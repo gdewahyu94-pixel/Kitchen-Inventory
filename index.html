@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kitchen Inventory</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#f4f5f3;--card:#fff;--ink:#1d2621;--mute:#6a756e;--line:#e1e5e1;--pri:#1f6f54;--pri2:#e5f1ec;--red:#c0392b;--red2:#fbecea;--amb:#b26b00;--amb2:#fdf3e1}
 *{box-sizing:border-box}
@@ -13,13 +14,13 @@ header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;justify-c
 header h1{font-size:17px;margin:0}header small{opacity:.8;font-size:12px}
 .icon{background:rgba(255,255,255,.15);border:0;color:#fff;font-size:18px;width:36px;height:36px;border-radius:8px;cursor:pointer}
 nav{display:flex;background:#fff;border-bottom:1px solid var(--line)}
-nav button{flex:1;border:0;background:none;padding:12px 4px;font:inherit;font-size:14px;color:var(--mute);border-bottom:3px solid transparent;cursor:pointer}
+nav button{flex:1;border:0;background:none;padding:12px 2px;font:inherit;font-size:13px;color:var(--mute);border-bottom:3px solid transparent;cursor:pointer}
 nav button.on{color:var(--pri);border-color:var(--pri);font-weight:600}
 main{max-width:900px;margin:0 auto;padding:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
 .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
-.stat small{color:var(--mute);font-size:12px}.stat b{display:block;font-size:24px;margin-top:2px}
+.stat small{color:var(--mute);font-size:12px}.stat b{display:block;font-size:22px;margin-top:2px}
 .stat.r b{color:var(--red)}.stat.a b{color:var(--amb)}.stat.g b{color:var(--pri)}
 h3{margin:0 0 10px;font-size:15px}h4{margin:18px 0 8px;font-size:14px}
 .bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
@@ -51,6 +52,7 @@ label input,label select,label textarea{margin-top:4px}
 .t-ADD,.t-NEWITEM{background:var(--pri2);color:var(--pri)}
 .q{font-weight:700}
 .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.row:last-child{border:0}
+.row span:last-child{text-align:right;white-space:nowrap}
 .empty{color:var(--mute);text-align:center;padding:20px;font-size:14px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;z-index:10}
 .modal[hidden]{display:none}
@@ -61,10 +63,35 @@ label input,label select,label textarea{margin-top:4px}
 .big{width:100%;max-height:260px;object-fit:contain;background:var(--bg);border-radius:10px;margin-bottom:12px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px;margin-bottom:12px}
 .grid div{background:var(--bg);border-radius:8px;padding:8px;text-align:center}
-.grid small{color:var(--mute);font-size:11px;display:block}.grid b{font-size:18px}
-.acts{display:flex;gap:8px;margin-bottom:14px}.acts .btn{flex:1}
+.grid small{color:var(--mute);font-size:11px;display:block}.grid b{font-size:16px}
+.acts{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.acts .btn{flex:1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;transition:.25s;z-index:20;font-size:14px;max-width:90vw}
 #toast.show{transform:translate(-50%,0)}#toast.err{background:var(--red)}
+/* Recap report */
+.tbl-wrap{overflow-x:auto;margin-bottom:16px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th,.tbl td{border:1px solid #cfd6d1;padding:5px 6px;text-align:left;vertical-align:top}
+.tbl th{background:var(--pri2);font-weight:600;white-space:nowrap}
+.tbl .n{text-align:right;white-space:nowrap}
+.tbl tfoot td{font-weight:700;background:var(--bg)}
+.rh{text-align:center;margin-bottom:14px}.rh h2{margin:0 0 4px;font-size:17px}.rh div{font-size:13px;color:var(--mute)}
+.rsum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.rsum div{border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center}
+.rsum small{display:block;font-size:11px;color:var(--mute)}.rsum b{font-size:15px}
+.rpt h4{margin:6px 0 6px}
+.sigs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;text-align:center;font-size:13px;page-break-inside:avoid}
+.sigs .ln{height:64px;border-bottom:1px solid var(--ink);margin:6px 8px 4px}
+@media(max-width:520px){.rsum{grid-template-columns:repeat(2,1fr)}}
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff}
+  .top,.noprint,#toast,#modal{display:none!important}
+  main{padding:0;max-width:none}
+  #rpt{border:0;padding:0;margin:0}
+  .tbl th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tbl-wrap{overflow:visible}
+}
 </style>
 </head>
 <body>
@@ -76,8 +103,9 @@ label input,label select,label textarea{margin-top:4px}
   <nav>
     <button data-tab="dash" class="on">Dashboard</button>
     <button data-tab="inv">Inventory</button>
-    <button data-tab="rep">Report</button>
+    <button data-tab="rep">Input</button>
     <button data-tab="his">History</button>
+    <button data-tab="rec">Recap</button>
   </nav>
 </div>
 
@@ -92,6 +120,7 @@ label input,label select,label textarea{margin-top:4px}
         <option value="name">Name A–Z</option>
         <option value="low">Lowest stock</option>
         <option value="broken">Most broken/lost</option>
+        <option value="price">Highest price</option>
       </select>
       <button class="btn" id="newBtn">+ New item</button>
     </div>
@@ -107,7 +136,11 @@ label input,label select,label textarea{margin-top:4px}
       </div>
       <label>Item<select id="rItem" required></select></label>
       <div id="rInfo" class="hint"></div>
-      <label>Quantity<input id="rQty" type="number" min="1" step="1" inputmode="numeric" required></label>
+      <div class="two">
+        <label>Quantity<input id="rQty" type="number" min="1" step="1" inputmode="numeric" required></label>
+        <label>Location<select id="rLoc" required></select></label>
+      </div>
+      <div id="rVal" class="hint"></div>
       <label>Reported by<input id="rBy" required></label>
       <label>Note<textarea id="rNote" rows="2" placeholder="e.g. dropped during dinner service"></textarea></label>
       <label>Photo (optional)<input id="rPhoto" type="file" accept="image/*" capture="environment"></label>
@@ -122,9 +155,30 @@ label input,label select,label textarea{margin-top:4px}
         <option value="">All types</option><option>BROKEN</option><option>LOST</option>
         <option>ADD</option><option>NEW ITEM</option>
       </select>
+      <select id="hLoc"></select>
       <input id="hMonth" type="month">
     </div>
     <div id="hList"></div>
+  </section>
+
+  <section id="rec" hidden>
+    <div class="card noprint">
+      <div class="bar">
+        <input type="month" id="cMonth">
+        <select id="cLoc"></select>
+      </div>
+      <h4 style="margin-top:0">Signatures</h4>
+      <div class="two">
+        <input id="s1n" placeholder="Prepared by – name"><input id="s1r" placeholder="Position">
+        <input id="s2n" placeholder="Checked by – name"><input id="s2r" placeholder="Position">
+        <input id="s3n" placeholder="Approved by – name"><input id="s3r" placeholder="Position">
+      </div>
+      <div class="acts" style="margin:14px 0 0">
+        <button class="btn" id="cPrint">Print / Save PDF</button>
+        <button class="btn ghost" id="cXls">Download Excel</button>
+      </div>
+    </div>
+    <div id="rpt" class="card rpt"></div>
   </section>
 </main>
 
@@ -132,11 +186,11 @@ label input,label select,label textarea{margin-top:4px}
 <div id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoowoC39D9UYmbTfchxQvI_-DmDwPE-QQADeUI0cNOY/exec';
+const API = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let S = { items: [], log: [], hasLost: false, low: 5, pin: false, type: 'BROKEN' };
+let S = { items: [], log: [], locs: [], hasLost: false, hasPrice: false, low: 5, pin: false, type: 'BROKEN' };
 
 /* ---------- API ---------- */
 async function get(action, params = {}) {
@@ -148,20 +202,26 @@ async function get(action, params = {}) {
   return j.data;
 }
 async function post(body) {
-  if (S.pin && !localStorage.getItem('inv_pin')) {
+  if (S.pin && !ls('inv_pin')) {
     const p = prompt('Enter PIN');
     if (!p) throw new Error('PIN required');
-    localStorage.setItem('inv_pin', p);
+    ls('inv_pin', p);
   }
-  body.pin = localStorage.getItem('inv_pin') || '';
-  body.by = body.by || localStorage.getItem('inv_by') || '';
+  body.pin = ls('inv_pin') || '';
+  body.by = body.by || ls('inv_by') || '';
   const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
   const j = await r.json();
-  if (!j.ok) { if (j.error === 'Wrong PIN') localStorage.removeItem('inv_pin'); throw new Error(j.error); }
+  if (!j.ok) { if (j.error === 'Wrong PIN') ls('inv_pin', null); throw new Error(j.error); }
   return j.data;
 }
 
 /* ---------- UTILS ---------- */
+function ls(k, v) {
+  try {
+    if (v === undefined) return localStorage.getItem(k);
+    if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v);
+  } catch (e) { return null; }
+}
 function toast(m, err) {
   const t = $('#toast'); t.textContent = m; t.className = 'show' + (err ? ' err' : '');
   clearTimeout(t._t); t._t = setTimeout(() => t.className = '', 3000);
@@ -171,8 +231,13 @@ function thumb(src, cls = 'th') {
   return src ? `<img class="${cls}" src="${esc(src)}" loading="lazy" referrerpolicy="no-referrer" onerror="noImg(this)">`
              : `<div class="${cls} ph">🍽</div>`;
 }
+const rp = n => 'Rp ' + Math.round(n || 0).toLocaleString('id-ID');
 const byRow = r => S.items.find(i => i.row == r);
+const priceOf = name => (S.items.find(i => i.item === name) || {}).harga || 0;
+const lossVal = l => l.value || l.qty * (l.price || priceOf(l.item));
+const isLoss = l => l.type === 'BROKEN' || l.type === 'LOST';
 function thisMonth() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function monthLabel(m) { const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleString('en', { month: 'long', year: 'numeric' }); }
 function compress(file) {
   return new Promise((res, rej) => {
     const img = new Image();
@@ -193,37 +258,61 @@ function compress(file) {
 async function load() {
   $('#sub').textContent = 'Loading...';
   try {
-    const [inv, log] = await Promise.all([get('list'), get('log', { limit: 1000 })]);
-    S.items = inv.items; S.hasLost = inv.hasLost; S.low = inv.lowStock; S.pin = inv.pinRequired; S.log = log;
-    renderDash(); renderList(); fillSelect(); renderHis();
+    const [inv, log] = await Promise.all([get('list'), get('log', { limit: 3000 })]);
+    S.items = inv.items; S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice;
+    S.low = inv.lowStock; S.pin = inv.pinRequired; S.locs = inv.locations || []; S.log = log;
+    fillLocs(); renderDash(); renderList(); fillSelect(); renderHis(); renderRecap();
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
+}
+
+function fillLocs() {
+  const opts = S.locs.map(l => `<option>${esc(l)}</option>`).join('');
+  [['#rLoc', '— choose location —'], ['#hLoc', 'All locations'], ['#cLoc', 'All locations']].forEach(([id, first]) => {
+    const s = $(id), v = s.value;
+    s.innerHTML = `<option value="">${first}</option>` + opts;
+    s.value = v;
+  });
 }
 
 /* ---------- DASHBOARD ---------- */
 function renderDash() {
   const m = S.log.filter(l => l.ts.startsWith(thisMonth()));
   const sum = t => m.filter(l => l.type === t).reduce((a, l) => a + l.qty, 0);
+  const loss = m.filter(isLoss);
+  const lossTotal = loss.reduce((a, l) => a + lossVal(l), 0);
   const stock = S.items.reduce((a, i) => a + i.closing, 0);
   const low = S.items.filter(i => i.closing <= S.low).sort((a, b) => a.closing - b.closing);
-  const top = {};
-  m.filter(l => l.type === 'BROKEN' || l.type === 'LOST').forEach(l => top[l.item] = (top[l.item] || 0) + l.qty);
-  const topList = Object.entries(top).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const monthName = new Date().toLocaleString('en', { month: 'long', year: 'numeric' });
+
+  const byItem = {}, byLoc = {};
+  loss.forEach(l => {
+    const a = byItem[l.item] || (byItem[l.item] = { q: 0, v: 0 }); a.q += l.qty; a.v += lossVal(l);
+    const k = l.loc || '-'; const b = byLoc[k] || (byLoc[k] = { q: 0, v: 0 }); b.q += l.qty; b.v += lossVal(l);
+  });
+  const sortKey = S.hasPrice ? 'v' : 'q';
+  const top = Object.entries(byItem).sort((a, b) => b[1][sortKey] - a[1][sortKey]).slice(0, 5);
+  const locs = Object.entries(byLoc).sort((a, b) => b[1][sortKey] - a[1][sortKey]);
+  const line = ([n, o]) => `<div class="row"><span>${esc(n)}</span><span><b>${o.q}</b> pcs${S.hasPrice ? ' · ' + rp(o.v) : ''}</span></div>`;
+  const mn = monthLabel(thisMonth());
 
   $('#dash').innerHTML = `
     <div class="stats">
       <div class="stat"><small>Items</small><b>${S.items.length}</b></div>
       <div class="stat g"><small>Stock on hand</small><b>${stock}</b></div>
-      <div class="stat r"><small>Broken · ${monthName}</small><b>${sum('BROKEN')}</b></div>
-      <div class="stat a"><small>Lost · ${monthName}</small><b>${sum('LOST')}</b></div>
-      <div class="stat g"><small>Added · ${monthName}</small><b>${sum('ADD')}</b></div>
+      <div class="stat r"><small>Broken · ${mn}</small><b>${sum('BROKEN')}</b></div>
+      <div class="stat a"><small>Lost · ${mn}</small><b>${sum('LOST')}</b></div>
+      ${S.hasPrice ? `<div class="stat r"><small>Loss value · ${mn}</small><b>${rp(lossTotal)}</b></div>` : ''}
+      <div class="stat g"><small>Added · ${mn}</small><b>${sum('ADD')}</b></div>
+    </div>
+    ${S.hasPrice ? '' : '<div class="card hint" style="margin:0 0 12px">Add a <b>HARGA</b> column to the sheet to see loss value in Rupiah.</div>'}
+    <div class="card"><h3>Loss by location · ${mn}</h3>
+      ${locs.length ? locs.map(line).join('') : '<p class="empty">Nothing reported this month</p>'}
+    </div>
+    <div class="card"><h3>Top broken / lost items · ${mn}</h3>
+      ${top.length ? top.map(line).join('') : '<p class="empty">Nothing reported this month</p>'}
     </div>
     <div class="card"><h3>Low stock (≤ ${S.low})</h3>
       ${low.length ? low.map(i => `<div class="row"><span>${esc(i.item)}</span><b style="color:var(--red)">${i.closing}</b></div>`).join('') : '<p class="empty">All items above minimum</p>'}
-    </div>
-    <div class="card"><h3>Most broken / lost this month</h3>
-      ${topList.length ? topList.map(([n, q]) => `<div class="row"><span>${esc(n)}</span><b>${q}</b></div>`).join('') : '<p class="empty">Nothing reported this month</p>'}
     </div>`;
 }
 
@@ -234,11 +323,13 @@ function renderList() {
   if (sort === 'name') a.sort((x, y) => x.item.localeCompare(y.item));
   if (sort === 'low') a.sort((x, y) => x.closing - y.closing);
   if (sort === 'broken') a.sort((x, y) => (y.broken + y.lost) - (x.broken + x.lost));
+  if (sort === 'price') a.sort((x, y) => y.harga - x.harga);
   $('#list').innerHTML = a.length ? a.map(i => {
     const low = i.closing <= S.low;
     return `<div class="item" onclick="openItem(${i.row})">${thumb(i.photo)}
       <div class="info"><b>${esc(i.item)}</b>
         <div class="meta">Awal ${i.awal} · +${i.add} · Broken ${i.broken}${S.hasLost ? ' · Lost ' + i.lost : ''}</div>
+        ${S.hasPrice ? `<div class="meta">${i.harga ? rp(i.harga) + ' / pcs' : 'No price'}</div>` : ''}
         ${i.remarks ? `<div class="meta">${esc(i.remarks)}</div>` : ''}
       </div>
       <div class="qty ${low ? 'low' : ''}">${i.closing}<small>${low ? 'low' : 'in stock'}</small></div></div>`;
@@ -261,12 +352,14 @@ function openItem(row) {
       <div><small>Broken</small><b>${i.broken}</b></div>
       ${S.hasLost ? `<div><small>Lost</small><b>${i.lost}</b></div>` : ''}
       <div><small>Closing</small><b>${i.closing}</b></div>
+      ${S.hasPrice ? `<div><small>Price</small><b>${i.harga ? rp(i.harga) : '-'}</b></div>` : ''}
     </div>
     <div class="acts">
       <button class="btn red" onclick="goReport(${i.row},'BROKEN')">Broken</button>
       <button class="btn amb" onclick="goReport(${i.row},'LOST')">Lost</button>
       <button class="btn" onclick="goReport(${i.row},'ADD')">Add stock</button>
     </div>
+    ${S.hasPrice ? `<label>Price per pcs (Rp)<input id="eHarga" type="number" min="0" inputmode="numeric" value="${i.harga || ''}"></label>` : ''}
     <label>Remarks<input id="eRem" value="${esc(i.remarks)}"></label>
     <label>Change photo<input id="ePhoto" type="file" accept="image/*" capture="environment"></label>
     <button class="btn full ghost" id="eSave" onclick="saveEdit(${i.row})">Save changes</button>
@@ -278,7 +371,11 @@ async function saveEdit(row) {
   const i = byRow(row), btn = $('#eSave'), f = $('#ePhoto').files[0];
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    await post({ action: 'updateItem', row, item: i.item, remarks: $('#eRem').value.trim(), photo: f ? await compress(f) : '' });
+    await post({
+      action: 'updateItem', row, item: i.item, remarks: $('#eRem').value.trim(),
+      harga: $('#eHarga') ? $('#eHarga').value : undefined,
+      photo: f ? await compress(f) : ''
+    });
     toast('Saved'); closeModal(); load();
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Save changes'; }
 }
@@ -286,7 +383,10 @@ async function saveEdit(row) {
 $('#newBtn').onclick = () => openModal(`
   <div class="mh"><h3>New item</h3><button class="x" onclick="closeModal()">✕</button></div>
   <label>Item name<input id="nName"></label>
-  <label>Stock awal<input id="nAwal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+  <div class="two">
+    <label>Stock awal<input id="nAwal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+    <label>Price per pcs (Rp)<input id="nHarga" type="number" min="0" inputmode="numeric"></label>
+  </div>
   <label>Remarks<input id="nRem"></label>
   <label>Photo<input id="nPhoto" type="file" accept="image/*" capture="environment"></label>
   <button class="btn full" id="nSave" onclick="saveNew()">Add item</button>`);
@@ -296,30 +396,41 @@ async function saveNew() {
   const btn = $('#nSave'), f = $('#nPhoto').files[0];
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    await post({ action: 'addItem', item: name, awal: +$('#nAwal').value || 0, remarks: $('#nRem').value.trim(), photo: f ? await compress(f) : '' });
+    await post({
+      action: 'addItem', item: name, awal: +$('#nAwal').value || 0, harga: $('#nHarga').value || 0,
+      remarks: $('#nRem').value.trim(), photo: f ? await compress(f) : ''
+    });
     toast('Item added'); closeModal(); load();
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Add item'; }
 }
 
-/* ---------- REPORT ---------- */
+/* ---------- INPUT ---------- */
 function fillSelect() {
   const s = $('#rItem'), v = s.value;
   s.innerHTML = '<option value="">— choose item —</option>' +
     [...S.items].sort((a, b) => a.item.localeCompare(b.item)).map(i => `<option value="${i.row}">${esc(i.item)}</option>`).join('');
   s.value = v; showInfo();
 }
-function showInfo() { const i = byRow($('#rItem').value); $('#rInfo').innerHTML = i ? `Current stock: <b>${i.closing}</b>` : ''; }
+function showInfo() {
+  const i = byRow($('#rItem').value);
+  $('#rInfo').innerHTML = i ? `Current stock: <b>${i.closing}</b>${S.hasPrice && i.harga ? ' · ' + rp(i.harga) + ' / pcs' : ''}` : '';
+  const q = +$('#rQty').value;
+  $('#rVal').innerHTML = (i && q > 0 && S.hasPrice && i.harga && S.type !== 'ADD') ? `Loss value: <b style="color:var(--red)">${rp(q * i.harga)}</b>` : '';
+}
 function setType(t) {
   S.type = t;
   document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   const btn = $('#rSubmit');
   btn.textContent = t === 'ADD' ? 'Add stock' : t === 'LOST' ? 'Report lost' : 'Report broken';
   btn.className = 'btn full ' + (t === 'ADD' ? '' : t === 'LOST' ? 'amb' : 'red');
+  $('#rLoc').required = t !== 'ADD';
+  showInfo();
 }
 function goReport(row, t) { closeModal(); tab('rep'); setType(t); $('#rItem').value = row; showInfo(); $('#rQty').focus(); }
 
 document.querySelectorAll('#seg button').forEach(b => b.onclick = () => setType(b.dataset.t));
 $('#rItem').onchange = showInfo;
+$('#rQty').oninput = showInfo;
 $('#rPhoto').onchange = e => { const f = e.target.files[0], p = $('#rPrev'); if (f) { p.src = URL.createObjectURL(f); p.hidden = false; } else p.hidden = true; };
 
 $('#repForm').onsubmit = async e => {
@@ -327,11 +438,15 @@ $('#repForm').onsubmit = async e => {
   const i = byRow($('#rItem').value); if (!i) return toast('Choose an item', 1);
   const qty = +$('#rQty').value;
   if (S.type !== 'ADD' && qty > i.closing) return toast('Quantity is more than current stock (' + i.closing + ')', 1);
-  const by = $('#rBy').value.trim(); localStorage.setItem('inv_by', by);
+  if (S.type !== 'ADD' && !$('#rLoc').value) return toast('Choose a location', 1);
+  const by = $('#rBy').value.trim(); ls('inv_by', by);
   const btn = $('#rSubmit'), f = $('#rPhoto').files[0];
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    await post({ action: 'movement', type: S.type, row: i.row, item: i.item, qty, by, note: $('#rNote').value.trim(), photo: f ? await compress(f) : '' });
+    await post({
+      action: 'movement', type: S.type, row: i.row, item: i.item, qty, by,
+      location: $('#rLoc').value, note: $('#rNote').value.trim(), photo: f ? await compress(f) : ''
+    });
     toast('Saved');
     $('#rQty').value = ''; $('#rNote').value = ''; $('#rPhoto').value = ''; $('#rPrev').hidden = true;
     await load();
@@ -341,30 +456,133 @@ $('#repForm').onsubmit = async e => {
 
 /* ---------- HISTORY ---------- */
 function logRow(l) {
-  const sign = (l.type === 'ADD' || l.type === 'NEW ITEM') ? '+' : (l.type === 'BROKEN' || l.type === 'LOST') ? '−' : '';
+  const sign = (l.type === 'ADD' || l.type === 'NEW ITEM') ? '+' : isLoss(l) ? '−' : '';
+  const val = isLoss(l) && S.hasPrice ? ' · ' + rp(lossVal(l)) : '';
   return `<div class="log"><span class="tag t-${l.type.replace(/\s/g, '')}">${esc(l.type)}</span>
-    <div class="info"><b>${esc(l.item)}</b> <span class="q">${sign}${l.qty}</span>
-      <div class="meta">${esc(l.ts)} · ${esc(l.by || '-')}${l.note ? ' · ' + esc(l.note) : ''}</div></div>
+    <div class="info"><b>${esc(l.item)}</b> <span class="q">${sign}${l.qty}</span>${val}
+      <div class="meta">${esc(l.ts)} · ${esc(l.by || '-')}${l.loc ? ' · ' + esc(l.loc) : ''}${l.note ? ' · ' + esc(l.note) : ''}</div></div>
     ${l.photo ? `<a href="${esc(l.photo)}" target="_blank">${thumb(l.photo, 'th sm')}</a>` : ''}</div>`;
 }
 function renderHis() {
-  const t = $('#hType').value, m = $('#hMonth').value;
-  const a = S.log.filter(l => (!t || l.type === t) && (!m || l.ts.startsWith(m)));
+  const t = $('#hType').value, m = $('#hMonth').value, loc = $('#hLoc').value;
+  const a = S.log.filter(l => (!t || l.type === t) && (!m || l.ts.startsWith(m)) && (!loc || l.loc === loc));
   $('#hList').innerHTML = a.length ? a.map(logRow).join('') : '<p class="empty">No records</p>';
+}
+
+/* ---------- RECAP ---------- */
+const SIGS = [['s1', 'Prepared by'], ['s2', 'Checked by'], ['s3', 'Approved by']];
+function sigs() { return SIGS.map(([k, label]) => ({ label, name: $('#' + k + 'n').value.trim(), role: $('#' + k + 'r').value.trim() })); }
+
+function recapData() {
+  const m = $('#cMonth').value || thisMonth(), loc = $('#cLoc').value;
+  const logs = S.log.filter(l => l.ts.startsWith(m) && (!loc || l.loc === loc) && ['ADD', 'BROKEN', 'LOST'].includes(l.type));
+  const agg = {};
+  S.items.forEach(i => agg[i.item] = { no: i.no, item: i.item, price: i.harga, add: 0, broken: 0, lost: 0, value: 0, stock: i.closing });
+  logs.forEach(l => {
+    const a = agg[l.item] || (agg[l.item] = { no: '', item: l.item, price: l.price, add: 0, broken: 0, lost: 0, value: 0, stock: '' });
+    if (l.type === 'ADD') a.add += l.qty;
+    else { a[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; a.value += lossVal(l); }
+  });
+  let rows = Object.values(agg);
+  if (loc) rows = rows.filter(r => r.add || r.broken || r.lost);
+  const byLoc = {};
+  logs.filter(isLoss).forEach(l => {
+    const k = l.loc || '-';
+    const b = byLoc[k] || (byLoc[k] = { loc: k, broken: 0, lost: 0, value: 0 });
+    b[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; b.value += lossVal(l);
+  });
+  const t = rows.reduce((a, r) => ({ add: a.add + r.add, broken: a.broken + r.broken, lost: a.lost + r.lost, value: a.value + r.value }),
+    { add: 0, broken: 0, lost: 0, value: 0 });
+  return { m, loc, rows, byLoc: Object.values(byLoc).sort((a, b) => b.value - a.value || (b.broken + b.lost) - (a.broken + a.lost)),
+    detail: logs.filter(isLoss).slice().reverse(), t };
+}
+
+function renderRecap() {
+  const d = recapData(), P = S.hasPrice;
+  const sg = sigs();
+  $('#rpt').innerHTML = `
+    <div class="rh">
+      <h2>Kitchen Utensils – Lost &amp; Breakage Report</h2>
+      <div>Period: <b>${monthLabel(d.m)}</b> · Location: <b>${esc(d.loc || 'All locations')}</b></div>
+      <div>Generated ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+    </div>
+    <div class="rsum">
+      <div><small>Added</small><b>${d.t.add}</b></div>
+      <div><small>Broken</small><b>${d.t.broken}</b></div>
+      <div><small>Lost</small><b>${d.t.lost}</b></div>
+      <div><small>${P ? 'Loss value' : 'Total loss'}</small><b>${P ? rp(d.t.value) : d.t.broken + d.t.lost}</b></div>
+    </div>
+
+    <h4>1. Summary per item</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>No</th><th>Item</th>${P ? '<th class="n">Price</th>' : ''}<th class="n">Added</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">Current stock</th></tr></thead>
+      <tbody>${d.rows.map((r, i) => `<tr><td>${esc(r.no || i + 1)}</td><td>${esc(r.item)}</td>${P ? `<td class="n">${r.price ? rp(r.price) : '-'}</td>` : ''}<td class="n">${r.add}</td><td class="n">${r.broken}</td><td class="n">${r.lost}</td>${P ? `<td class="n">${rp(r.value)}</td>` : ''}<td class="n">${r.stock}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No data</td></tr>`}</tbody>
+      <tfoot><tr><td></td><td>TOTAL</td>${P ? '<td></td>' : ''}<td class="n">${d.t.add}</td><td class="n">${d.t.broken}</td><td class="n">${d.t.lost}</td>${P ? `<td class="n">${rp(d.t.value)}</td>` : ''}<td></td></tr></tfoot>
+    </table></div>
+
+    <h4>2. Loss by location</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Location</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}</tr></thead>
+      <tbody>${d.byLoc.map(b => `<tr><td>${esc(b.loc)}</td><td class="n">${b.broken}</td><td class="n">${b.lost}</td>${P ? `<td class="n">${rp(b.value)}</td>` : ''}</tr>`).join('') || `<tr><td colspan="4" class="empty">No breakage or loss this period</td></tr>`}</tbody>
+    </table></div>
+
+    <h4>3. Incident detail</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Date</th><th>Type</th><th>Item</th><th class="n">Qty</th>${P ? '<th class="n">Value</th>' : ''}<th>Location</th><th>Reported by</th><th>Note</th></tr></thead>
+      <tbody>${d.detail.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type}</td><td>${esc(l.item)}</td><td class="n">${l.qty}</td>${P ? `<td class="n">${rp(lossVal(l))}</td>` : ''}<td>${esc(l.loc || '-')}</td><td>${esc(l.by || '-')}</td><td>${esc(l.note)}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No incidents</td></tr>`}</tbody>
+    </table></div>
+
+    <div class="sigs">${sg.map(s => `<div>${s.label}<div class="ln"></div><b>${esc(s.name) || '&nbsp;'}</b><br><span style="color:var(--mute)">${esc(s.role) || '&nbsp;'}</span></div>`).join('')}</div>`;
+}
+
+function downloadXls() {
+  if (!window.XLSX) return toast('Excel library not loaded, check internet connection', 1);
+  const d = recapData(), P = S.hasPrice, sg = sigs();
+  const head = [['KITCHEN UTENSILS - LOST & BREAKAGE REPORT'], ['Period', monthLabel(d.m)], ['Location', d.loc || 'All locations'], []];
+
+  const s1 = head.concat([P ? ['NO', 'ITEM', 'PRICE', 'ADDED', 'BROKEN', 'LOST', 'LOSS VALUE', 'CURRENT STOCK']
+                            : ['NO', 'ITEM', 'ADDED', 'BROKEN', 'LOST', 'CURRENT STOCK']]);
+  d.rows.forEach((r, i) => s1.push(P ? [r.no || i + 1, r.item, r.price, r.add, r.broken, r.lost, r.value, r.stock]
+                                     : [r.no || i + 1, r.item, r.add, r.broken, r.lost, r.stock]));
+  s1.push(P ? ['', 'TOTAL', '', d.t.add, d.t.broken, d.t.lost, d.t.value, ''] : ['', 'TOTAL', d.t.add, d.t.broken, d.t.lost, '']);
+  s1.push([], [], [sg[0].label, '', '', sg[1].label, '', '', sg[2].label], [], [], [],
+    [sg[0].name, '', '', sg[1].name, '', '', sg[2].name], [sg[0].role, '', '', sg[1].role, '', '', sg[2].role]);
+
+  const s2 = head.concat([P ? ['LOCATION', 'BROKEN', 'LOST', 'LOSS VALUE'] : ['LOCATION', 'BROKEN', 'LOST']]);
+  d.byLoc.forEach(b => s2.push(P ? [b.loc, b.broken, b.lost, b.value] : [b.loc, b.broken, b.lost]));
+
+  const s3 = head.concat([['DATE', 'TYPE', 'ITEM', 'QTY', ...(P ? ['PRICE', 'VALUE'] : []), 'LOCATION', 'REPORTED BY', 'NOTE']]);
+  d.detail.forEach(l => s3.push([l.ts, l.type, l.item, l.qty, ...(P ? [l.price || priceOf(l.item), lossVal(l)] : []), l.loc, l.by, l.note]));
+
+  const wb = XLSX.utils.book_new();
+  const add = (aoa, name, cols) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = cols.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, name); };
+  add(s1, 'Summary', P ? [16, 32, 12, 9, 9, 9, 14, 14] : [16, 32, 9, 9, 9, 14]);
+  add(s2, 'By Location', [24, 10, 10, 14]);
+  add(s3, 'Detail', [17, 9, 28, 6, ...(P ? [12, 12] : []), 18, 16, 30]);
+  XLSX.writeFile(wb, 'Lost-Breakage-' + d.m + (d.loc ? '-' + d.loc.replace(/\W+/g, '_') : '') + '.xlsx');
 }
 
 /* ---------- TABS & INIT ---------- */
 function tab(t) {
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== t);
+  if (t === 'rec') renderRecap();
   scrollTo(0, 0);
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
 $('#q').oninput = renderList; $('#sort').onchange = renderList;
-$('#hType').onchange = renderHis; $('#hMonth').onchange = renderHis;
+$('#hType').onchange = renderHis; $('#hMonth').onchange = renderHis; $('#hLoc').onchange = renderHis;
+$('#cMonth').onchange = renderRecap; $('#cLoc').onchange = renderRecap;
+SIGS.forEach(([k]) => ['n', 'r'].forEach(x => {
+  const el = $('#' + k + x); el.value = ls('inv_' + k + x) || '';
+  el.oninput = () => { ls('inv_' + k + x, el.value); renderRecap(); };
+}));
+$('#cPrint').onclick = () => { renderRecap(); window.print(); };
+$('#cXls').onclick = downloadXls;
 $('#refresh').onclick = load;
-$('#rBy').value = localStorage.getItem('inv_by') || '';
+$('#rBy').value = ls('inv_by') || '';
 $('#hMonth').value = thisMonth();
+$('#cMonth').value = thisMonth();
 load();
 </script>
 </body>
