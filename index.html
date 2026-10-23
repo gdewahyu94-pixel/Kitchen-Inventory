@@ -145,7 +145,7 @@ label input,label select,label textarea{margin-top:4px}
       <div id="rVal" class="hint"></div>
       <label>Reported by<input id="rBy" required></label>
       <label>Note<textarea id="rNote" rows="2" placeholder="e.g. dropped during dinner service"></textarea></label>
-      <label>Photo (optional)<input id="rPhoto" type="file" accept="image/*" capture="environment"></label>
+      <label>Photo (optional)<input id="rPhoto" type="file" accept="image/*"></label>
       <img id="rPrev" class="prev" hidden>
       <button class="btn full red" id="rSubmit">Report broken</button>
     </form>
@@ -259,7 +259,7 @@ function compress(file) {
       URL.revokeObjectURL(img.src);
       res(c.toDataURL('image/jpeg', 0.75));
     };
-    img.onerror = rej;
+    img.onerror = () => rej(new Error('Photo format not supported, choose another photo'));
     img.src = URL.createObjectURL(file);
   });
 }
@@ -371,10 +371,12 @@ function openItem(row) {
     </div>
     ${S.hasPrice ? `<label>Price per pcs (Rp)<input id="eHarga" type="number" min="0" inputmode="numeric" value="${i.harga || ''}"></label>` : ''}
     <label>Remarks<input id="eRem" value="${esc(i.remarks)}"></label>
-    <label>Change photo<input id="ePhoto" type="file" accept="image/*" capture="environment"></label>
+    <label>Change photo<input id="ePhoto" type="file" accept="image/*"></label>
+    <img id="ePrev" class="prev" hidden>
     <button class="btn full ghost" id="eSave" onclick="saveEdit(${i.row})">Save changes</button>
     <h4>Recent history</h4>
     ${h.length ? h.map(logRow).join('') : '<p class="empty">No history yet</p>'}`);
+  previewOn('#ePhoto', '#ePrev');
 }
 
 async function saveEdit(row) {
@@ -390,16 +392,20 @@ async function saveEdit(row) {
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Save changes'; }
 }
 
-$('#newBtn').onclick = () => openModal(`
-  <div class="mh"><h3>New item</h3><button class="x" onclick="closeModal()">✕</button></div>
-  <label>Item name<input id="nName"></label>
-  <div class="two">
-    <label>Stock awal<input id="nAwal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
-    <label>Price per pcs (Rp)<input id="nHarga" type="number" min="0" inputmode="numeric"></label>
-  </div>
-  <label>Remarks<input id="nRem"></label>
-  <label>Photo<input id="nPhoto" type="file" accept="image/*" capture="environment"></label>
-  <button class="btn full" id="nSave" onclick="saveNew()">Add item</button>`);
+$('#newBtn').onclick = () => {
+  openModal(`
+    <div class="mh"><h3>New item</h3><button class="x" onclick="closeModal()">✕</button></div>
+    <label>Item name<input id="nName"></label>
+    <div class="two">
+      <label>Stock awal<input id="nAwal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+      <label>Price per pcs (Rp)<input id="nHarga" type="number" min="0" inputmode="numeric"></label>
+    </div>
+    <label>Remarks<input id="nRem"></label>
+    <label>Photo<input id="nPhoto" type="file" accept="image/*"></label>
+    <img id="nPrev" class="prev" hidden>
+    <button class="btn full" id="nSave" onclick="saveNew()">Add item</button>`);
+  previewOn('#nPhoto', '#nPrev');
+};
 
 async function saveNew() {
   const name = $('#nName').value.trim(); if (!name) return toast('Item name is required', 1);
@@ -412,6 +418,13 @@ async function saveNew() {
     });
     toast('Item added'); closeModal(); load();
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Add item'; }
+}
+
+function previewOn(inputId, imgId) {
+  $(inputId).onchange = e => {
+    const f = e.target.files[0], p = $(imgId);
+    if (f) { p.src = URL.createObjectURL(f); p.hidden = false; } else p.hidden = true;
+  };
 }
 
 /* ---------- INPUT ---------- */
@@ -441,7 +454,7 @@ function goReport(row, t) { closeModal(); tab('rep'); setType(t); $('#rItem').va
 document.querySelectorAll('#seg button').forEach(b => b.onclick = () => setType(b.dataset.t));
 $('#rItem').onchange = showInfo;
 $('#rQty').oninput = showInfo;
-$('#rPhoto').onchange = e => { const f = e.target.files[0], p = $('#rPrev'); if (f) { p.src = URL.createObjectURL(f); p.hidden = false; } else p.hidden = true; };
+previewOn('#rPhoto', '#rPrev');
 
 $('#repForm').onsubmit = async e => {
   e.preventDefault();
