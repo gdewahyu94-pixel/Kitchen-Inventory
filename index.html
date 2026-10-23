@@ -6,7 +6,7 @@
 <title>Kitchen Inventory</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#f4f5f3;--card:#fff;--ink:#1d2621;--mute:#6a756e;--line:#e1e5e1;--pri:#1f6f54;--pri2:#e5f1ec;--red:#c0392b;--red2:#fbecea;--amb:#b26b00;--amb2:#fdf3e1}
+:root{--bg:#f4f5f3;--card:#fff;--ink:#1d2621;--mute:#6a756e;--line:#e1e5e1;--pri:#1f6f54;--pri2:#e5f1ec;--red:#c0392b;--red2:#fbecea;--amb:#b26b00;--amb2:#fdf3e1;--blu:#2b5797;--blu2:#e8eef7}
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
 .top{position:sticky;top:0;z-index:5}
@@ -46,10 +46,11 @@ label input,label select,label textarea{margin-top:4px}
 .seg button.on[data-t=LOST]{background:var(--amb2);border-color:var(--amb);color:var(--amb);font-weight:600}
 .seg button.on[data-t=ADD]{background:var(--pri2);border-color:var(--pri);color:var(--pri);font-weight:600}
 .hint{font-size:13px;margin:-6px 0 12px;color:var(--mute)}
+.note{font-size:13px;color:var(--ink);background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px;line-height:1.5}
 .prev{max-width:160px;border-radius:8px;margin-bottom:12px;display:block}
 .tag{font-size:11px;font-weight:700;padding:4px 6px;border-radius:6px;flex:none;width:72px;text-align:center}
 .t-BROKEN{background:var(--red2);color:var(--red)}.t-LOST{background:var(--amb2);color:var(--amb)}
-.t-ADD,.t-NEWITEM{background:var(--pri2);color:var(--pri)}
+.t-ADD,.t-NEWITEM{background:var(--pri2);color:var(--pri)}.t-CLOSEMONTH{background:var(--blu2);color:var(--blu)}
 .q{font-weight:700}
 .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.row:last-child{border:0}
 .row span:last-child{text-align:right;white-space:nowrap}
@@ -66,6 +67,7 @@ label input,label select,label textarea{margin-top:4px}
 .grid small{color:var(--mute);font-size:11px;display:block}.grid b{font-size:16px}
 .acts{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.acts .btn{flex:1}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.flex{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 #toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;transition:.25s;z-index:20;font-size:14px;max-width:90vw}
 #toast.show{transform:translate(-50%,0)}#toast.err{background:var(--red)}
 /* Recap report */
@@ -153,7 +155,7 @@ label input,label select,label textarea{margin-top:4px}
     <div class="bar">
       <select id="hType">
         <option value="">All types</option><option>BROKEN</option><option>LOST</option>
-        <option>ADD</option><option>NEW ITEM</option>
+        <option>ADD</option><option>NEW ITEM</option><option>CLOSE MONTH</option>
       </select>
       <select id="hLoc"></select>
       <input id="hMonth" type="month">
@@ -162,6 +164,12 @@ label input,label select,label textarea{margin-top:4px}
   </section>
 
   <section id="rec" hidden>
+    <div class="card noprint">
+      <div class="flex">
+        <div><h3 style="margin:0">Month closing</h3><div class="meta" id="closeInfo">-</div></div>
+        <button class="btn red" id="closeBtn">Close month…</button>
+      </div>
+    </div>
     <div class="card noprint">
       <div class="bar">
         <input type="month" id="cMonth">
@@ -186,15 +194,15 @@ label input,label select,label textarea{margin-top:4px}
 <div id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoowoC39D9UYmbTfchxQvI_-DmDwPE-QQADeUI0cNOY/exec';
+const API = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let S = { items: [], log: [], locs: [], hasLost: false, hasPrice: false, low: 5, pin: false, type: 'BROKEN' };
+let S = { items: [], log: [], locs: [], closings: [], hasLost: false, hasPrice: false, low: 5, pin: false, type: 'BROKEN' };
 
 /* ---------- API ---------- */
 async function get(action, params = {}) {
-  const u = new URL(API);
+  const u = new URL(API.trim());
   u.searchParams.set('action', action);
   for (const k in params) u.searchParams.set(k, params[k]);
   const j = await (await fetch(u)).json();
@@ -209,7 +217,7 @@ async function post(body) {
   }
   body.pin = ls('inv_pin') || '';
   body.by = body.by || ls('inv_by') || '';
-  const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+  const r = await fetch(API.trim(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
   const j = await r.json();
   if (!j.ok) { if (j.error === 'Wrong PIN') ls('inv_pin', null); throw new Error(j.error); }
   return j.data;
@@ -224,7 +232,7 @@ function ls(k, v) {
 }
 function toast(m, err) {
   const t = $('#toast'); t.textContent = m; t.className = 'show' + (err ? ' err' : '');
-  clearTimeout(t._t); t._t = setTimeout(() => t.className = '', 3000);
+  clearTimeout(t._t); t._t = setTimeout(() => t.className = '', 3500);
 }
 function noImg(el) { const d = document.createElement('div'); d.className = el.className + ' ph'; d.textContent = '🍽'; el.replaceWith(d); }
 function thumb(src, cls = 'th') {
@@ -236,8 +244,10 @@ const byRow = r => S.items.find(i => i.row == r);
 const priceOf = name => (S.items.find(i => i.item === name) || {}).harga || 0;
 const lossVal = l => l.value || l.qty * (l.price || priceOf(l.item));
 const isLoss = l => l.type === 'BROKEN' || l.type === 'LOST';
-function thisMonth() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+const ym = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+const thisMonth = () => ym(new Date());
 function monthLabel(m) { const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleString('en', { month: 'long', year: 'numeric' }); }
+const closedMonths = () => [...new Set(S.closings.map(c => c.month))].sort();
 function compress(file) {
   return new Promise((res, rej) => {
     const img = new Image();
@@ -258,10 +268,10 @@ function compress(file) {
 async function load() {
   $('#sub').textContent = 'Loading...';
   try {
-    const [inv, log] = await Promise.all([get('list'), get('log', { limit: 3000 })]);
+    const [inv, log, cl] = await Promise.all([get('list'), get('log', { limit: 3000 }), get('closing')]);
     S.items = inv.items; S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice;
-    S.low = inv.lowStock; S.pin = inv.pinRequired; S.locs = inv.locations || []; S.log = log;
-    fillLocs(); renderDash(); renderList(); fillSelect(); renderHis(); renderRecap();
+    S.low = inv.lowStock; S.pin = inv.pinRequired; S.locs = inv.locations || []; S.log = log; S.closings = cl;
+    fillLocs(); renderDash(); renderList(); fillSelect(); renderHis(); renderCloseInfo(); renderRecap();
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
 }
@@ -456,6 +466,10 @@ $('#repForm').onsubmit = async e => {
 
 /* ---------- HISTORY ---------- */
 function logRow(l) {
+  if (l.type === 'CLOSE MONTH') {
+    return `<div class="log"><span class="tag t-CLOSEMONTH">CLOSE</span>
+      <div class="info"><b>Month closed</b> · ${l.qty} items<div class="meta">${esc(l.ts)} · ${esc(l.by || '-')} · ${esc(l.note)}</div></div></div>`;
+  }
   const sign = (l.type === 'ADD' || l.type === 'NEW ITEM') ? '+' : isLoss(l) ? '−' : '';
   const val = isLoss(l) && S.hasPrice ? ' · ' + rp(lossVal(l)) : '';
   return `<div class="log"><span class="tag t-${l.type.replace(/\s/g, '')}">${esc(l.type)}</span>
@@ -469,6 +483,45 @@ function renderHis() {
   $('#hList').innerHTML = a.length ? a.map(logRow).join('') : '<p class="empty">No records</p>';
 }
 
+/* ---------- CLOSE MONTH ---------- */
+function renderCloseInfo() {
+  const ms = closedMonths(), last = ms[ms.length - 1];
+  $('#closeInfo').innerHTML = last ? 'Last closed: <b>' + monthLabel(last) + '</b>' : 'No month closed yet';
+}
+function defaultCloseMonth() {
+  const ms = closedMonths(), last = ms[ms.length - 1];
+  const d = new Date();
+  if (d.getDate() <= 15) { d.setDate(1); d.setMonth(d.getMonth() - 1); }
+  let m = ym(d);
+  if (last && m <= last) { const [y, mo] = last.split('-').map(Number); m = ym(new Date(y, mo, 1)); }
+  return m > thisMonth() ? thisMonth() : m;
+}
+function openClose() {
+  openModal(`
+    <div class="mh"><h3>Close month</h3><button class="x" onclick="closeModal()">✕</button></div>
+    <label>Month to close<input type="month" id="clM" value="${defaultCloseMonth()}" max="${thisMonth()}"></label>
+    <div class="note">
+      <b>What happens:</b><br>
+      1. A snapshot is saved to tab <b>ARSIP yyyy-mm</b> and to the <b>CLOSING</b> history.<br>
+      2. Closing stock becomes the new Stock Awal.<br>
+      3. Additional, Broken and Lost are reset to 0. Inputs made after the month ended are carried into the new month.<br>
+      This cannot be undone from the app.
+    </div>
+    <label>Type <b>TUTUP</b> to confirm<input id="clC" autocomplete="off" autocapitalize="characters"></label>
+    <button class="btn full red" id="clBtn" onclick="doClose()">Close month</button>`);
+}
+async function doClose() {
+  const m = $('#clM').value;
+  if (!m) return toast('Choose a month', 1);
+  if ($('#clC').value.trim().toUpperCase() !== 'TUTUP') return toast('Type TUTUP to confirm', 1);
+  const btn = $('#clBtn'); btn.disabled = true; btn.textContent = 'Closing...';
+  try {
+    const r = await post({ action: 'closeMonth', month: m, confirm: 'TUTUP' });
+    toast(monthLabel(m) + ' closed · ' + r.items + ' items');
+    closeModal(); $('#cMonth').value = m; await load();
+  } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Close month'; }
+}
+
 /* ---------- RECAP ---------- */
 const SIGS = [['s1', 'Prepared by'], ['s2', 'Checked by'], ['s3', 'Approved by']];
 function sigs() { return SIGS.map(([k, label]) => ({ label, name: $('#' + k + 'n').value.trim(), role: $('#' + k + 'r').value.trim() })); }
@@ -476,10 +529,20 @@ function sigs() { return SIGS.map(([k, label]) => ({ label, name: $('#' + k + 'n
 function recapData() {
   const m = $('#cMonth').value || thisMonth(), loc = $('#cLoc').value;
   const logs = S.log.filter(l => l.ts.startsWith(m) && (!loc || l.loc === loc) && ['ADD', 'BROKEN', 'LOST'].includes(l.type));
+  const cl = {};
+  S.closings.filter(c => c.month === m).forEach(c => cl[c.item] = c);
+  const closed = Object.keys(cl).length > 0;
   const agg = {};
-  S.items.forEach(i => agg[i.item] = { no: i.no, item: i.item, price: i.harga, add: 0, broken: 0, lost: 0, value: 0, stock: i.closing });
+  S.items.forEach(i => {
+    const c = cl[i.item];
+    agg[i.item] = { no: i.no, item: i.item, price: c ? (c.harga || i.harga) : i.harga, add: 0, broken: 0, lost: 0, value: 0,
+      opening: c ? c.awal : '', stock: closed ? (c ? c.closing : '') : i.closing };
+  });
+  Object.values(cl).forEach(c => {
+    if (!agg[c.item]) agg[c.item] = { no: c.no, item: c.item, price: c.harga, add: 0, broken: 0, lost: 0, value: 0, opening: c.awal, stock: c.closing };
+  });
   logs.forEach(l => {
-    const a = agg[l.item] || (agg[l.item] = { no: '', item: l.item, price: l.price, add: 0, broken: 0, lost: 0, value: 0, stock: '' });
+    const a = agg[l.item] || (agg[l.item] = { no: '', item: l.item, price: l.price, add: 0, broken: 0, lost: 0, value: 0, opening: '', stock: '' });
     if (l.type === 'ADD') a.add += l.qty;
     else { a[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; a.value += lossVal(l); }
   });
@@ -493,18 +556,19 @@ function recapData() {
   });
   const t = rows.reduce((a, r) => ({ add: a.add + r.add, broken: a.broken + r.broken, lost: a.lost + r.lost, value: a.value + r.value }),
     { add: 0, broken: 0, lost: 0, value: 0 });
-  return { m, loc, rows, byLoc: Object.values(byLoc).sort((a, b) => b.value - a.value || (b.broken + b.lost) - (a.broken + a.lost)),
-    detail: logs.filter(isLoss).slice().reverse(), t };
+  return { m, loc, closed, rows, t,
+    byLoc: Object.values(byLoc).sort((a, b) => b.value - a.value || (b.broken + b.lost) - (a.broken + a.lost)),
+    detail: logs.filter(isLoss).slice().reverse() };
 }
 
 function renderRecap() {
-  const d = recapData(), P = S.hasPrice;
-  const sg = sigs();
+  const d = recapData(), P = S.hasPrice, C = d.closed, sg = sigs();
+  const cols = 6 + (P ? 2 : 0) + (C ? 1 : 0);
   $('#rpt').innerHTML = `
     <div class="rh">
       <h2>Kitchen Utensils – Lost &amp; Breakage Report</h2>
       <div>Period: <b>${monthLabel(d.m)}</b> · Location: <b>${esc(d.loc || 'All locations')}</b></div>
-      <div>Generated ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+      <div>${C ? 'Month closed' : 'Month not closed yet – stock shown is current stock'} · Generated ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
     </div>
     <div class="rsum">
       <div><small>Added</small><b>${d.t.add}</b></div>
@@ -515,9 +579,9 @@ function renderRecap() {
 
     <h4>1. Summary per item</h4>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>No</th><th>Item</th>${P ? '<th class="n">Price</th>' : ''}<th class="n">Added</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">Current stock</th></tr></thead>
-      <tbody>${d.rows.map((r, i) => `<tr><td>${esc(r.no || i + 1)}</td><td>${esc(r.item)}</td>${P ? `<td class="n">${r.price ? rp(r.price) : '-'}</td>` : ''}<td class="n">${r.add}</td><td class="n">${r.broken}</td><td class="n">${r.lost}</td>${P ? `<td class="n">${rp(r.value)}</td>` : ''}<td class="n">${r.stock}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No data</td></tr>`}</tbody>
-      <tfoot><tr><td></td><td>TOTAL</td>${P ? '<td></td>' : ''}<td class="n">${d.t.add}</td><td class="n">${d.t.broken}</td><td class="n">${d.t.lost}</td>${P ? `<td class="n">${rp(d.t.value)}</td>` : ''}<td></td></tr></tfoot>
+      <thead><tr><th>No</th><th>Item</th>${P ? '<th class="n">Price</th>' : ''}${C ? '<th class="n">Opening</th>' : ''}<th class="n">Added</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing stock' : 'Current stock'}</th></tr></thead>
+      <tbody>${d.rows.map((r, i) => `<tr><td>${esc(r.no || i + 1)}</td><td>${esc(r.item)}</td>${P ? `<td class="n">${r.price ? rp(r.price) : '-'}</td>` : ''}${C ? `<td class="n">${r.opening}</td>` : ''}<td class="n">${r.add}</td><td class="n">${r.broken}</td><td class="n">${r.lost}</td>${P ? `<td class="n">${rp(r.value)}</td>` : ''}<td class="n">${r.stock}</td></tr>`).join('') || `<tr><td colspan="${cols}" class="empty">No data</td></tr>`}</tbody>
+      <tfoot><tr><td></td><td>TOTAL</td>${P ? '<td></td>' : ''}${C ? '<td></td>' : ''}<td class="n">${d.t.add}</td><td class="n">${d.t.broken}</td><td class="n">${d.t.lost}</td>${P ? `<td class="n">${rp(d.t.value)}</td>` : ''}<td></td></tr></tfoot>
     </table></div>
 
     <h4>2. Loss by location</h4>
@@ -537,14 +601,14 @@ function renderRecap() {
 
 function downloadXls() {
   if (!window.XLSX) return toast('Excel library not loaded, check internet connection', 1);
-  const d = recapData(), P = S.hasPrice, sg = sigs();
-  const head = [['KITCHEN UTENSILS - LOST & BREAKAGE REPORT'], ['Period', monthLabel(d.m)], ['Location', d.loc || 'All locations'], []];
+  const d = recapData(), P = S.hasPrice, C = d.closed, sg = sigs();
+  const head = [['KITCHEN UTENSILS - LOST & BREAKAGE REPORT'], ['Period', monthLabel(d.m)], ['Location', d.loc || 'All locations'],
+    ['Status', C ? 'Month closed' : 'Month not closed - stock is current stock'], []];
 
-  const s1 = head.concat([P ? ['NO', 'ITEM', 'PRICE', 'ADDED', 'BROKEN', 'LOST', 'LOSS VALUE', 'CURRENT STOCK']
-                            : ['NO', 'ITEM', 'ADDED', 'BROKEN', 'LOST', 'CURRENT STOCK']]);
-  d.rows.forEach((r, i) => s1.push(P ? [r.no || i + 1, r.item, r.price, r.add, r.broken, r.lost, r.value, r.stock]
-                                     : [r.no || i + 1, r.item, r.add, r.broken, r.lost, r.stock]));
-  s1.push(P ? ['', 'TOTAL', '', d.t.add, d.t.broken, d.t.lost, d.t.value, ''] : ['', 'TOTAL', d.t.add, d.t.broken, d.t.lost, '']);
+  const h1 = ['NO', 'ITEM', ...(P ? ['PRICE'] : []), ...(C ? ['OPENING'] : []), 'ADDED', 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING STOCK' : 'CURRENT STOCK'];
+  const s1 = head.concat([h1]);
+  d.rows.forEach((r, i) => s1.push([r.no || i + 1, r.item, ...(P ? [r.price] : []), ...(C ? [r.opening] : []), r.add, r.broken, r.lost, ...(P ? [r.value] : []), r.stock]));
+  s1.push(['', 'TOTAL', ...(P ? [''] : []), ...(C ? [''] : []), d.t.add, d.t.broken, d.t.lost, ...(P ? [d.t.value] : []), '']);
   s1.push([], [], [sg[0].label, '', '', sg[1].label, '', '', sg[2].label], [], [], [],
     [sg[0].name, '', '', sg[1].name, '', '', sg[2].name], [sg[0].role, '', '', sg[1].role, '', '', sg[2].role]);
 
@@ -556,7 +620,7 @@ function downloadXls() {
 
   const wb = XLSX.utils.book_new();
   const add = (aoa, name, cols) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = cols.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, name); };
-  add(s1, 'Summary', P ? [16, 32, 12, 9, 9, 9, 14, 14] : [16, 32, 9, 9, 9, 14]);
+  add(s1, 'Summary', [16, 32, 12, 10, 9, 9, 9, 14, 14]);
   add(s2, 'By Location', [24, 10, 10, 14]);
   add(s3, 'Detail', [17, 9, 28, 6, ...(P ? [12, 12] : []), 18, 16, 30]);
   XLSX.writeFile(wb, 'Lost-Breakage-' + d.m + (d.loc ? '-' + d.loc.replace(/\W+/g, '_') : '') + '.xlsx');
@@ -577,6 +641,7 @@ SIGS.forEach(([k]) => ['n', 'r'].forEach(x => {
   const el = $('#' + k + x); el.value = ls('inv_' + k + x) || '';
   el.oninput = () => { ls('inv_' + k + x, el.value); renderRecap(); };
 }));
+$('#closeBtn').onclick = openClose;
 $('#cPrint').onclick = () => { renderRecap(); window.print(); };
 $('#cXls').onclick = downloadXls;
 $('#refresh').onclick = load;
