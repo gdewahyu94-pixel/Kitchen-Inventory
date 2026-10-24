@@ -34,6 +34,7 @@ label input,label select,label textarea{margin-top:4px}
 .chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
 .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 14px;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer;color:var(--ink)}
 .chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.code{display:inline-block;font-size:11px;font-weight:700;color:var(--blu);background:var(--blu2);border-radius:4px;padding:1px 6px;margin-right:6px;vertical-align:1px;letter-spacing:.3px}
 .item,.log{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
 .item{cursor:pointer}
 .th{width:56px;height:56px;border-radius:8px;object-fit:cover;flex:none;background:var(--pri2)}
@@ -118,9 +119,10 @@ label input,label select,label textarea{margin-top:4px}
   <section id="inv" hidden>
     <div class="chips" id="secChips"></div>
     <div class="bar">
-      <input id="q" placeholder="Search item...">
+      <input id="q" placeholder="Search name or code...">
       <select id="sort">
         <option value="no">Sheet order</option>
+        <option value="code">Code</option>
         <option value="name">Name A–Z</option>
         <option value="low">Lowest stock</option>
         <option value="broken">Most broken/lost</option>
@@ -205,7 +207,7 @@ const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoo
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let S = { items: [], groups: [], log: [], secs: [], closings: [], hasLost: false, hasPrice: false, hasSection: false, hasTrf: false,
-          low: 5, pin: false, type: 'BROKEN', sec: '' };
+          hasCode: false, codePrefix: 'KU-', low: 5, pin: false, type: 'BROKEN', sec: '' };
 
 /* ---------- API ---------- */
 async function get(action, params = {}) {
@@ -251,11 +253,15 @@ const sgn = n => n > 0 ? '+' + n : String(n);
 const nk = s => String(s || '').trim().toLowerCase();
 const byRow = r => S.items.find(i => i.row == r);
 const groupOf = name => S.groups.find(g => nk(g.item) === nk(name));
+const codeOf = name => (groupOf(name) || {}).code || '';
+const codeTag = c => c ? `<span class="code">${esc(c)}</span>` : '';
+const withCode = name => { const c = codeOf(name); return (c ? c + ' · ' : '') + name; };
 const priceOf = name => (groupOf(name) || {}).harga || 0;
 const lossVal = l => l.value || l.qty * (l.price || priceOf(l.item));
 const isLoss = l => l.type === 'BROKEN' || l.type === 'LOST';
 const secIdx = s => { const i = S.secs.indexOf(s); return i < 0 ? 999 : i; };
 const sortSec = rows => [...rows].sort((a, b) => secIdx(a.section) - secIdx(b.section));
+const byCode = (a, b) => (a.code || '~').localeCompare(b.code || '~', undefined, { numeric: true }) || a.item.localeCompare(b.item);
 const ym = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 const thisMonth = () => ym(new Date());
 function monthLabel(m) { const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleString('en', { month: 'long', year: 'numeric' }); }
@@ -289,6 +295,7 @@ async function load() {
     const [inv, log, cl] = await Promise.all([get('list'), get('log', { limit: 3000 }), get('closing')]);
     S.items = inv.items; S.secs = inv.sections || [];
     S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice; S.hasSection = inv.hasSection; S.hasTrf = inv.hasTrf;
+    S.hasCode = inv.hasCode; S.codePrefix = inv.codePrefix || 'KU-';
     S.low = inv.lowStock; S.pin = inv.pinRequired; S.log = log; S.closings = cl;
     if (S.sec && S.secs.indexOf(S.sec) < 0) S.sec = '';
     buildGroups();
@@ -301,9 +308,10 @@ function buildGroups() {
   const m = {}, order = [];
   S.items.forEach(r => {
     const k = nk(r.item);
-    if (!m[k]) { m[k] = { item: r.item, no: r.no, photo: '', harga: 0, remarks: '', rows: [], total: 0, broken: 0, lost: 0 }; order.push(m[k]); }
+    if (!m[k]) { m[k] = { item: r.item, code: '', no: r.no, photo: '', harga: 0, remarks: '', rows: [], total: 0, broken: 0, lost: 0 }; order.push(m[k]); }
     const g = m[k];
     g.rows.push(r); g.total += r.closing; g.broken += r.broken; g.lost += r.lost;
+    if (!g.code && r.code) g.code = r.code;
     if (!g.photo && r.photo) g.photo = r.photo;
     if (!g.harga && r.harga) g.harga = r.harga;
     if (!g.remarks && r.remarks) g.remarks = r.remarks;
@@ -340,7 +348,7 @@ function renderDash() {
   loss.forEach(l => { const a = byItem[l.item] || (byItem[l.item] = { q: 0, v: 0 }); a.q += l.qty; a.v += lossVal(l); });
   const key = S.hasPrice ? 'v' : 'q';
   const top = Object.entries(byItem).sort((a, b) => b[1][key] - a[1][key]).slice(0, 5);
-  const line = ([n, o]) => `<div class="row"><span>${esc(n)}</span><span><b>${o.q}</b> pcs${S.hasPrice ? ' · ' + rp(o.v) : ''}</span></div>`;
+  const line = ([n, o]) => `<div class="row"><span>${codeTag(codeOf(n))}${esc(n)}</span><span><b>${o.q}</b> pcs${S.hasPrice ? ' · ' + rp(o.v) : ''}</span></div>`;
 
   let secHtml = '';
   if (S.hasSection) {
@@ -374,7 +382,7 @@ function renderDash() {
       ${top.length ? top.map(line).join('') : '<p class="empty">Nothing reported this month</p>'}
     </div>
     <div class="card"><h3>Low stock (≤ ${S.low})</h3>
-      ${low.length ? low.map(i => `<div class="row"><span>${esc(i.item)}${i.section ? ' · <span style="color:var(--mute)">' + esc(i.section) + '</span>' : ''}</span><b style="color:var(--red)">${i.closing}</b></div>`).join('') : '<p class="empty">All items above minimum</p>'}
+      ${low.length ? low.map(i => `<div class="row"><span>${codeTag(codeOf(i.item))}${esc(i.item)}${i.section ? ' · <span style="color:var(--mute)">' + esc(i.section) + '</span>' : ''}</span><b style="color:var(--red)">${i.closing}</b></div>`).join('') : '<p class="empty">All items above minimum</p>'}
     </div>`;
 }
 
@@ -388,15 +396,21 @@ function renderChips() {
   box.querySelectorAll('.chip').forEach(b => b.onclick = () => { S.sec = b.dataset.v; renderChips(); renderList(); });
 }
 
+function sortList(a, sort, stockKey) {
+  if (sort === 'code') a.sort(byCode);
+  if (sort === 'name') a.sort((x, y) => x.item.localeCompare(y.item));
+  if (sort === 'low') a.sort((x, y) => x[stockKey] - y[stockKey]);
+  if (sort === 'broken') a.sort((x, y) => (y.broken + y.lost) - (x.broken + x.lost));
+  if (sort === 'price') a.sort((x, y) => y.harga - x.harga);
+  return a;
+}
+
 function renderList() {
   const q = nk($('#q').value), sort = $('#sort').value;
+  const match = (name, code) => nk(name).includes(q) || nk(code).includes(q);
   let html = '';
   if (!S.sec) {
-    let a = S.groups.filter(g => nk(g.item).includes(q));
-    if (sort === 'name') a.sort((x, y) => x.item.localeCompare(y.item));
-    if (sort === 'low') a.sort((x, y) => x.total - y.total);
-    if (sort === 'broken') a.sort((x, y) => (y.broken + y.lost) - (x.broken + x.lost));
-    if (sort === 'price') a.sort((x, y) => y.harga - x.harga);
+    const a = sortList(S.groups.filter(g => match(g.item, g.code)), sort, 'total');
     html = a.map(g => {
       const low = g.rows.some(r => r.closing <= S.low);
       const r0 = g.rows[0];
@@ -404,20 +418,16 @@ function renderList() {
         ? g.rows.map(r => `${esc(r.section || '-')} <b>${r.closing}</b>`).join(' · ')
         : `Awal ${r0.awal} · +${r0.add} · Broken ${r0.broken}${S.hasLost ? ' · Lost ' + r0.lost : ''}`;
       return `<div class="item" onclick="openItem(${g.id})">${thumb(g.photo)}
-        <div class="info"><b>${esc(g.item)}</b><div class="meta">${per}</div>
+        <div class="info"><b>${codeTag(g.code)}${esc(g.item)}</b><div class="meta">${per}</div>
           ${S.hasPrice ? `<div class="meta">${g.harga ? rp(g.harga) + ' / pcs' : 'No price'}</div>` : ''}</div>
         <div class="qty ${low ? 'low' : ''}">${g.total}<small>${S.hasSection ? 'total' : (low ? 'low' : 'in stock')}</small></div></div>`;
     }).join('');
   } else {
-    let a = S.items.filter(r => r.section === S.sec && nk(r.item).includes(q));
-    if (sort === 'name') a.sort((x, y) => x.item.localeCompare(y.item));
-    if (sort === 'low') a.sort((x, y) => x.closing - y.closing);
-    if (sort === 'broken') a.sort((x, y) => (y.broken + y.lost) - (x.broken + x.lost));
-    if (sort === 'price') a.sort((x, y) => y.harga - x.harga);
+    const a = sortList(S.items.filter(r => r.section === S.sec && match(r.item, codeOf(r.item))).map(r => Object.assign({}, r, { code: codeOf(r.item) })), sort, 'closing');
     html = a.map(r => {
       const g = groupOf(r.item), low = r.closing <= S.low;
       return `<div class="item" onclick="openItem(${g.id})">${thumb(g.photo)}
-        <div class="info"><b>${esc(r.item)}</b>
+        <div class="info"><b>${codeTag(r.code)}${esc(r.item)}</b>
           <div class="meta">Awal ${r.awal} · +${r.add}${r.trf ? ' · Trf ' + sgn(r.trf) : ''} · Broken ${r.broken}${S.hasLost ? ' · Lost ' + r.lost : ''}</div>
           ${S.hasPrice ? `<div class="meta">${r.harga ? rp(r.harga) + ' / pcs' : 'No price'}</div>` : ''}</div>
         <div class="qty ${low ? 'low' : ''}">${r.closing}<small>${low ? 'low' : 'in stock'}</small></div></div>`;
@@ -437,7 +447,7 @@ function openItem(id) {
   const th = `<th>${S.hasSection ? 'Section' : ''}</th><th class="n">Awal</th><th class="n">Add</th>${S.hasSection ? '<th class="n">Trf</th>' : ''}<th class="n">Broken</th>${S.hasLost ? '<th class="n">Lost</th>' : ''}<th class="n">Stock</th>`;
   const tr = (label, o) => `<td>${label}</td><td class="n">${o.awal}</td><td class="n">${o.add}</td>${S.hasSection ? `<td class="n">${sgn(o.trf)}</td>` : ''}<td class="n">${o.broken}</td>${S.hasLost ? `<td class="n">${o.lost}</td>` : ''}<td class="n"><b>${o.closing}</b></td>`;
   openModal(`
-    <div class="mh"><h3>${esc(g.item)}</h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="mh"><h3>${codeTag(g.code)}${esc(g.item)}</h3><button class="x" onclick="closeModal()">✕</button></div>
     ${g.photo ? `<img class="big" src="${esc(g.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
     ${S.hasPrice ? `<div class="meta" style="margin-bottom:8px">Price: <b>${g.harga ? rp(g.harga) + ' / pcs' : '-'}</b></div>` : ''}
     <div class="tbl-wrap"><table class="tbl">
@@ -451,11 +461,14 @@ function openItem(id) {
       <button class="btn" onclick="goReport(${g.id},'ADD')">Add</button>
       ${S.hasSection ? `<button class="btn blu" onclick="goReport(${g.id},'TRANSFER')">Transfer</button>` : ''}
     </div>
-    ${S.hasPrice ? `<label>Price per pcs (Rp)${S.hasSection ? ' – all sections' : ''}<input id="eHarga" type="number" min="0" inputmode="numeric" value="${g.harga || ''}"></label>` : ''}
+    <div class="two">
+      ${S.hasCode ? `<label>Code<input id="eCode" value="${esc(g.code)}" autocapitalize="characters"></label>` : ''}
+      ${S.hasPrice ? `<label>Price per pcs (Rp)<input id="eHarga" type="number" min="0" inputmode="numeric" value="${g.harga || ''}"></label>` : ''}
+    </div>
     <label>Remarks<input id="eRem" value="${esc(g.remarks)}"></label>
     <label>Change photo<input id="ePhoto" type="file" accept="image/*"></label>
     <img id="ePrev" class="prev" hidden>
-    <button class="btn full ghost" id="eSave" onclick="saveEdit(${g.id})">Save changes</button>
+    <button class="btn full ghost" id="eSave" onclick="saveEdit(${g.id})">Save changes${S.hasSection ? ' (all sections)' : ''}</button>
     <h4>Recent history</h4>
     ${h.length ? h.map(logRow).join('') : '<p class="empty">No history yet</p>'}`);
   previewOn('#ePhoto', '#ePrev');
@@ -463,10 +476,12 @@ function openItem(id) {
 
 async function saveEdit(id) {
   const g = S.groups[id], btn = $('#eSave'), f = $('#ePhoto').files[0];
+  const code = $('#eCode') ? $('#eCode').value.trim().toUpperCase() : undefined;
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     await post({
       action: 'updateItem', item: g.item, remarks: $('#eRem').value.trim(),
+      code: code && code !== g.code ? code : undefined,
       harga: $('#eHarga') ? $('#eHarga').value : undefined,
       photo: f ? await compress(f) : ''
     });
@@ -477,13 +492,16 @@ async function saveEdit(id) {
 $('#newBtn').onclick = () => {
   const secInputs = S.hasSection
     ? `<h4 style="margin-top:4px">Stock awal per section</h4>
-       <div class="hint" style="margin:0 0 8px">Leave empty for sections that don't use this item. You can also add an existing item to a new section here.</div>
+       <div class="hint" style="margin:0 0 8px">Leave empty for sections that don't use this item. To add an existing item to a new section, use the same name.</div>
        <div class="two">${S.secs.map(s => `<label>${esc(s)}<input class="nSec" data-s="${esc(s)}" type="number" min="0" step="1" inputmode="numeric"></label>`).join('')}</div>`
     : `<label>Stock awal<input id="nAwal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>`;
   openModal(`
     <div class="mh"><h3>New item</h3><button class="x" onclick="closeModal()">✕</button></div>
     <label>Item name<input id="nName"></label>
-    ${S.hasPrice ? '<label>Price per pcs (Rp)<input id="nHarga" type="number" min="0" inputmode="numeric"></label>' : ''}
+    <div class="two">
+      ${S.hasCode ? `<label>Code (optional)<input id="nCode" placeholder="Auto, e.g. ${esc(S.codePrefix)}012" autocapitalize="characters"></label>` : ''}
+      ${S.hasPrice ? '<label>Price per pcs (Rp)<input id="nHarga" type="number" min="0" inputmode="numeric"></label>' : ''}
+    </div>
     ${secInputs}
     <label>Remarks<input id="nRem"></label>
     <label>Photo<input id="nPhoto" type="file" accept="image/*"></label>
@@ -502,19 +520,21 @@ async function saveNew() {
   const btn = $('#nSave'), f = $('#nPhoto').files[0];
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    await post({
-      action: 'addItem', item: name, harga: $('#nHarga') ? $('#nHarga').value || 0 : 0,
+    const r = await post({
+      action: 'addItem', item: name, code: $('#nCode') ? $('#nCode').value.trim().toUpperCase() : '',
+      harga: $('#nHarga') ? $('#nHarga').value || 0 : 0,
       stocks, remarks: $('#nRem').value.trim(), photo: f ? await compress(f) : ''
     });
-    toast('Item added'); closeModal(); load();
+    toast('Item added' + (r && r.code ? ' · ' + r.code : '')); closeModal(); load();
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Add item'; }
 }
 
 /* ---------- INPUT ---------- */
 function fillItems() {
   const s = $('#rItem'), cur = byRow(s.value), sec = $('#rSec').value;
-  const rows = S.items.filter(r => !S.hasSection || r.section === sec).sort((a, b) => a.item.localeCompare(b.item));
-  s.innerHTML = '<option value="">— choose item —</option>' + rows.map(r => `<option value="${r.row}">${esc(r.item)}</option>`).join('');
+  const rows = S.items.filter(r => !S.hasSection || r.section === sec)
+    .map(r => Object.assign({}, r, { code: codeOf(r.item) })).sort(byCode);
+  s.innerHTML = '<option value="">— choose item —</option>' + rows.map(r => `<option value="${r.row}">${esc(withCode(r.item))}</option>`).join('');
   if (cur) { const m = rows.find(r => nk(r.item) === nk(cur.item)); if (m) s.value = m.row; }
   showInfo();
 }
@@ -608,7 +628,7 @@ function logRow(l) {
   const sign = ['ADD', 'NEW ITEM', 'TRANSFER IN'].includes(l.type) ? '+' : (isLoss(l) || l.type === 'TRANSFER OUT') ? '−' : '';
   const val = isLoss(l) && S.hasPrice ? ' · ' + rp(lossVal(l)) : '';
   return `<div class="log"><span class="tag t-${cls}">${esc(tag)}</span>
-    <div class="info"><b>${esc(l.item)}</b> <span class="q">${sign}${l.qty}</span>${val}
+    <div class="info"><b>${codeTag(codeOf(l.item))}${esc(l.item)}</b> <span class="q">${sign}${l.qty}</span>${val}
       <div class="meta">${esc(l.ts)}${l.loc ? ' · ' + esc(l.loc) : ''} · ${esc(l.by || '-')}${l.note ? ' · ' + esc(l.note) : ''}</div></div>
     ${l.photo ? `<a href="${esc(l.photo)}" target="_blank">${thumb(l.photo, 'th sm')}</a>` : ''}</div>`;
 }
@@ -669,7 +689,7 @@ function recapData() {
   const agg = {}, order = [];
   const A = (name, no, price) => {
     const k = nk(name);
-    if (!agg[k]) { agg[k] = { no: no || '', item: name, price: price || 0, opening: 0, add: 0, trf: 0, broken: 0, lost: 0, value: 0, stock: 0 }; order.push(agg[k]); }
+    if (!agg[k]) { agg[k] = { no: no || '', code: codeOf(name), item: name, price: price || 0, opening: 0, add: 0, trf: 0, broken: 0, lost: 0, value: 0, stock: 0 }; order.push(agg[k]); }
     if (!agg[k].price && price) agg[k].price = price;
     return agg[k];
   };
@@ -684,6 +704,7 @@ function recapData() {
   });
   let rows = order;
   if (sec) rows = rows.filter(r => r.opening || r.stock || r.add || r.trf || r.broken || r.lost);
+  if (S.hasCode) rows = [...rows].sort(byCode);
 
   const secList = S.hasSection ? (sec ? [sec] : S.secs) : [];
   const bySec = secList.map(s => {
@@ -709,12 +730,12 @@ function recapData() {
 }
 
 function renderRecap() {
-  const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, sg = sigs();
+  const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, K = S.hasCode, sg = sigs();
   let no = 0;
-  const cols = 7 + (P ? 2 : 0) + (T ? 1 : 0);
-  const head = `<th>No</th><th>Item</th>${P ? '<th class="n">Price</th>' : ''}<th class="n">Opening</th><th class="n">Added</th>${T ? '<th class="n">Transfer</th>' : ''}<th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing stock' : 'Current stock'}</th>`;
-  const body = d.rows.map((r, i) => `<tr><td>${esc(r.no || i + 1)}</td><td>${esc(r.item)}</td>${P ? `<td class="n">${r.price ? rp(r.price) : '-'}</td>` : ''}<td class="n">${r.opening}</td><td class="n">${r.add}</td>${T ? `<td class="n">${sgn(r.trf)}</td>` : ''}<td class="n">${r.broken}</td><td class="n">${r.lost}</td>${P ? `<td class="n">${rp(r.value)}</td>` : ''}<td class="n">${r.stock}</td></tr>`).join('');
-  const foot = `<tr><td></td><td>TOTAL</td>${P ? '<td></td>' : ''}<td class="n">${d.t.opening}</td><td class="n">${d.t.add}</td>${T ? `<td class="n">${sgn(d.t.trf)}</td>` : ''}<td class="n">${d.t.broken}</td><td class="n">${d.t.lost}</td>${P ? `<td class="n">${rp(d.t.value)}</td>` : ''}<td class="n">${d.t.stock}</td></tr>`;
+  const cols = 7 + (P ? 2 : 0) + (T ? 1 : 0) + (K ? 1 : 0);
+  const head = `<th>No</th>${K ? '<th>Code</th>' : ''}<th>Item</th>${P ? '<th class="n">Price</th>' : ''}<th class="n">Opening</th><th class="n">Added</th>${T ? '<th class="n">Transfer</th>' : ''}<th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing stock' : 'Current stock'}</th>`;
+  const body = d.rows.map((r, i) => `<tr><td>${i + 1}</td>${K ? `<td>${esc(r.code)}</td>` : ''}<td>${esc(r.item)}</td>${P ? `<td class="n">${r.price ? rp(r.price) : '-'}</td>` : ''}<td class="n">${r.opening}</td><td class="n">${r.add}</td>${T ? `<td class="n">${sgn(r.trf)}</td>` : ''}<td class="n">${r.broken}</td><td class="n">${r.lost}</td>${P ? `<td class="n">${rp(r.value)}</td>` : ''}<td class="n">${r.stock}</td></tr>`).join('');
+  const foot = `<tr><td></td>${K ? '<td></td>' : ''}<td>TOTAL</td>${P ? '<td></td>' : ''}<td class="n">${d.t.opening}</td><td class="n">${d.t.add}</td>${T ? `<td class="n">${sgn(d.t.trf)}</td>` : ''}<td class="n">${d.t.broken}</td><td class="n">${d.t.lost}</td>${P ? `<td class="n">${rp(d.t.value)}</td>` : ''}<td class="n">${d.t.stock}</td></tr>`;
 
   const secTbl = d.bySec.length ? `<h4>${++no + 1}. By section</h4>
     <div class="tbl-wrap"><table class="tbl">
@@ -724,14 +745,14 @@ function renderRecap() {
 
   const incTbl = `<h4>${++no + 1}. Incident detail (broken / lost)</h4>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Date</th><th>Type</th><th>Item</th>${S.hasSection ? '<th>Section</th>' : ''}<th class="n">Qty</th>${P ? '<th class="n">Value</th>' : ''}<th>Reported by</th><th>Note</th></tr></thead>
-      <tbody>${d.incidents.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type}</td><td>${esc(l.item)}</td>${S.hasSection ? `<td>${esc(l.loc || '-')}</td>` : ''}<td class="n">${l.qty}</td>${P ? `<td class="n">${rp(lossVal(l))}</td>` : ''}<td>${esc(l.by || '-')}</td><td>${esc(l.note)}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No incidents</td></tr>`}</tbody>
+      <thead><tr><th>Date</th><th>Type</th>${K ? '<th>Code</th>' : ''}<th>Item</th>${S.hasSection ? '<th>Section</th>' : ''}<th class="n">Qty</th>${P ? '<th class="n">Value</th>' : ''}<th>Reported by</th><th>Note</th></tr></thead>
+      <tbody>${d.incidents.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type}</td>${K ? `<td>${esc(codeOf(l.item))}</td>` : ''}<td>${esc(l.item)}</td>${S.hasSection ? `<td>${esc(l.loc || '-')}</td>` : ''}<td class="n">${l.qty}</td>${P ? `<td class="n">${rp(lossVal(l))}</td>` : ''}<td>${esc(l.by || '-')}</td><td>${esc(l.note)}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">No incidents</td></tr>`}</tbody>
     </table></div>`;
 
   const trfTbl = S.hasSection ? `<h4>${++no + 1}. Transfers</h4>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Section</th><th class="n">Qty</th><th>Detail</th><th>By</th></tr></thead>
-      <tbody>${d.transfers.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type === 'TRANSFER IN' ? 'IN' : 'OUT'}</td><td>${esc(l.item)}</td><td>${esc(l.loc)}</td><td class="n">${l.qty}</td><td>${esc(l.note)}</td><td>${esc(l.by || '-')}</td></tr>`).join('') || `<tr><td colspan="7" class="empty">No transfers</td></tr>`}</tbody>
+      <thead><tr><th>Date</th><th>Type</th>${K ? '<th>Code</th>' : ''}<th>Item</th><th>Section</th><th class="n">Qty</th><th>Detail</th><th>By</th></tr></thead>
+      <tbody>${d.transfers.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type === 'TRANSFER IN' ? 'IN' : 'OUT'}</td>${K ? `<td>${esc(codeOf(l.item))}</td>` : ''}<td>${esc(l.item)}</td><td>${esc(l.loc)}</td><td class="n">${l.qty}</td><td>${esc(l.note)}</td><td>${esc(l.by || '-')}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No transfers</td></tr>`}</tbody>
     </table></div>` : '';
 
   $('#rpt').innerHTML = `
@@ -758,21 +779,21 @@ function renderRecap() {
 
 function downloadXls() {
   if (!window.XLSX) return toast('Excel library not loaded, check internet connection', 1);
-  const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, sg = sigs();
+  const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, K = S.hasCode, sg = sigs();
   const head = [['KITCHEN UTENSILS - LOST & BREAKAGE REPORT'], ['Period', monthLabel(d.m)],
     ['Section', d.sec || (S.hasSection ? 'All sections' : '-')],
     ['Status', C ? 'Month closed' : 'Month not closed - stock is current stock'], []];
 
-  const h1 = ['NO', 'ITEM', ...(P ? ['PRICE'] : []), 'OPENING', 'ADDED', ...(T ? ['TRANSFER'] : []), 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING STOCK' : 'CURRENT STOCK'];
+  const h1 = ['NO', ...(K ? ['CODE'] : []), 'ITEM', ...(P ? ['PRICE'] : []), 'OPENING', 'ADDED', ...(T ? ['TRANSFER'] : []), 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING STOCK' : 'CURRENT STOCK'];
   const s1 = head.concat([h1]);
-  d.rows.forEach((r, i) => s1.push([r.no || i + 1, r.item, ...(P ? [r.price] : []), r.opening, r.add, ...(T ? [r.trf] : []), r.broken, r.lost, ...(P ? [r.value] : []), r.stock]));
-  s1.push(['', 'TOTAL', ...(P ? [''] : []), d.t.opening, d.t.add, ...(T ? [d.t.trf] : []), d.t.broken, d.t.lost, ...(P ? [d.t.value] : []), d.t.stock]);
+  d.rows.forEach((r, i) => s1.push([i + 1, ...(K ? [r.code] : []), r.item, ...(P ? [r.price] : []), r.opening, r.add, ...(T ? [r.trf] : []), r.broken, r.lost, ...(P ? [r.value] : []), r.stock]));
+  s1.push(['', ...(K ? [''] : []), 'TOTAL', ...(P ? [''] : []), d.t.opening, d.t.add, ...(T ? [d.t.trf] : []), d.t.broken, d.t.lost, ...(P ? [d.t.value] : []), d.t.stock]);
   s1.push([], [], [sg[0].label, '', '', sg[1].label, '', '', sg[2].label], [], [], [],
     [sg[0].name, '', '', sg[1].name, '', '', sg[2].name], [sg[0].role, '', '', sg[1].role, '', '', sg[2].role]);
 
   const wb = XLSX.utils.book_new();
   const add = (aoa, name, cols) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = cols.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, name); };
-  add(s1, 'Summary', [16, 32, 12, 10, 9, 10, 9, 9, 14, 14]);
+  add(s1, 'Summary', [16, ...(K ? [10] : []), 32, 12, 10, 9, 10, 9, 9, 14, 14]);
 
   if (d.bySec.length) {
     const s2 = head.concat([['SECTION', 'OPENING', 'ADDED', 'TRF IN', 'TRF OUT', 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING' : 'CURRENT']]);
@@ -780,14 +801,14 @@ function downloadXls() {
     add(s2, 'By Section', [22, 10, 9, 9, 9, 9, 9, 14, 10]);
   }
 
-  const s3 = head.concat([['DATE', 'TYPE', 'ITEM', ...(S.hasSection ? ['SECTION'] : []), 'QTY', ...(P ? ['PRICE', 'VALUE'] : []), 'REPORTED BY', 'NOTE']]);
-  d.incidents.forEach(l => s3.push([l.ts, l.type, l.item, ...(S.hasSection ? [l.loc] : []), l.qty, ...(P ? [l.price || priceOf(l.item), lossVal(l)] : []), l.by, l.note]));
-  add(s3, 'Incidents', [17, 9, 28, 18, 6, 12, 12, 16, 30]);
+  const s3 = head.concat([['DATE', 'TYPE', ...(K ? ['CODE'] : []), 'ITEM', ...(S.hasSection ? ['SECTION'] : []), 'QTY', ...(P ? ['PRICE', 'VALUE'] : []), 'REPORTED BY', 'NOTE']]);
+  d.incidents.forEach(l => s3.push([l.ts, l.type, ...(K ? [codeOf(l.item)] : []), l.item, ...(S.hasSection ? [l.loc] : []), l.qty, ...(P ? [l.price || priceOf(l.item), lossVal(l)] : []), l.by, l.note]));
+  add(s3, 'Incidents', [17, 9, ...(K ? [10] : []), 28, 18, 6, 12, 12, 16, 30]);
 
   if (S.hasSection) {
-    const s4 = head.concat([['DATE', 'TYPE', 'ITEM', 'SECTION', 'QTY', 'DETAIL', 'BY']]);
-    d.transfers.forEach(l => s4.push([l.ts, l.type, l.item, l.loc, l.qty, l.note, l.by]));
-    add(s4, 'Transfers', [17, 13, 28, 18, 6, 30, 16]);
+    const s4 = head.concat([['DATE', 'TYPE', ...(K ? ['CODE'] : []), 'ITEM', 'SECTION', 'QTY', 'DETAIL', 'BY']]);
+    d.transfers.forEach(l => s4.push([l.ts, l.type, ...(K ? [codeOf(l.item)] : []), l.item, l.loc, l.qty, l.note, l.by]));
+    add(s4, 'Transfers', [17, 13, ...(K ? [10] : []), 28, 18, 6, 30, 16]);
   }
   XLSX.writeFile(wb, 'Lost-Breakage-' + d.m + (d.sec ? '-' + d.sec.replace(/\W+/g, '_') : '') + '.xlsx');
 }
