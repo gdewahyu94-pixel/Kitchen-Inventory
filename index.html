@@ -37,14 +37,16 @@ label input,label select,label textarea{margin-top:4px}
 .check input{width:auto;margin:0}
 .btn{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:600;background:var(--pri);color:#fff;cursor:pointer;white-space:nowrap}
 .btn.red{background:var(--red)}.btn.amb{background:var(--amb)}.btn.blu{background:var(--blu)}.btn.ghost{background:var(--pri2);color:var(--pri)}
-.btn.full{width:100%}.btn.lg{padding:14px;font-size:16px}.btn:disabled{opacity:.6}
-.link{border:0;background:none;color:var(--pri);font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
+.btn.full{width:100%}.btn.lg{padding:14px;font-size:16px}.btn.xl{padding:22px 10px;font-size:19px;border-radius:12px}.btn:disabled{opacity:.6}
+.link{border:0;background:none;color:var(--pri);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
 .chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
 .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 14px;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer;color:var(--ink)}
 .chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
 .code{display:inline-block;font-size:11px;font-weight:700;color:var(--blu);background:var(--blu2);border-radius:4px;padding:1px 6px;margin-right:6px;vertical-align:1px;letter-spacing:.3px}
 .who{display:flex;gap:8px;align-items:center;background:var(--pri2);border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:12px}
 .who svg{flex:none}
+.tbanner{border-radius:8px;padding:10px 12px;font-weight:700;margin-bottom:12px;text-align:center}
+.tbanner.BROKEN{background:var(--red2);color:var(--red)}.tbanner.LOST{background:var(--amb2);color:var(--amb)}
 .item,.log{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
 .item{cursor:pointer}
 .th{width:56px;height:56px;border-radius:8px;object-fit:cover;flex:none;background:var(--pri2)}
@@ -62,7 +64,6 @@ label input,label select,label textarea{margin-top:4px}
 .seg button.on[data-t=LOST]{background:var(--amb2);border-color:var(--amb);color:var(--amb);font-weight:600}
 .seg button.on[data-t=ADD]{background:var(--pri2);border-color:var(--pri);color:var(--pri);font-weight:600}
 .seg button.on[data-t=TRANSFER]{background:var(--blu2);border-color:var(--blu);color:var(--blu);font-weight:600}
-.seg.big button{padding:14px 6px;font-size:16px}
 .hint{font-size:13px;margin:-6px 0 12px;color:var(--mute)}
 .note{font-size:13px;color:var(--ink);background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px;line-height:1.5}
 .prev{max-width:160px;border-radius:8px;margin-bottom:12px;display:block}
@@ -70,6 +71,7 @@ label input,label select,label textarea{margin-top:4px}
 .picked img,.picked .ph{width:48px;height:48px;border-radius:8px;object-fit:cover;background:#fff;flex:none}
 .qitem{text-align:center;margin-bottom:14px}
 .qitem h2{margin:6px 0 2px;font-size:20px}
+.pin{text-align:center;font-size:24px;letter-spacing:8px}
 .done{text-align:center;padding:28px 16px}
 .done .ok{width:64px;height:64px;border-radius:50%;background:var(--pri2);color:var(--pri);font-size:34px;line-height:64px;margin:0 auto 10px;font-weight:700}
 .tag{font-size:11px;font-weight:700;padding:4px 6px;border-radius:6px;flex:none;width:72px;text-align:center}
@@ -198,22 +200,26 @@ label input,label select,label textarea{margin-top:4px}
 <main>
   <section id="dash"><p class="empty">Loading...</p></section>
 
-  <!-- QR mode: one item, Broken/Lost only, no login -->
+  <!-- QR mode: item detail + Broken / Lost, PIN asked after tapping a button -->
   <section id="qrv" hidden>
     <div class="card" id="qrCard">
       <div id="qItem"><p class="empty">Loading item...</p></div>
       <label id="qSecWrap" hidden>Section<select id="qSec"></select></label>
-      <div class="seg big" id="qSeg">
-        <button type="button" data-t="BROKEN" class="on">Broken</button>
-        <button type="button" data-t="LOST">Lost</button>
+      <div id="qPick" class="two">
+        <button type="button" class="btn red xl" id="qBtnB">Broken</button>
+        <button type="button" class="btn amb xl" id="qBtnL">Lost</button>
       </div>
-      <label>Quantity<input id="qQty" type="number" min="1" step="1" inputmode="numeric"></label>
-      <label id="qReasonWrap">Cause<select id="qReason"></select></label>
-      <div class="who" id="qWho"></div>
-      <label>Note<textarea id="qNote" rows="2" placeholder="e.g. table 12, dinner service"></textarea></label>
-      <label>Photo (optional)<input id="qPhoto" type="file" accept="image/*"></label>
-      <img id="qPrev" class="prev" hidden>
-      <button type="button" class="btn full red lg" id="qSubmit">Report broken</button>
+      <div id="qForm" hidden>
+        <div class="tbanner" id="qBanner"></div>
+        <div class="who" id="qWho"></div>
+        <label>Quantity<input id="qQty" type="number" min="1" step="1" inputmode="numeric"></label>
+        <label id="qReasonWrap">Cause<select id="qReason"></select></label>
+        <label>Note<textarea id="qNote" rows="2" placeholder="e.g. table 12, dinner service"></textarea></label>
+        <label>Photo (optional)<input id="qPhoto" type="file" accept="image/*"></label>
+        <img id="qPrev" class="prev" hidden>
+        <button type="button" class="btn full red lg" id="qSubmit">Report broken</button>
+        <button type="button" class="btn ghost full" id="qCancel" style="margin-top:8px">Cancel</button>
+      </div>
     </div>
     <div class="card done" id="qDone" hidden></div>
   </section>
@@ -356,7 +362,7 @@ label input,label select,label textarea{margin-top:4px}
         </label>
         <label>QR content
           <select id="lMode">
-            <option value="link">Link – staff report without login</option>
+            <option value="link">Link – staff report from scan</option>
             <option value="code">Code only (for USB/Bluetooth scanner)</option>
           </select>
         </label>
@@ -379,35 +385,24 @@ const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoo
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let S = { role: '', qrKey: '', me: '', staff: [], items: [], groups: [], log: [], secs: [], closings: [], reasons: [], hasLost: false, hasPrice: false,
-          hasSection: false, hasTrf: false, hasCode: false, hasMin: false, codePrefix: 'KU-', low: 5, type: 'BROKEN', sec: '', modalLocked: false };
+let S = { role: '', qrKey: '', me: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], hasLost: false, hasPrice: false,
+          hasSection: false, hasTrf: false, hasCode: false, hasMin: false, codePrefix: 'KU-', low: 5, type: 'BROKEN', sec: '' };
 let LBL = { only: null, skip: new Set(), cur: [] };
 let OP = { sec: null, counts: {} };
 let SCN = null;
 const APP_URL = location.href.split(/[?#]/)[0];
 const URLP = new URLSearchParams(location.search);
 let DEEP = { code: URLP.get('code'), item: URLP.get('item'), sec: URLP.get('sec') };
-const QR = { key: URLP.get('k') || '', g: null, fixedSec: '', type: 'BROKEN' };
+const QR = { key: URLP.get('k') || '', g: null, fixedSec: '', type: 'BROKEN', pin: '', name: '' };
 const isSpv = () => S.role === 'spv';
 const USER_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f6f54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>';
-
-// ID unik HP ini (dibuat sekali, disimpan di browser)
-const DEV = (() => {
-  let d = ls('inv_dev');
-  if (!d || d.length < 12) {
-    d = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
-      : Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-    ls('inv_dev', d);
-  }
-  return d;
-})();
+const whoHtml = name => `${USER_SVG}<div>Reported by: <b>${esc(name)}</b><div class="meta">Locked to your PIN</div></div>`;
 
 /* ---------- API ---------- */
 async function get(action, params = {}, pinOverride) {
   const u = new URL(API.trim());
   u.searchParams.set('action', action);
   u.searchParams.set('pin', pinOverride || ls('inv_pin') || '');
-  u.searchParams.set('dev', DEV);
   for (const k in params) u.searchParams.set(k, params[k]);
   const j = await (await fetch(u)).json();
   if (!j.ok) { if (j.error === 'Wrong PIN' && !pinOverride) logout(true); throw new Error(j.error); }
@@ -416,15 +411,10 @@ async function get(action, params = {}, pinOverride) {
 async function post(body) {
   const override = !!body.pin;
   body.pin = body.pin || ls('inv_pin') || '';
-  body.dev = DEV;
   if (isSpv()) body.by = body.by || ls('inv_by') || '';
   const r = await fetch(API.trim(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
   const j = await r.json();
-  if (!j.ok) {
-    if (j.error === 'Wrong PIN' && !override) logout(true);
-    if (/belum terdaftar/i.test(j.error)) { S.me = ''; showWho(); }
-    throw new Error(j.error);
-  }
+  if (!j.ok) { if (j.error === 'Wrong PIN' && !override) logout(true); throw new Error(j.error); }
   return j.data;
 }
 
@@ -436,17 +426,18 @@ async function doLogin() {
   const btn = $('#lgBtn'); btn.disabled = true; btn.textContent = 'Checking...';
   try {
     const r = await post({ action: 'login', pin });
-    ls('inv_pin', pin); ls('inv_role', r.role); S.role = r.role;
+    if (r.role === 'qr') throw new Error('Wrong PIN');
+    ls('inv_pin', pin); ls('inv_role', r.role); S.role = r.role; S.me = r.name || '';
     $('#login').hidden = true;
-    toast('Logged in as ' + (r.role === 'spv' ? 'Supervisor' : 'Staff'));
+    toast(r.role === 'spv' ? 'Logged in as Supervisor' : 'Hi, ' + r.name);
     applyRole(); tab(isSpv() ? 'dash' : 'rep');
     await load();
   } catch (e) { toast(e.message === 'Wrong PIN' ? 'Wrong PIN' : e.message, 1); }
   finally { btn.disabled = false; btn.textContent = 'Login'; }
 }
 function logout(silent) {
-  ls('inv_pin', null); ls('inv_role', null); S.role = '';
-  closeModal(true);
+  ls('inv_pin', null); ls('inv_role', null); S.role = ''; S.me = '';
+  closeModal();
   if (!silent) toast('Logged out');
   showLogin();
 }
@@ -458,48 +449,14 @@ function applyRole() {
   $('#segAdd').hidden = !spv;
   $('#segTrf').hidden = !spv || !S.hasSection;
   $('#rByWrap').hidden = !spv;
-  $('#rWho').hidden = spv;
-  showWho();
+  $('#rWho').hidden = spv || !S.me;
+  if (!spv && S.me) $('#rWho').innerHTML = whoHtml(S.me);
   if (!spv) {
     if (S.type !== 'BROKEN' && S.type !== 'LOST') setType('BROKEN');
     if (currentTab() !== 'rep') tab('rep');
   }
 }
 function currentTab() { const s = [...document.querySelectorAll('main section')].find(x => !x.hidden); return s ? s.id : ''; }
-
-/* ---------- HP TERDAFTAR (nama terkunci) ---------- */
-function showWho() {
-  const html = S.me
-    ? `${USER_SVG}<div>Dilaporkan oleh: <b>${esc(S.me)}</b><div class="meta">Nama terkunci ke HP ini</div></div>`
-    : `${USER_SVG}<div><b>HP belum terdaftar</b><div class="meta"><button type="button" class="link" onclick="openRegister()">Daftarkan HP ini</button></div></div>`;
-  $('#qWho').innerHTML = html;
-  $('#rWho').innerHTML = html;
-}
-function openRegister(after) {
-  const list = S.staff || [];
-  openModal(`
-    <div class="mh"><h3>Daftarkan HP ini</h3></div>
-    <div class="note">Semua laporan dari HP ini akan tercatat atas nama yang Anda pilih.<br><b>Nama tidak bisa diubah</b> setelah didaftarkan. Gunakan <b>HP pribadi</b> Anda.</div>
-    ${list.length
-      ? `<label>Nama Anda<select id="regName"><option value="">— pilih nama —</option>${list.map(n => `<option>${esc(n)}</option>`).join('')}</select></label>`
-      : `<label>Nama lengkap<input id="regName" autocomplete="name" placeholder="Nama sesuai ID karyawan"></label>`}
-    <button type="button" class="btn full lg" id="regBtn">Daftarkan</button>
-    <div class="hint" style="margin:12px 0 0">Nama tidak ada / salah daftar? Hubungi Supervisor.</div>`, true);
-  $('#regBtn').onclick = async () => {
-    const name = $('#regName').value.trim();
-    if (!name) return toast('Pilih / isi nama Anda', 1);
-    if (!confirm('Daftarkan HP ini atas nama "' + name + '"?\n\nNama tidak bisa diubah lagi.')) return;
-    const btn = $('#regBtn'); btn.disabled = true; btn.textContent = 'Mendaftarkan...';
-    try {
-      const r = await post({ action: 'register', name, pin: S.role === 'qr' ? QR.key : undefined });
-      S.me = r.name;
-      closeModal(true);
-      showWho();
-      toast('HP terdaftar: ' + r.name);
-      if (typeof after === 'function') after();
-    } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Daftarkan'; }
-  };
-}
 
 /* ---------- UTILS ---------- */
 function ls(k, v) {
@@ -598,7 +555,7 @@ function applyInv(inv) {
   S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice; S.hasSection = inv.hasSection; S.hasTrf = inv.hasTrf;
   S.hasCode = inv.hasCode; S.hasMin = inv.hasMin; S.codePrefix = inv.codePrefix || 'KU-';
   S.low = inv.lowStock; S.qrKey = inv.qrKey || S.qrKey || '';
-  S.me = inv.me || ''; S.staff = inv.staff || [];
+  if (S.role !== 'qr') S.me = inv.me || '';
   if (S.sec && S.secs.indexOf(S.sec) < 0) S.sec = '';
   buildGroups();
 }
@@ -612,6 +569,7 @@ async function load() {
     let inv, log = [], cl = [];
     if (isSpv()) [inv, log, cl] = await Promise.all([get('list'), get('log', { limit: 3000 }), get('closing')]);
     else inv = await get('list');
+    if (inv.role === 'qr') { logout(true); return; }
     if (inv.role && inv.role !== S.role) { S.role = inv.role; ls('inv_role', inv.role); }
     applyInv(inv);
     S.log = log; S.closings = cl;
@@ -624,7 +582,6 @@ async function load() {
     applyRole();
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     handleDeepLink();
-    if (!isSpv() && !S.me && $('#modal').hidden) openRegister();
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
 }
 
@@ -654,7 +611,7 @@ function buildGroups() {
   S.groups.forEach((g, i) => { g.id = i; g.rows = sortSec(g.rows); });
 }
 
-/* ---------- QR MODE (no login, one item) ---------- */
+/* ---------- QR MODE: detail item + Broken/Lost, PIN after tapping ---------- */
 async function startQr() {
   S.role = 'qr';
   $('#login').hidden = true; $('#nav').hidden = true; $('#hbtns').hidden = true;
@@ -670,9 +627,7 @@ async function startQr() {
     QR.g = g;
     QR.fixedSec = (d.sec && g.rows.some(r => r.section === d.sec)) ? d.sec : '';
     qrRender(true);
-    showWho();
     $('#sub').textContent = 'Lost · Breakage report';
-    if (!S.me) openRegister();
   } catch (e) {
     qrMessage('Cannot open this label', e.message === 'Wrong PIN'
       ? 'This QR label is no longer valid. Please ask your supervisor for a new label.' : e.message);
@@ -699,7 +654,7 @@ function qrRender(first) {
     sel.innerHTML = '<option value="">— choose section —</option>' + rows.map(r => `<option>${esc(r.section)}</option>`).join('');
   }
   qrInfo();
-  qrType(QR.type);
+  qrShowPick();
 }
 function qrInfo() {
   const g = QR.g, r = qrRow();
@@ -712,20 +667,63 @@ function qrInfo() {
       ${r ? `<div class="meta">Current stock: <b>${r.closing}</b></div>` : '<div class="meta">Choose the section below</div>'}
     </div>`;
 }
-function qrType(t) {
-  QR.type = t;
-  document.querySelectorAll('#qSeg button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
-  const btn = $('#qSubmit');
-  btn.textContent = t === 'LOST' ? 'Report lost' : 'Report broken';
-  btn.className = 'btn full lg ' + (t === 'LOST' ? 'amb' : 'red');
-  const s = $('#qReason'), v = s.value;
-  const list = S.reasons.filter(r => r.type === 'ALL' || r.type === t);
-  s.innerHTML = '<option value="">— choose cause —</option>' + list.map(r => `<option>${esc(r.name)}</option>`).join('');
-  if (v && list.some(r => r.name === v)) s.value = v;
-  $('#qReasonWrap').hidden = !list.length;
+function qrShowPick() {
+  QR.pin = ''; QR.name = '';
+  $('#qForm').hidden = true;
+  $('#qPick').hidden = false;
+  $('#qSec').disabled = false;
+}
+function qrStart(t) {
+  const r = qrRow();
+  if (!r) return toast('Choose the section first', 1);
+  if (r.closing <= 0) return toast('Stock is 0 – nothing to report. Inform your supervisor.', 1);
+  askPin(t, (pin, name) => {
+    QR.pin = pin; QR.name = name; QR.type = t;
+    $('#qPick').hidden = true;
+    $('#qSec').disabled = true;
+    $('#qForm').hidden = false;
+    $('#qBanner').className = 'tbanner ' + t;
+    $('#qBanner').textContent = t === 'LOST' ? 'Report LOST' : 'Report BROKEN';
+    $('#qWho').innerHTML = whoHtml(name);
+    const btn = $('#qSubmit');
+    btn.textContent = t === 'LOST' ? 'Report lost' : 'Report broken';
+    btn.className = 'btn full lg ' + (t === 'LOST' ? 'amb' : 'red');
+    const s = $('#qReason');
+    const list = S.reasons.filter(x => x.type === 'ALL' || x.type === t);
+    s.innerHTML = '<option value="">— choose cause —</option>' + list.map(x => `<option>${esc(x.name)}</option>`).join('');
+    $('#qReasonWrap').hidden = !list.length;
+    $('#qQty').value = ''; $('#qNote').value = ''; $('#qPhoto').value = ''; $('#qPrev').hidden = true;
+    setTimeout(() => $('#qQty').focus(), 150);
+  });
+}
+function askPin(t, cb) {
+  openModal(`
+    <div class="mh"><h3>Enter your PIN</h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="meta" style="margin-bottom:10px">To report <b>${t === 'LOST' ? 'LOST' : 'BROKEN'}</b>, enter your personal staff PIN. The report will be recorded under your name.</div>
+    <input id="pinIn" class="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••">
+    <button type="button" class="btn full lg" id="pinBtn" style="margin-top:12px">Continue</button>
+    <div class="hint" style="margin:12px 0 0">Forgot your PIN? Ask your supervisor.</div>`);
+  const go = async () => {
+    const pin = $('#pinIn').value.trim();
+    if (!pin) return toast('Enter your PIN', 1);
+    const btn = $('#pinBtn'); btn.disabled = true; btn.textContent = 'Checking...';
+    try {
+      const r = await post({ action: 'login', pin });
+      if (r.role === 'staff') { closeModal(); cb(pin, r.name); }
+      else if (r.role === 'spv') { closeModal(); cb(pin, 'Supervisor'); }
+      else throw new Error('Wrong PIN');
+    } catch (e) {
+      toast(e.message === 'Wrong PIN' ? 'Wrong PIN' : e.message, 1);
+      btn.disabled = false; btn.textContent = 'Continue';
+      $('#pinIn').value = ''; $('#pinIn').focus();
+    }
+  };
+  $('#pinBtn').onclick = go;
+  $('#pinIn').onkeydown = e => { if (e.key === 'Enter') go(); };
+  setTimeout(() => $('#pinIn').focus(), 150);
 }
 async function qrSubmit() {
-  if (!S.me) return openRegister();
+  if (!QR.pin) return qrShowPick();
   const r = qrRow();
   if (!r) return toast('Choose the section', 1);
   const qty = +$('#qQty').value;
@@ -736,17 +734,19 @@ async function qrSubmit() {
   const btn = $('#qSubmit'), f = $('#qPhoto').files[0];
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    await post({
-      action: 'movement', pin: QR.key, type: QR.type, row: r.row, item: r.item, section: r.section,
+    const res = await post({
+      action: 'movement', pin: QR.pin, by: QR.name, type: QR.type, row: r.row, item: r.item, section: r.section,
       qty, reason, note: $('#qNote').value.trim(), photo: f ? await compress(f) : ''
     });
+    const name = (res && res.by) || QR.name;
+    QR.pin = ''; QR.name = '';
     $('#qrCard').hidden = true;
     $('#qDone').hidden = false;
     $('#qDone').innerHTML = `
       <div class="ok">✓</div>
       <h3>Recorded</h3>
       <div class="meta"><b>${qty} × ${esc(r.item)}</b> · ${QR.type === 'LOST' ? 'Lost' : 'Broken'}${r.section ? ' · ' + esc(r.section) : ''}</div>
-      <div class="meta">Reported by ${esc(S.me)}</div>
+      <div class="meta">Reported by ${esc(name)}</div>
       <button class="btn ghost full" style="margin-top:18px" onclick="qrAgain()">Report again for this item</button>
       <div class="hint" style="margin:14px 0 0">To report another item, scan its QR label.</div>`;
     try {
@@ -755,19 +755,19 @@ async function qrSubmit() {
       QR.g = findGroup({ code: QR.g.code, item: QR.g.item }) || QR.g;
     } catch (e) {}
   } catch (e) {
-    toast(e.message, 1);
-    if (/belum terdaftar/i.test(e.message)) openRegister();
+    toast(e.message === 'Wrong PIN' ? 'PIN is no longer valid, try again' : e.message, 1);
+    if (e.message === 'Wrong PIN') qrShowPick();
   }
-  finally { btn.disabled = false; qrType(QR.type); }
+  finally { btn.disabled = false; btn.textContent = QR.type === 'LOST' ? 'Report lost' : 'Report broken'; }
 }
 function qrAgain() {
-  $('#qQty').value = ''; $('#qNote').value = ''; $('#qPhoto').value = ''; $('#qPrev').hidden = true; $('#qReason').value = '';
   $('#qDone').hidden = true; $('#qrCard').hidden = false;
   qrRender(false);
-  showWho();
   scrollTo(0, 0);
 }
-document.querySelectorAll('#qSeg button').forEach(b => b.onclick = () => qrType(b.dataset.t));
+$('#qBtnB').onclick = () => qrStart('BROKEN');
+$('#qBtnL').onclick = () => qrStart('LOST');
+$('#qCancel').onclick = qrShowPick;
 $('#qSec').onchange = qrInfo;
 $('#qSubmit').onclick = qrSubmit;
 previewOn('#qPhoto', '#qPrev');
@@ -907,11 +907,8 @@ function renderList() {
   $('#list').innerHTML = html || '<p class="empty">No items found</p>';
 }
 
-function openModal(html, locked) { stopScanner(); S.modalLocked = !!locked; $('#sheet').innerHTML = html; $('#modal').hidden = false; }
-function closeModal(force) {
-  if (S.modalLocked && !force) return;
-  stopScanner(); S.modalLocked = false; $('#modal').hidden = true;
-}
+function openModal(html) { stopScanner(); $('#sheet').innerHTML = html; $('#modal').hidden = false; }
+function closeModal() { stopScanner(); $('#modal').hidden = true; }
 $('#modal').onclick = e => { if (e.target.id === 'modal') closeModal(); };
 
 function openItem(id) {
@@ -1216,7 +1213,7 @@ function renderLabels() {
   const noCode = list.filter(x => !x.g.code).length;
   let info = `${list.length} item${list.length === 1 ? '' : 's'} × ${copies} = <b>${list.length * copies}</b> labels`;
   if (noCode) info += ` · <span class="neg">${noCode} without code</span>`;
-  if ($('#lMode').value === 'link' && !S.qrKey) info += ` · <span class="neg">QR_KEY not set in Code.gs – staff will need a PIN</span>`;
+  if ($('#lMode').value === 'link' && !S.qrKey) info += ` · <span class="neg">QR_KEY not set in Code.gs</span>`;
   if (LBL.skip.size) info += ` · ${LBL.skip.size} hidden <button class="link" onclick="LBL.skip.clear();renderLabels()">show</button>`;
   if (LBL.only !== null) info += ` · <button class="link" onclick="LBL.only=null;renderLabels()">show all items</button>`;
   $('#lInfo').innerHTML = info;
@@ -1315,7 +1312,6 @@ $('#scanBtn').onclick = () => openScanner(txt => {
 
 $('#repForm').onsubmit = async e => {
   e.preventDefault();
-  if (!isSpv() && !S.me) return openRegister();
   const i = byRow($('#rItem').value); if (!i) return toast('Choose an item or scan QR', 1);
   const qty = +$('#rQty').value;
   if (!(qty > 0)) return toast('Enter quantity', 1);
@@ -1350,10 +1346,7 @@ $('#repForm').onsubmit = async e => {
     $('#rQty').value = ''; $('#rNote').value = ''; $('#rPhoto').value = ''; $('#rPrev').hidden = true; $('#rReason').value = '';
     if (!isSpv()) $('#rItem').value = '';
     await load();
-  } catch (err) {
-    toast(err.message, 1);
-    if (/belum terdaftar/i.test(err.message)) openRegister();
-  }
+  } catch (err) { toast(err.message, 1); }
   finally { btn.disabled = false; setType(S.type); }
 };
 
@@ -1638,7 +1631,7 @@ $('#cMonth').value = thisMonth();
 
 // START
 if (QR.key && (DEEP.code || DEEP.item) && ls('inv_role') !== 'spv') {
-  startQr();                                   // staff scan label: no login, one item only
+  startQr();                                   // scan label: item detail + Broken/Lost, PIN after tapping
 } else if (ls('inv_pin')) {
   S.role = ls('inv_role') || 'staff'; applyRole(); tab(isSpv() ? 'dash' : 'rep'); load();
 } else {
