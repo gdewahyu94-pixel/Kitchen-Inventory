@@ -1210,4 +1210,210 @@ function recapData() {
     if (!agg[k].price && price) agg[k].price = price;
     return agg[k];
   };
-  if (closed) S.closings.filter(c
+  if (closed) S.closings.filter(c => c.month === m && (!sec || c.section === sec)).forEach(c => { const a = A(c.item, c.no, c.harga); a.opening += c.awal; a.stock += c.closing; });
+  else S.items.filter(r => !sec || r.section === sec).forEach(r => { const a = A(r.item, r.no, r.harga); a.opening += r.awal; a.stock += r.closing; });
+  logs.forEach(l => {
+    const a = A(l.item, '', l.price || priceOf(l.item));
+    if (l.type === 'ADD') a.add += l.qty;
+    else if (l.type === 'TRANSFER IN') a.trf += l.qty;
+    else if (l.type === 'TRANSFER OUT') a.trf -= l.qty;
+    else { a[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; a.value += lossVal(l); }
+  });
+  let rows = order;
+  if (sec) rows = rows.filter(r => r.opening || r.stock || r.add || r.trf || r.broken || r.lost);
+  if (S.hasCode) rows = [...rows].sort(byCode);
+
+  const secList = S.hasSection ? (sec ? [sec] : S.secs) : [];
+  const bySec = secList.map(s => {
+    const o = { sec: s, opening: 0, add: 0, tin: 0, tout: 0, broken: 0, lost: 0, value: 0, stock: 0 };
+    if (closed) S.closings.filter(c => c.month === m && c.section === s).forEach(c => { o.opening += c.awal; o.stock += c.closing; });
+    else S.items.filter(r => r.section === s).forEach(r => { o.opening += r.awal; o.stock += r.closing; });
+    S.log.filter(l => l.ts.startsWith(m) && l.loc === s).forEach(l => {
+      if (l.type === 'ADD') o.add += l.qty;
+      else if (l.type === 'TRANSFER IN') o.tin += l.qty;
+      else if (l.type === 'TRANSFER OUT') o.tout += l.qty;
+      else if (isLoss(l)) { o[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; o.value += lossVal(l); }
+    });
+    return o;
+  });
+  const cz = {};
+  logs.filter(isLoss).forEach(l => {
+    const k = l.reason || '(not specified)';
+    const o = cz[k] || (cz[k] = { cause: k, broken: 0, lost: 0, value: 0 });
+    o[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; o.value += lossVal(l);
+  });
+  const t = rows.reduce((a, r) => {
+    ['opening', 'add', 'trf', 'broken', 'lost', 'value', 'stock'].forEach(k => a[k] += r[k]); return a;
+  }, { opening: 0, add: 0, trf: 0, broken: 0, lost: 0, value: 0, stock: 0 });
+  return {
+    m, sec, closed, rows, bySec, t,
+    causes: Object.values(cz).sort((a, b) => b.value - a.value || (b.broken + b.lost) - (a.broken + a.lost)),
+    incidents: logs.filter(isLoss).slice().reverse(),
+    transfers: logs.filter(l => l.type === 'TRANSFER OUT' || (sec && l.type === 'TRANSFER IN')).slice().reverse()
+  };
+}
+
+function renderRecap() {
+  const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, K = S.hasCode, sg = sigs();
+  let no = 1;
+  const cols = 7 + (P ? 2 : 0) + (T ? 1 : 0) + (K ? 1 : 0);
+  const head = `<th>No</th>${K ? '<th>Code</th>' : ''}<th>Item</th>${P ? '<th class="n">Price</th>' : ''}<th class="n">Opening</th><th class="n">Added</th>${T ? '<th class="n">Transfer</th>' : ''}<th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing stock' : 'Current stock'}</th>`;
+  const body = d.rows.map((r, i) => `<tr><td>${i + 1}</td>${K ? `<td>${esc(r.code)}</td>` : ''}<td>${esc(r.item)}</td>${P ? `<td class="n">${r.price ? rp(r.price) : '-'}</td>` : ''}<td class="n">${r.opening}</td><td class="n">${r.add}</td>${T ? `<td class="n">${sgn(r.trf)}</td>` : ''}<td class="n">${r.broken}</td><td class="n">${r.lost}</td>${P ? `<td class="n">${rp(r.value)}</td>` : ''}<td class="n">${r.stock}</td></tr>`).join('');
+  const foot = `<tr><td></td>${K ? '<td></td>' : ''}<td>TOTAL</td>${P ? '<td></td>' : ''}<td class="n">${d.t.opening}</td><td class="n">${d.t.add}</td>${T ? `<td class="n">${sgn(d.t.trf)}</td>` : ''}<td class="n">${d.t.broken}</td><td class="n">${d.t.lost}</td>${P ? `<td class="n">${rp(d.t.value)}</td>` : ''}<td class="n">${d.t.stock}</td></tr>`;
+
+  const secTbl = d.bySec.length ? `<h4>${++no}. By section</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Section</th><th class="n">Opening</th><th class="n">Added</th><th class="n">Trf in</th><th class="n">Trf out</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing' : 'Current'}</th></tr></thead>
+      <tbody>${d.bySec.map(s => `<tr><td>${esc(s.sec)}</td><td class="n">${s.opening}</td><td class="n">${s.add}</td><td class="n">${s.tin}</td><td class="n">${s.tout}</td><td class="n">${s.broken}</td><td class="n">${s.lost}</td>${P ? `<td class="n">${rp(s.value)}</td>` : ''}<td class="n">${s.stock}</td></tr>`).join('')}</tbody>
+    </table></div>` : '';
+
+  const causeTbl = `<h4>${++no}. Loss by cause</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Cause</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}</tr></thead>
+      <tbody>${d.causes.map(c => `<tr><td>${esc(c.cause)}</td><td class="n">${c.broken}</td><td class="n">${c.lost}</td>${P ? `<td class="n">${rp(c.value)}</td>` : ''}</tr>`).join('') || `<tr><td colspan="4" class="empty">No breakage or loss this period</td></tr>`}</tbody>
+    </table></div>`;
+
+  const incTbl = `<h4>${++no}. Incident detail (broken / lost)</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Date</th><th>Type</th>${K ? '<th>Code</th>' : ''}<th>Item</th>${S.hasSection ? '<th>Section</th>' : ''}<th class="n">Qty</th>${P ? '<th class="n">Value</th>' : ''}<th>Cause</th><th>Reported by</th><th>Note</th></tr></thead>
+      <tbody>${d.incidents.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type}</td>${K ? `<td>${esc(codeOf(l.item))}</td>` : ''}<td>${esc(l.item)}</td>${S.hasSection ? `<td>${esc(l.loc || '-')}</td>` : ''}<td class="n">${l.qty}</td>${P ? `<td class="n">${rp(lossVal(l))}</td>` : ''}<td>${esc(l.reason || '-')}</td><td>${esc(l.by || '-')}</td><td>${esc(l.note)}</td></tr>`).join('') || `<tr><td colspan="10" class="empty">No incidents</td></tr>`}</tbody>
+    </table></div>`;
+
+  const trfTbl = S.hasSection ? `<h4>${++no}. Transfers</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Date</th><th>Type</th>${K ? '<th>Code</th>' : ''}<th>Item</th><th>Section</th><th class="n">Qty</th><th>Detail</th><th>By</th></tr></thead>
+      <tbody>${d.transfers.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type === 'TRANSFER IN' ? 'IN' : 'OUT'}</td>${K ? `<td>${esc(codeOf(l.item))}</td>` : ''}<td>${esc(l.item)}</td><td>${esc(l.loc)}</td><td class="n">${l.qty}</td><td>${esc(l.note)}</td><td>${esc(l.by || '-')}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No transfers</td></tr>`}</tbody>
+    </table></div>` : '';
+
+  $('#rpt').innerHTML = `
+    <div class="rh">
+      <h2>Kitchen Utensils – Lost &amp; Breakage Report</h2>
+      <div>Period: <b>${monthLabel(d.m)}</b>${S.hasSection ? ` · Section: <b>${esc(d.sec || 'All sections')}</b>` : ''}</div>
+      <div>${C ? 'Month closed' : 'Month not closed yet – stock shown is current stock'} · Generated ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+    </div>
+    <div class="rsum">
+      <div><small>Added</small><b>${d.t.add}</b></div>
+      <div><small>Broken</small><b>${d.t.broken}</b></div>
+      <div><small>Lost</small><b>${d.t.lost}</b></div>
+      <div><small>${P ? 'Loss value' : 'Total loss'}</small><b>${P ? rp(d.t.value) : d.t.broken + d.t.lost}</b></div>
+    </div>
+    <h4>1. Summary per item${d.sec ? ' – ' + esc(d.sec) : (S.hasSection ? ' (all sections combined)' : '')}</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr>${head}</tr></thead>
+      <tbody>${body || `<tr><td colspan="${cols}" class="empty">No data</td></tr>`}</tbody>
+      <tfoot>${foot}</tfoot>
+    </table></div>
+    ${secTbl}${causeTbl}${incTbl}${trfTbl}
+    <div class="sigs">${sg.map(s => `<div>${s.label}<div class="ln"></div><b>${esc(s.name) || '&nbsp;'}</b><br><span style="color:var(--mute)">${esc(s.role) || '&nbsp;'}</span></div>`).join('')}</div>`;
+}
+
+function downloadXls() {
+  if (!window.XLSX) return toast('Excel library not loaded, check internet connection', 1);
+  const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, K = S.hasCode, sg = sigs();
+  const head = [['KITCHEN UTENSILS - LOST & BREAKAGE REPORT'], ['Period', monthLabel(d.m)],
+    ['Section', d.sec || (S.hasSection ? 'All sections' : '-')],
+    ['Status', C ? 'Month closed' : 'Month not closed - stock is current stock'], []];
+
+  const h1 = ['NO', ...(K ? ['CODE'] : []), 'ITEM', ...(P ? ['PRICE'] : []), 'OPENING', 'ADDED', ...(T ? ['TRANSFER'] : []), 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING STOCK' : 'CURRENT STOCK'];
+  const s1 = head.concat([h1]);
+  d.rows.forEach((r, i) => s1.push([i + 1, ...(K ? [r.code] : []), r.item, ...(P ? [r.price] : []), r.opening, r.add, ...(T ? [r.trf] : []), r.broken, r.lost, ...(P ? [r.value] : []), r.stock]));
+  s1.push(['', ...(K ? [''] : []), 'TOTAL', ...(P ? [''] : []), d.t.opening, d.t.add, ...(T ? [d.t.trf] : []), d.t.broken, d.t.lost, ...(P ? [d.t.value] : []), d.t.stock]);
+  s1.push([], [], [sg[0].label, '', '', sg[1].label, '', '', sg[2].label], [], [], [],
+    [sg[0].name, '', '', sg[1].name, '', '', sg[2].name], [sg[0].role, '', '', sg[1].role, '', '', sg[2].role]);
+
+  const wb = XLSX.utils.book_new();
+  const add = (aoa, name, cols) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = cols.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, name); };
+  add(s1, 'Summary', [16, ...(K ? [10] : []), 32, 12, 10, 9, 10, 9, 9, 14, 14]);
+
+  if (d.bySec.length) {
+    const s2 = head.concat([['SECTION', 'OPENING', 'ADDED', 'TRF IN', 'TRF OUT', 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING' : 'CURRENT']]);
+    d.bySec.forEach(s => s2.push([s.sec, s.opening, s.add, s.tin, s.tout, s.broken, s.lost, ...(P ? [s.value] : []), s.stock]));
+    add(s2, 'By Section', [22, 10, 9, 9, 9, 9, 9, 14, 10]);
+  }
+
+  const sc = head.concat([['CAUSE', 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : [])]]);
+  d.causes.forEach(c => sc.push([c.cause, c.broken, c.lost, ...(P ? [c.value] : [])]));
+  add(sc, 'Causes', [32, 10, 10, 14]);
+
+  const s3 = head.concat([['DATE', 'TYPE', ...(K ? ['CODE'] : []), 'ITEM', ...(S.hasSection ? ['SECTION'] : []), 'QTY', ...(P ? ['PRICE', 'VALUE'] : []), 'CAUSE', 'REPORTED BY', 'NOTE']]);
+  d.incidents.forEach(l => s3.push([l.ts, l.type, ...(K ? [codeOf(l.item)] : []), l.item, ...(S.hasSection ? [l.loc] : []), l.qty, ...(P ? [l.price || priceOf(l.item), lossVal(l)] : []), l.reason, l.by, l.note]));
+  add(s3, 'Incidents', [17, 9, ...(K ? [10] : []), 28, 18, 6, 12, 12, 26, 16, 30]);
+
+  if (S.hasSection) {
+    const s4 = head.concat([['DATE', 'TYPE', ...(K ? ['CODE'] : []), 'ITEM', 'SECTION', 'QTY', 'DETAIL', 'BY']]);
+    d.transfers.forEach(l => s4.push([l.ts, l.type, ...(K ? [codeOf(l.item)] : []), l.item, l.loc, l.qty, l.note, l.by]));
+    add(s4, 'Transfers', [17, 13, ...(K ? [10] : []), 28, 18, 6, 30, 16]);
+  }
+  XLSX.writeFile(wb, 'Lost-Breakage-' + d.m + (d.sec ? '-' + d.sec.replace(/\W+/g, '_') : '') + '.xlsx');
+}
+
+/* ---------- TABS & INIT ---------- */
+function tab(t) {
+  if (!isSpv() && t !== 'rep') t = 'rep';
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t || (t === 'lab' && b.dataset.tab === 'inv')));
+  document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== t);
+  if (t === 'rec') renderRecap();
+  if (t === 'lab') renderLabels();
+  if (t === 'opn') renderOpname();
+  scrollTo(0, 0);
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
+$('#q').oninput = () => {
+  const v = scanCode($('#q').value);
+  if (v !== $('#q').value) $('#q').value = v;
+  renderList();
+};
+$('#sort').onchange = renderList;
+$('#hType').onchange = renderHis; $('#hMonth').onchange = renderHis; $('#hSec').onchange = renderHis;
+$('#cMonth').onchange = renderRecap; $('#cSec').onchange = renderRecap;
+SIGS.forEach(([k]) => ['n', 'r'].forEach(x => {
+  const el = $('#' + k + x); el.value = ls('inv_' + k + x) || '';
+  el.oninput = () => { ls('inv_' + k + x, el.value); renderRecap(); };
+}));
+// Opname
+$('#oSec').onchange = () => { $('#opRpt').hidden = true; renderOpname(); };
+$('#oQ').oninput = () => {
+  const v = scanCode($('#oQ').value);
+  if (v !== $('#oQ').value) $('#oQ').value = v;
+  renderOpname();
+  const inputs = document.querySelectorAll('#oList .ocnt');
+  if (inputs.length === 1 && v) inputs[0].focus();
+};
+$('#oScan').onclick = () => openScanner(txt => {
+  const p = parseScan(txt);
+  const g = findGroup(p);
+  if (!g) return toast('Item not found: ' + (p.code || p.item || txt), 1);
+  $('#oQ').value = g.code || g.item;
+  renderOpname();
+  const inputs = document.querySelectorAll('#oList .ocnt');
+  if (inputs.length) inputs[0].focus();
+  else toast(g.item + ' is not in ' + OP.sec, 1);
+});
+$('#oSheet').onclick = printCountSheet;
+$('#oClear').onclick = () => { if (confirm('Clear all counts for this section?')) { OP.counts = {}; opSave(); renderOpname(); } };
+$('#oSubmit').onclick = submitOpname;
+// Labels
+$('#lblBtn').onclick = () => openLabels(null);
+$('#lSec').onchange = () => { LBL.only = null; renderLabels(); };
+$('#lQ').oninput = () => { LBL.only = null; renderLabels(); };
+$('#lSize').onchange = renderLabels;
+$('#lMode').onchange = renderLabels;
+$('#lCopies').oninput = renderLabels;
+$('#lPrint').onclick = printLabels;
+// Others
+$('#closeBtn').onclick = openClose;
+$('#cPrint').onclick = () => { renderRecap(); window.print(); };
+$('#cXls').onclick = downloadXls;
+$('#refresh').onclick = load;
+$('#logoutBtn').onclick = () => { if (confirm('Logout?')) logout(); };
+$('#lgBtn').onclick = doLogin;
+$('#lgPin').onkeydown = e => { if (e.key === 'Enter') doLogin(); };
+$('#rBy').value = ls('inv_by') || '';
+$('#hMonth').value = thisMonth();
+$('#cMonth').value = thisMonth();
+
+if (ls('inv_pin')) { S.role = ls('inv_role') || 'staff'; applyRole(); tab(isSpv() ? 'dash' : 'rep'); load(); }
+else showLogin();
+</script>
+</body>
+</html>
