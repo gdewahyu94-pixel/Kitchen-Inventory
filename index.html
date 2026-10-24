@@ -29,48 +29,49 @@ input,select,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(
 label{display:block;font-size:13px;color:var(--mute);margin-bottom:12px}
 label input,label select,label textarea{margin-top:4px}
 .btn{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:600;background:var(--pri);color:#fff;cursor:pointer;white-space:nowrap}
-.btn.red{background:var(--red)}.btn.amb{background:var(--amb)}.btn.ghost{background:var(--pri2);color:var(--pri)}
+.btn.red{background:var(--red)}.btn.amb{background:var(--amb)}.btn.blu{background:var(--blu)}.btn.ghost{background:var(--pri2);color:var(--pri)}
 .btn.full{width:100%}.btn:disabled{opacity:.6}
+.chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 14px;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
 .item,.log{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px}
 .item{cursor:pointer}
 .th{width:56px;height:56px;border-radius:8px;object-fit:cover;flex:none;background:var(--pri2)}
 .th.sm{width:44px;height:44px}
 .ph{display:flex;align-items:center;justify-content:center;font-size:22px}
 .info{flex:1;min-width:0}.meta{color:var(--mute);font-size:12px;margin-top:2px}
+.meta b{color:var(--ink)}
 .qty{text-align:center;font-size:22px;font-weight:700;color:var(--pri);min-width:60px}
 .qty small{display:block;font-size:11px;font-weight:500;color:var(--mute)}
 .qty.low{color:var(--red)}
-.seg{display:flex;gap:6px;margin-bottom:14px}
-.seg button{flex:1;padding:10px;border:1px solid var(--line);background:#fff;border-radius:8px;font:inherit;cursor:pointer;color:var(--mute)}
+.seg{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.seg button{flex:1;padding:10px 6px;border:1px solid var(--line);background:#fff;border-radius:8px;font:inherit;font-size:14px;cursor:pointer;color:var(--mute)}
 .seg button.on[data-t=BROKEN]{background:var(--red2);border-color:var(--red);color:var(--red);font-weight:600}
 .seg button.on[data-t=LOST]{background:var(--amb2);border-color:var(--amb);color:var(--amb);font-weight:600}
 .seg button.on[data-t=ADD]{background:var(--pri2);border-color:var(--pri);color:var(--pri);font-weight:600}
+.seg button.on[data-t=TRANSFER]{background:var(--blu2);border-color:var(--blu);color:var(--blu);font-weight:600}
 .hint{font-size:13px;margin:-6px 0 12px;color:var(--mute)}
 .note{font-size:13px;color:var(--ink);background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px;line-height:1.5}
 .prev{max-width:160px;border-radius:8px;margin-bottom:12px;display:block}
 .tag{font-size:11px;font-weight:700;padding:4px 6px;border-radius:6px;flex:none;width:72px;text-align:center}
 .t-BROKEN{background:var(--red2);color:var(--red)}.t-LOST{background:var(--amb2);color:var(--amb)}
-.t-ADD,.t-NEWITEM{background:var(--pri2);color:var(--pri)}.t-CLOSEMONTH{background:var(--blu2);color:var(--blu)}
+.t-ADD,.t-NEWITEM{background:var(--pri2);color:var(--pri)}.t-CLOSEMONTH,.t-TRF{background:var(--blu2);color:var(--blu)}
 .q{font-weight:700}
 .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.row:last-child{border:0}
 .row span:last-child{text-align:right;white-space:nowrap}
 .empty{color:var(--mute);text-align:center;padding:20px;font-size:14px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;z-index:10}
 .modal[hidden]{display:none}
-.sheet{background:#fff;width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px}
+.sheet{background:#fff;width:100%;max-width:600px;max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px}
 @media(min-width:600px){.modal{align-items:center}.sheet{border-radius:16px}}
 .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.mh h3{margin:0;font-size:17px}
 .x{border:0;background:var(--bg);width:32px;height:32px;border-radius:8px;cursor:pointer}
-.big{width:100%;max-height:260px;object-fit:contain;background:var(--bg);border-radius:10px;margin-bottom:12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px;margin-bottom:12px}
-.grid div{background:var(--bg);border-radius:8px;padding:8px;text-align:center}
-.grid small{color:var(--mute);font-size:11px;display:block}.grid b{font-size:16px}
+.big{width:100%;max-height:240px;object-fit:contain;background:var(--bg);border-radius:10px;margin-bottom:12px}
 .acts{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.acts .btn{flex:1}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .flex{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 #toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;transition:.25s;z-index:20;font-size:14px;max-width:90vw}
 #toast.show{transform:translate(-50%,0)}#toast.err{background:var(--red)}
-/* Recap report */
 .tbl-wrap{overflow-x:auto;margin-bottom:16px}
 .tbl{width:100%;border-collapse:collapse;font-size:12px}
 .tbl th,.tbl td{border:1px solid #cfd6d1;padding:5px 6px;text-align:left;vertical-align:top}
@@ -115,6 +116,7 @@ label input,label select,label textarea{margin-top:4px}
   <section id="dash"><p class="empty">Loading...</p></section>
 
   <section id="inv" hidden>
+    <div class="chips" id="secChips"></div>
     <div class="bar">
       <input id="q" placeholder="Search item...">
       <select id="sort">
@@ -134,19 +136,23 @@ label input,label select,label textarea{margin-top:4px}
       <div class="seg" id="seg">
         <button type="button" data-t="BROKEN" class="on">Broken</button>
         <button type="button" data-t="LOST">Lost</button>
-        <button type="button" data-t="ADD">Add stock</button>
+        <button type="button" data-t="ADD">Add</button>
+        <button type="button" data-t="TRANSFER" id="segTrf">Transfer</button>
       </div>
+      <label id="rSecWrap"><span id="rSecLbl">Section</span><select id="rSec"></select></label>
       <label>Item<select id="rItem" required></select></label>
       <div id="rInfo" class="hint"></div>
       <div class="two">
         <label>Quantity<input id="rQty" type="number" min="1" step="1" inputmode="numeric" required></label>
-        <label>Location<select id="rLoc" required></select></label>
+        <label id="rToWrap" hidden>To section<select id="rTo"></select></label>
       </div>
       <div id="rVal" class="hint"></div>
       <label>Reported by<input id="rBy" required></label>
       <label>Note<textarea id="rNote" rows="2" placeholder="e.g. dropped during dinner service"></textarea></label>
-      <label>Photo (optional)<input id="rPhoto" type="file" accept="image/*"></label>
-      <img id="rPrev" class="prev" hidden>
+      <div id="rPhotoWrap">
+        <label>Photo (optional)<input id="rPhoto" type="file" accept="image/*"></label>
+        <img id="rPrev" class="prev" hidden>
+      </div>
       <button class="btn full red" id="rSubmit">Report broken</button>
     </form>
   </section>
@@ -154,10 +160,10 @@ label input,label select,label textarea{margin-top:4px}
   <section id="his" hidden>
     <div class="bar">
       <select id="hType">
-        <option value="">All types</option><option>BROKEN</option><option>LOST</option>
-        <option>ADD</option><option>NEW ITEM</option><option>CLOSE MONTH</option>
+        <option value="">All types</option><option>BROKEN</option><option>LOST</option><option>ADD</option>
+        <option>TRANSFER IN</option><option>TRANSFER OUT</option><option>NEW ITEM</option><option>CLOSE MONTH</option>
       </select>
-      <select id="hLoc"></select>
+      <select id="hSec"></select>
       <input id="hMonth" type="month">
     </div>
     <div id="hList"></div>
@@ -173,7 +179,7 @@ label input,label select,label textarea{margin-top:4px}
     <div class="card noprint">
       <div class="bar">
         <input type="month" id="cMonth">
-        <select id="cLoc"></select>
+        <select id="cSec"></select>
       </div>
       <h4 style="margin-top:0">Signatures</h4>
       <div class="two">
@@ -198,7 +204,8 @@ const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoo
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let S = { items: [], log: [], locs: [], closings: [], hasLost: false, hasPrice: false, low: 5, pin: false, type: 'BROKEN' };
+let S = { items: [], groups: [], log: [], secs: [], closings: [], hasLost: false, hasPrice: false, hasSection: false, hasTrf: false,
+          low: 5, pin: false, type: 'BROKEN', sec: '' };
 
 /* ---------- API ---------- */
 async function get(action, params = {}) {
@@ -240,10 +247,15 @@ function thumb(src, cls = 'th') {
              : `<div class="${cls} ph">🍽</div>`;
 }
 const rp = n => 'Rp ' + Math.round(n || 0).toLocaleString('id-ID');
+const sgn = n => n > 0 ? '+' + n : String(n);
+const nk = s => String(s || '').trim().toLowerCase();
 const byRow = r => S.items.find(i => i.row == r);
-const priceOf = name => (S.items.find(i => i.item === name) || {}).harga || 0;
+const groupOf = name => S.groups.find(g => nk(g.item) === nk(name));
+const priceOf = name => (groupOf(name) || {}).harga || 0;
 const lossVal = l => l.value || l.qty * (l.price || priceOf(l.item));
 const isLoss = l => l.type === 'BROKEN' || l.type === 'LOST';
+const secIdx = s => { const i = S.secs.indexOf(s); return i < 0 ? 999 : i; };
+const sortSec = rows => [...rows].sort((a, b) => secIdx(a.section) - secIdx(b.section));
 const ym = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 const thisMonth = () => ym(new Date());
 function monthLabel(m) { const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleString('en', { month: 'long', year: 'numeric' }); }
@@ -263,128 +275,198 @@ function compress(file) {
     img.src = URL.createObjectURL(file);
   });
 }
+function previewOn(inputId, imgId) {
+  $(inputId).onchange = e => {
+    const f = e.target.files[0], p = $(imgId);
+    if (f) { p.src = URL.createObjectURL(f); p.hidden = false; } else p.hidden = true;
+  };
+}
 
 /* ---------- LOAD ---------- */
 async function load() {
   $('#sub').textContent = 'Loading...';
   try {
     const [inv, log, cl] = await Promise.all([get('list'), get('log', { limit: 3000 }), get('closing')]);
-    S.items = inv.items; S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice;
-    S.low = inv.lowStock; S.pin = inv.pinRequired; S.locs = inv.locations || []; S.log = log; S.closings = cl;
-    fillLocs(); renderDash(); renderList(); fillSelect(); renderHis(); renderCloseInfo(); renderRecap();
+    S.items = inv.items; S.secs = inv.sections || [];
+    S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice; S.hasSection = inv.hasSection; S.hasTrf = inv.hasTrf;
+    S.low = inv.lowStock; S.pin = inv.pinRequired; S.log = log; S.closings = cl;
+    if (S.sec && S.secs.indexOf(S.sec) < 0) S.sec = '';
+    buildGroups();
+    fillSecs(); renderChips(); renderDash(); renderList(); fillItems(); renderHis(); renderCloseInfo(); renderRecap();
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
 }
 
-function fillLocs() {
-  const opts = S.locs.map(l => `<option>${esc(l)}</option>`).join('');
-  [['#rLoc', '— choose location —'], ['#hLoc', 'All locations'], ['#cLoc', 'All locations']].forEach(([id, first]) => {
-    const s = $(id), v = s.value;
-    s.innerHTML = `<option value="">${first}</option>` + opts;
-    s.value = v;
+function buildGroups() {
+  const m = {}, order = [];
+  S.items.forEach(r => {
+    const k = nk(r.item);
+    if (!m[k]) { m[k] = { item: r.item, no: r.no, photo: '', harga: 0, remarks: '', rows: [], total: 0, broken: 0, lost: 0 }; order.push(m[k]); }
+    const g = m[k];
+    g.rows.push(r); g.total += r.closing; g.broken += r.broken; g.lost += r.lost;
+    if (!g.photo && r.photo) g.photo = r.photo;
+    if (!g.harga && r.harga) g.harga = r.harga;
+    if (!g.remarks && r.remarks) g.remarks = r.remarks;
   });
+  S.groups = order;
+  S.groups.forEach((g, i) => { g.id = i; g.rows = sortSec(g.rows); });
+}
+
+function fillSecs() {
+  const opts = S.secs.map(s => `<option>${esc(s)}</option>`).join('');
+  const set = (id, first) => {
+    const s = $(id), v = s.value;
+    s.innerHTML = (first ? `<option value="">${first}</option>` : '') + opts;
+    if (v && [...s.options].some(o => o.value === v)) s.value = v;
+  };
+  set('#rSec', ''); set('#rTo', '— choose section —'); set('#hSec', 'All sections'); set('#cSec', 'All sections');
+  $('#rSecWrap').hidden = !S.hasSection;
+  $('#segTrf').hidden = !S.hasSection;
+  $('#hSec').hidden = !S.hasSection;
+  $('#cSec').hidden = !S.hasSection;
 }
 
 /* ---------- DASHBOARD ---------- */
 function renderDash() {
-  const m = S.log.filter(l => l.ts.startsWith(thisMonth()));
+  const mk = thisMonth(), mn = monthLabel(mk);
+  const m = S.log.filter(l => l.ts.startsWith(mk));
   const sum = t => m.filter(l => l.type === t).reduce((a, l) => a + l.qty, 0);
   const loss = m.filter(isLoss);
   const lossTotal = loss.reduce((a, l) => a + lossVal(l), 0);
   const stock = S.items.reduce((a, i) => a + i.closing, 0);
   const low = S.items.filter(i => i.closing <= S.low).sort((a, b) => a.closing - b.closing);
 
-  const byItem = {}, byLoc = {};
-  loss.forEach(l => {
-    const a = byItem[l.item] || (byItem[l.item] = { q: 0, v: 0 }); a.q += l.qty; a.v += lossVal(l);
-    const k = l.loc || '-'; const b = byLoc[k] || (byLoc[k] = { q: 0, v: 0 }); b.q += l.qty; b.v += lossVal(l);
-  });
-  const sortKey = S.hasPrice ? 'v' : 'q';
-  const top = Object.entries(byItem).sort((a, b) => b[1][sortKey] - a[1][sortKey]).slice(0, 5);
-  const locs = Object.entries(byLoc).sort((a, b) => b[1][sortKey] - a[1][sortKey]);
+  const byItem = {};
+  loss.forEach(l => { const a = byItem[l.item] || (byItem[l.item] = { q: 0, v: 0 }); a.q += l.qty; a.v += lossVal(l); });
+  const key = S.hasPrice ? 'v' : 'q';
+  const top = Object.entries(byItem).sort((a, b) => b[1][key] - a[1][key]).slice(0, 5);
   const line = ([n, o]) => `<div class="row"><span>${esc(n)}</span><span><b>${o.q}</b> pcs${S.hasPrice ? ' · ' + rp(o.v) : ''}</span></div>`;
-  const mn = monthLabel(thisMonth());
+
+  let secHtml = '';
+  if (S.hasSection) {
+    const rows = S.secs.map(s => {
+      const ls_ = loss.filter(l => l.loc === s);
+      return {
+        s, stock: S.items.filter(r => r.section === s).reduce((a, r) => a + r.closing, 0),
+        broken: ls_.filter(l => l.type === 'BROKEN').reduce((a, l) => a + l.qty, 0),
+        lost: ls_.filter(l => l.type === 'LOST').reduce((a, l) => a + l.qty, 0),
+        v: ls_.reduce((a, l) => a + lossVal(l), 0)
+      };
+    });
+    secHtml = `<div class="card"><h3>By section · ${mn}</h3><div class="tbl-wrap" style="margin:0"><table class="tbl">
+      <thead><tr><th>Section</th><th class="n">Stock</th><th class="n">Broken</th><th class="n">Lost</th>${S.hasPrice ? '<th class="n">Loss value</th>' : ''}</tr></thead>
+      <tbody>${rows.map(r => `<tr><td>${esc(r.s)}</td><td class="n">${r.stock}</td><td class="n">${r.broken}</td><td class="n">${r.lost}</td>${S.hasPrice ? `<td class="n">${rp(r.v)}</td>` : ''}</tr>`).join('')}</tbody>
+    </table></div></div>`;
+  }
 
   $('#dash').innerHTML = `
     <div class="stats">
-      <div class="stat"><small>Items</small><b>${S.items.length}</b></div>
+      <div class="stat"><small>Items</small><b>${S.groups.length}</b></div>
       <div class="stat g"><small>Stock on hand</small><b>${stock}</b></div>
       <div class="stat r"><small>Broken · ${mn}</small><b>${sum('BROKEN')}</b></div>
       <div class="stat a"><small>Lost · ${mn}</small><b>${sum('LOST')}</b></div>
       ${S.hasPrice ? `<div class="stat r"><small>Loss value · ${mn}</small><b>${rp(lossTotal)}</b></div>` : ''}
       <div class="stat g"><small>Added · ${mn}</small><b>${sum('ADD')}</b></div>
     </div>
-    ${S.hasPrice ? '' : '<div class="card hint" style="margin:0 0 12px">Add a <b>HARGA</b> column to the sheet to see loss value in Rupiah.</div>'}
-    <div class="card"><h3>Loss by location · ${mn}</h3>
-      ${locs.length ? locs.map(line).join('') : '<p class="empty">Nothing reported this month</p>'}
-    </div>
+    ${S.hasSection ? '' : '<div class="card hint" style="margin:0 0 12px">Add a <b>SECTION</b> column to the sheet to split stock per section.</div>'}
+    ${secHtml}
     <div class="card"><h3>Top broken / lost items · ${mn}</h3>
       ${top.length ? top.map(line).join('') : '<p class="empty">Nothing reported this month</p>'}
     </div>
     <div class="card"><h3>Low stock (≤ ${S.low})</h3>
-      ${low.length ? low.map(i => `<div class="row"><span>${esc(i.item)}</span><b style="color:var(--red)">${i.closing}</b></div>`).join('') : '<p class="empty">All items above minimum</p>'}
+      ${low.length ? low.map(i => `<div class="row"><span>${esc(i.item)}${i.section ? ' · <span style="color:var(--mute)">' + esc(i.section) + '</span>' : ''}</span><b style="color:var(--red)">${i.closing}</b></div>`).join('') : '<p class="empty">All items above minimum</p>'}
     </div>`;
 }
 
 /* ---------- INVENTORY ---------- */
+function renderChips() {
+  const box = $('#secChips');
+  box.hidden = !S.hasSection;
+  if (!S.hasSection) return;
+  const all = [['', 'All sections'], ...S.secs.map(s => [s, s])];
+  box.innerHTML = all.map(([v, l]) => `<button class="chip ${S.sec === v ? 'on' : ''}" data-v="${esc(v)}">${esc(l)}</button>`).join('');
+  box.querySelectorAll('.chip').forEach(b => b.onclick = () => { S.sec = b.dataset.v; renderChips(); renderList(); });
+}
+
 function renderList() {
-  const q = $('#q').value.toLowerCase().trim(), sort = $('#sort').value;
-  let a = S.items.filter(i => i.item.toLowerCase().includes(q));
-  if (sort === 'name') a.sort((x, y) => x.item.localeCompare(y.item));
-  if (sort === 'low') a.sort((x, y) => x.closing - y.closing);
-  if (sort === 'broken') a.sort((x, y) => (y.broken + y.lost) - (x.broken + x.lost));
-  if (sort === 'price') a.sort((x, y) => y.harga - x.harga);
-  $('#list').innerHTML = a.length ? a.map(i => {
-    const low = i.closing <= S.low;
-    return `<div class="item" onclick="openItem(${i.row})">${thumb(i.photo)}
-      <div class="info"><b>${esc(i.item)}</b>
-        <div class="meta">Awal ${i.awal} · +${i.add} · Broken ${i.broken}${S.hasLost ? ' · Lost ' + i.lost : ''}</div>
-        ${S.hasPrice ? `<div class="meta">${i.harga ? rp(i.harga) + ' / pcs' : 'No price'}</div>` : ''}
-        ${i.remarks ? `<div class="meta">${esc(i.remarks)}</div>` : ''}
-      </div>
-      <div class="qty ${low ? 'low' : ''}">${i.closing}<small>${low ? 'low' : 'in stock'}</small></div></div>`;
-  }).join('') : '<p class="empty">No items found</p>';
+  const q = nk($('#q').value), sort = $('#sort').value;
+  let html = '';
+  if (!S.sec) {
+    let a = S.groups.filter(g => nk(g.item).includes(q));
+    if (sort === 'name') a.sort((x, y) => x.item.localeCompare(y.item));
+    if (sort === 'low') a.sort((x, y) => x.total - y.total);
+    if (sort === 'broken') a.sort((x, y) => (y.broken + y.lost) - (x.broken + x.lost));
+    if (sort === 'price') a.sort((x, y) => y.harga - x.harga);
+    html = a.map(g => {
+      const low = g.rows.some(r => r.closing <= S.low);
+      const r0 = g.rows[0];
+      const per = S.hasSection
+        ? g.rows.map(r => `${esc(r.section || '-')} <b>${r.closing}</b>`).join(' · ')
+        : `Awal ${r0.awal} · +${r0.add} · Broken ${r0.broken}${S.hasLost ? ' · Lost ' + r0.lost : ''}`;
+      return `<div class="item" onclick="openItem(${g.id})">${thumb(g.photo)}
+        <div class="info"><b>${esc(g.item)}</b><div class="meta">${per}</div>
+          ${S.hasPrice ? `<div class="meta">${g.harga ? rp(g.harga) + ' / pcs' : 'No price'}</div>` : ''}</div>
+        <div class="qty ${low ? 'low' : ''}">${g.total}<small>${S.hasSection ? 'total' : (low ? 'low' : 'in stock')}</small></div></div>`;
+    }).join('');
+  } else {
+    let a = S.items.filter(r => r.section === S.sec && nk(r.item).includes(q));
+    if (sort === 'name') a.sort((x, y) => x.item.localeCompare(y.item));
+    if (sort === 'low') a.sort((x, y) => x.closing - y.closing);
+    if (sort === 'broken') a.sort((x, y) => (y.broken + y.lost) - (x.broken + x.lost));
+    if (sort === 'price') a.sort((x, y) => y.harga - x.harga);
+    html = a.map(r => {
+      const g = groupOf(r.item), low = r.closing <= S.low;
+      return `<div class="item" onclick="openItem(${g.id})">${thumb(g.photo)}
+        <div class="info"><b>${esc(r.item)}</b>
+          <div class="meta">Awal ${r.awal} · +${r.add}${r.trf ? ' · Trf ' + sgn(r.trf) : ''} · Broken ${r.broken}${S.hasLost ? ' · Lost ' + r.lost : ''}</div>
+          ${S.hasPrice ? `<div class="meta">${r.harga ? rp(r.harga) + ' / pcs' : 'No price'}</div>` : ''}</div>
+        <div class="qty ${low ? 'low' : ''}">${r.closing}<small>${low ? 'low' : 'in stock'}</small></div></div>`;
+    }).join('');
+  }
+  $('#list').innerHTML = html || '<p class="empty">No items found</p>';
 }
 
 function openModal(html) { $('#sheet').innerHTML = html; $('#modal').hidden = false; }
 function closeModal() { $('#modal').hidden = true; }
 $('#modal').onclick = e => { if (e.target.id === 'modal') closeModal(); };
 
-function openItem(row) {
-  const i = byRow(row); if (!i) return;
-  const h = S.log.filter(l => l.item === i.item).slice(0, 10);
+function openItem(id) {
+  const g = S.groups[id]; if (!g) return;
+  const rows = g.rows, T = k => rows.reduce((a, r) => a + r[k], 0);
+  const h = S.log.filter(l => nk(l.item) === nk(g.item)).slice(0, 10);
+  const th = `<th>${S.hasSection ? 'Section' : ''}</th><th class="n">Awal</th><th class="n">Add</th>${S.hasSection ? '<th class="n">Trf</th>' : ''}<th class="n">Broken</th>${S.hasLost ? '<th class="n">Lost</th>' : ''}<th class="n">Stock</th>`;
+  const tr = (label, o) => `<td>${label}</td><td class="n">${o.awal}</td><td class="n">${o.add}</td>${S.hasSection ? `<td class="n">${sgn(o.trf)}</td>` : ''}<td class="n">${o.broken}</td>${S.hasLost ? `<td class="n">${o.lost}</td>` : ''}<td class="n"><b>${o.closing}</b></td>`;
   openModal(`
-    <div class="mh"><h3>${esc(i.item)}</h3><button class="x" onclick="closeModal()">✕</button></div>
-    ${i.photo ? `<img class="big" src="${esc(i.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
-    <div class="grid">
-      <div><small>Stock awal</small><b>${i.awal}</b></div>
-      <div><small>Additional</small><b>${i.add}</b></div>
-      <div><small>Broken</small><b>${i.broken}</b></div>
-      ${S.hasLost ? `<div><small>Lost</small><b>${i.lost}</b></div>` : ''}
-      <div><small>Closing</small><b>${i.closing}</b></div>
-      ${S.hasPrice ? `<div><small>Price</small><b>${i.harga ? rp(i.harga) : '-'}</b></div>` : ''}
-    </div>
+    <div class="mh"><h3>${esc(g.item)}</h3><button class="x" onclick="closeModal()">✕</button></div>
+    ${g.photo ? `<img class="big" src="${esc(g.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
+    ${S.hasPrice ? `<div class="meta" style="margin-bottom:8px">Price: <b>${g.harga ? rp(g.harga) + ' / pcs' : '-'}</b></div>` : ''}
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr>${th}</tr></thead>
+      <tbody>${rows.map(r => `<tr>${tr(esc(r.section || '-'), r)}</tr>`).join('')}</tbody>
+      ${rows.length > 1 ? `<tfoot><tr>${tr('Total', { awal: T('awal'), add: T('add'), trf: T('trf'), broken: T('broken'), lost: T('lost'), closing: T('closing') })}</tr></tfoot>` : ''}
+    </table></div>
     <div class="acts">
-      <button class="btn red" onclick="goReport(${i.row},'BROKEN')">Broken</button>
-      <button class="btn amb" onclick="goReport(${i.row},'LOST')">Lost</button>
-      <button class="btn" onclick="goReport(${i.row},'ADD')">Add stock</button>
+      <button class="btn red" onclick="goReport(${g.id},'BROKEN')">Broken</button>
+      <button class="btn amb" onclick="goReport(${g.id},'LOST')">Lost</button>
+      <button class="btn" onclick="goReport(${g.id},'ADD')">Add</button>
+      ${S.hasSection ? `<button class="btn blu" onclick="goReport(${g.id},'TRANSFER')">Transfer</button>` : ''}
     </div>
-    ${S.hasPrice ? `<label>Price per pcs (Rp)<input id="eHarga" type="number" min="0" inputmode="numeric" value="${i.harga || ''}"></label>` : ''}
-    <label>Remarks<input id="eRem" value="${esc(i.remarks)}"></label>
+    ${S.hasPrice ? `<label>Price per pcs (Rp)${S.hasSection ? ' – all sections' : ''}<input id="eHarga" type="number" min="0" inputmode="numeric" value="${g.harga || ''}"></label>` : ''}
+    <label>Remarks<input id="eRem" value="${esc(g.remarks)}"></label>
     <label>Change photo<input id="ePhoto" type="file" accept="image/*"></label>
     <img id="ePrev" class="prev" hidden>
-    <button class="btn full ghost" id="eSave" onclick="saveEdit(${i.row})">Save changes</button>
+    <button class="btn full ghost" id="eSave" onclick="saveEdit(${g.id})">Save changes</button>
     <h4>Recent history</h4>
     ${h.length ? h.map(logRow).join('') : '<p class="empty">No history yet</p>'}`);
   previewOn('#ePhoto', '#ePrev');
 }
 
-async function saveEdit(row) {
-  const i = byRow(row), btn = $('#eSave'), f = $('#ePhoto').files[0];
+async function saveEdit(id) {
+  const g = S.groups[id], btn = $('#eSave'), f = $('#ePhoto').files[0];
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     await post({
-      action: 'updateItem', row, item: i.item, remarks: $('#eRem').value.trim(),
+      action: 'updateItem', item: g.item, remarks: $('#eRem').value.trim(),
       harga: $('#eHarga') ? $('#eHarga').value : undefined,
       photo: f ? await compress(f) : ''
     });
@@ -393,13 +475,16 @@ async function saveEdit(row) {
 }
 
 $('#newBtn').onclick = () => {
+  const secInputs = S.hasSection
+    ? `<h4 style="margin-top:4px">Stock awal per section</h4>
+       <div class="hint" style="margin:0 0 8px">Leave empty for sections that don't use this item. You can also add an existing item to a new section here.</div>
+       <div class="two">${S.secs.map(s => `<label>${esc(s)}<input class="nSec" data-s="${esc(s)}" type="number" min="0" step="1" inputmode="numeric"></label>`).join('')}</div>`
+    : `<label>Stock awal<input id="nAwal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>`;
   openModal(`
     <div class="mh"><h3>New item</h3><button class="x" onclick="closeModal()">✕</button></div>
     <label>Item name<input id="nName"></label>
-    <div class="two">
-      <label>Stock awal<input id="nAwal" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
-      <label>Price per pcs (Rp)<input id="nHarga" type="number" min="0" inputmode="numeric"></label>
-    </div>
+    ${S.hasPrice ? '<label>Price per pcs (Rp)<input id="nHarga" type="number" min="0" inputmode="numeric"></label>' : ''}
+    ${secInputs}
     <label>Remarks<input id="nRem"></label>
     <label>Photo<input id="nPhoto" type="file" accept="image/*"></label>
     <img id="nPrev" class="prev" hidden>
@@ -409,50 +494,74 @@ $('#newBtn').onclick = () => {
 
 async function saveNew() {
   const name = $('#nName').value.trim(); if (!name) return toast('Item name is required', 1);
+  const stocks = {};
+  if (S.hasSection) {
+    document.querySelectorAll('.nSec').forEach(el => { if (el.value !== '') stocks[el.dataset.s] = +el.value || 0; });
+    if (!Object.keys(stocks).length) return toast('Fill stock for at least one section', 1);
+  } else stocks[''] = +$('#nAwal').value || 0;
   const btn = $('#nSave'), f = $('#nPhoto').files[0];
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     await post({
-      action: 'addItem', item: name, awal: +$('#nAwal').value || 0, harga: $('#nHarga').value || 0,
-      remarks: $('#nRem').value.trim(), photo: f ? await compress(f) : ''
+      action: 'addItem', item: name, harga: $('#nHarga') ? $('#nHarga').value || 0 : 0,
+      stocks, remarks: $('#nRem').value.trim(), photo: f ? await compress(f) : ''
     });
     toast('Item added'); closeModal(); load();
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Add item'; }
 }
 
-function previewOn(inputId, imgId) {
-  $(inputId).onchange = e => {
-    const f = e.target.files[0], p = $(imgId);
-    if (f) { p.src = URL.createObjectURL(f); p.hidden = false; } else p.hidden = true;
-  };
-}
-
 /* ---------- INPUT ---------- */
-function fillSelect() {
-  const s = $('#rItem'), v = s.value;
-  s.innerHTML = '<option value="">— choose item —</option>' +
-    [...S.items].sort((a, b) => a.item.localeCompare(b.item)).map(i => `<option value="${i.row}">${esc(i.item)}</option>`).join('');
-  s.value = v; showInfo();
+function fillItems() {
+  const s = $('#rItem'), cur = byRow(s.value), sec = $('#rSec').value;
+  const rows = S.items.filter(r => !S.hasSection || r.section === sec).sort((a, b) => a.item.localeCompare(b.item));
+  s.innerHTML = '<option value="">— choose item —</option>' + rows.map(r => `<option value="${r.row}">${esc(r.item)}</option>`).join('');
+  if (cur) { const m = rows.find(r => nk(r.item) === nk(cur.item)); if (m) s.value = m.row; }
+  showInfo();
 }
 function showInfo() {
   const i = byRow($('#rItem').value);
-  $('#rInfo').innerHTML = i ? `Current stock: <b>${i.closing}</b>${S.hasPrice && i.harga ? ' · ' + rp(i.harga) + ' / pcs' : ''}` : '';
+  let info = i ? `Current stock${i.section ? ' in ' + esc(i.section) : ''}: <b>${i.closing}</b>${S.hasPrice && i.harga ? ' · ' + rp(i.harga) + ' / pcs' : ''}` : '';
+  if (i && S.type === 'TRANSFER') {
+    const to = $('#rTo').value;
+    if (to) {
+      const t = S.items.find(r => nk(r.item) === nk(i.item) && r.section === to);
+      info += ` · ${esc(to)}: <b>${t ? t.closing : 0}</b>${t ? '' : ' (new row will be created)'}`;
+    }
+  }
+  $('#rInfo').innerHTML = info;
   const q = +$('#rQty').value;
-  $('#rVal').innerHTML = (i && q > 0 && S.hasPrice && i.harga && S.type !== 'ADD') ? `Loss value: <b style="color:var(--red)">${rp(q * i.harga)}</b>` : '';
+  $('#rVal').innerHTML = (i && q > 0 && S.hasPrice && i.harga && (S.type === 'BROKEN' || S.type === 'LOST'))
+    ? `Loss value: <b style="color:var(--red)">${rp(q * i.harga)}</b>` : '';
 }
 function setType(t) {
   S.type = t;
   document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   const btn = $('#rSubmit');
-  btn.textContent = t === 'ADD' ? 'Add stock' : t === 'LOST' ? 'Report lost' : 'Report broken';
-  btn.className = 'btn full ' + (t === 'ADD' ? '' : t === 'LOST' ? 'amb' : 'red');
-  $('#rLoc').required = t !== 'ADD';
+  btn.textContent = { BROKEN: 'Report broken', LOST: 'Report lost', ADD: 'Add stock', TRANSFER: 'Transfer stock' }[t];
+  btn.className = 'btn full ' + { BROKEN: 'red', LOST: 'amb', ADD: '', TRANSFER: 'blu' }[t];
+  $('#rToWrap').hidden = t !== 'TRANSFER';
+  $('#rTo').required = t === 'TRANSFER';
+  $('#rPhotoWrap').hidden = t === 'TRANSFER';
+  $('#rSecLbl').textContent = t === 'TRANSFER' ? 'From section' : 'Section';
   showInfo();
 }
-function goReport(row, t) { closeModal(); tab('rep'); setType(t); $('#rItem').value = row; showInfo(); $('#rQty').focus(); }
+function goReport(id, t) {
+  const g = S.groups[id];
+  closeModal(); tab('rep'); setType(t);
+  if (S.hasSection) {
+    const sec = (S.sec && g.rows.some(r => r.section === S.sec)) ? S.sec : g.rows[0].section;
+    $('#rSec').value = sec;
+  }
+  fillItems();
+  const r = g.rows.find(r => !S.hasSection || r.section === $('#rSec').value);
+  if (r) $('#rItem').value = r.row;
+  showInfo(); $('#rQty').focus();
+}
 
 document.querySelectorAll('#seg button').forEach(b => b.onclick = () => setType(b.dataset.t));
+$('#rSec').onchange = fillItems;
 $('#rItem').onchange = showInfo;
+$('#rTo').onchange = showInfo;
 $('#rQty').oninput = showInfo;
 previewOn('#rPhoto', '#rPrev');
 
@@ -460,17 +569,27 @@ $('#repForm').onsubmit = async e => {
   e.preventDefault();
   const i = byRow($('#rItem').value); if (!i) return toast('Choose an item', 1);
   const qty = +$('#rQty').value;
+  if (!(qty > 0)) return toast('Enter quantity', 1);
   if (S.type !== 'ADD' && qty > i.closing) return toast('Quantity is more than current stock (' + i.closing + ')', 1);
-  if (S.type !== 'ADD' && !$('#rLoc').value) return toast('Choose a location', 1);
+  const to = $('#rTo').value;
+  if (S.type === 'TRANSFER') {
+    if (!to) return toast('Choose destination section', 1);
+    if (to === i.section) return toast('Destination must be a different section', 1);
+  }
   const by = $('#rBy').value.trim(); ls('inv_by', by);
   const btn = $('#rSubmit'), f = $('#rPhoto').files[0];
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
-    await post({
-      action: 'movement', type: S.type, row: i.row, item: i.item, qty, by,
-      location: $('#rLoc').value, note: $('#rNote').value.trim(), photo: f ? await compress(f) : ''
-    });
-    toast('Saved');
+    if (S.type === 'TRANSFER') {
+      await post({ action: 'transfer', row: i.row, item: i.item, section: i.section, to, qty, by, note: $('#rNote').value.trim() });
+      toast('Transferred ' + qty + ' to ' + to);
+    } else {
+      await post({
+        action: 'movement', type: S.type, row: i.row, item: i.item, section: i.section, qty, by,
+        note: $('#rNote').value.trim(), photo: f ? await compress(f) : ''
+      });
+      toast('Saved');
+    }
     $('#rQty').value = ''; $('#rNote').value = ''; $('#rPhoto').value = ''; $('#rPrev').hidden = true;
     await load();
   } catch (err) { toast(err.message, 1); }
@@ -481,18 +600,21 @@ $('#repForm').onsubmit = async e => {
 function logRow(l) {
   if (l.type === 'CLOSE MONTH') {
     return `<div class="log"><span class="tag t-CLOSEMONTH">CLOSE</span>
-      <div class="info"><b>Month closed</b> · ${l.qty} items<div class="meta">${esc(l.ts)} · ${esc(l.by || '-')} · ${esc(l.note)}</div></div></div>`;
+      <div class="info"><b>Month closed</b> · ${l.qty} rows<div class="meta">${esc(l.ts)} · ${esc(l.by || '-')} · ${esc(l.note)}</div></div></div>`;
   }
-  const sign = (l.type === 'ADD' || l.type === 'NEW ITEM') ? '+' : isLoss(l) ? '−' : '';
+  const trf = l.type.startsWith('TRANSFER');
+  const tag = trf ? (l.type === 'TRANSFER IN' ? 'TRF IN' : 'TRF OUT') : l.type;
+  const cls = trf ? 'TRF' : l.type.replace(/\s/g, '');
+  const sign = ['ADD', 'NEW ITEM', 'TRANSFER IN'].includes(l.type) ? '+' : (isLoss(l) || l.type === 'TRANSFER OUT') ? '−' : '';
   const val = isLoss(l) && S.hasPrice ? ' · ' + rp(lossVal(l)) : '';
-  return `<div class="log"><span class="tag t-${l.type.replace(/\s/g, '')}">${esc(l.type)}</span>
+  return `<div class="log"><span class="tag t-${cls}">${esc(tag)}</span>
     <div class="info"><b>${esc(l.item)}</b> <span class="q">${sign}${l.qty}</span>${val}
-      <div class="meta">${esc(l.ts)} · ${esc(l.by || '-')}${l.loc ? ' · ' + esc(l.loc) : ''}${l.note ? ' · ' + esc(l.note) : ''}</div></div>
+      <div class="meta">${esc(l.ts)}${l.loc ? ' · ' + esc(l.loc) : ''} · ${esc(l.by || '-')}${l.note ? ' · ' + esc(l.note) : ''}</div></div>
     ${l.photo ? `<a href="${esc(l.photo)}" target="_blank">${thumb(l.photo, 'th sm')}</a>` : ''}</div>`;
 }
 function renderHis() {
-  const t = $('#hType').value, m = $('#hMonth').value, loc = $('#hLoc').value;
-  const a = S.log.filter(l => (!t || l.type === t) && (!m || l.ts.startsWith(m)) && (!loc || l.loc === loc));
+  const t = $('#hType').value, m = $('#hMonth').value, sec = $('#hSec').value;
+  const a = S.log.filter(l => (!t || l.type === t) && (!m || l.ts.startsWith(m)) && (!sec || l.loc === sec));
   $('#hList').innerHTML = a.length ? a.map(logRow).join('') : '<p class="empty">No records</p>';
 }
 
@@ -516,8 +638,8 @@ function openClose() {
     <div class="note">
       <b>What happens:</b><br>
       1. A snapshot is saved to tab <b>ARSIP yyyy-mm</b> and to the <b>CLOSING</b> history.<br>
-      2. Closing stock becomes the new Stock Awal.<br>
-      3. Additional, Broken and Lost are reset to 0. Inputs made after the month ended are carried into the new month.<br>
+      2. Closing stock becomes the new Stock Awal for every item in every section.<br>
+      3. Additional, Transfer, Broken and Lost are reset to 0. Inputs made after the month ended are carried into the new month.<br>
       This cannot be undone from the app.
     </div>
     <label>Type <b>TUTUP</b> to confirm<input id="clC" autocomplete="off" autocapitalize="characters"></label>
@@ -530,7 +652,7 @@ async function doClose() {
   const btn = $('#clBtn'); btn.disabled = true; btn.textContent = 'Closing...';
   try {
     const r = await post({ action: 'closeMonth', month: m, confirm: 'TUTUP' });
-    toast(monthLabel(m) + ' closed · ' + r.items + ' items');
+    toast(monthLabel(m) + ' closed · ' + r.items + ' rows');
     closeModal(); $('#cMonth').value = m; await load();
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Close month'; }
 }
@@ -540,47 +662,82 @@ const SIGS = [['s1', 'Prepared by'], ['s2', 'Checked by'], ['s3', 'Approved by']
 function sigs() { return SIGS.map(([k, label]) => ({ label, name: $('#' + k + 'n').value.trim(), role: $('#' + k + 'r').value.trim() })); }
 
 function recapData() {
-  const m = $('#cMonth').value || thisMonth(), loc = $('#cLoc').value;
-  const logs = S.log.filter(l => l.ts.startsWith(m) && (!loc || l.loc === loc) && ['ADD', 'BROKEN', 'LOST'].includes(l.type));
-  const cl = {};
-  S.closings.filter(c => c.month === m).forEach(c => cl[c.item] = c);
-  const closed = Object.keys(cl).length > 0;
-  const agg = {};
-  S.items.forEach(i => {
-    const c = cl[i.item];
-    agg[i.item] = { no: i.no, item: i.item, price: c ? (c.harga || i.harga) : i.harga, add: 0, broken: 0, lost: 0, value: 0,
-      opening: c ? c.awal : '', stock: closed ? (c ? c.closing : '') : i.closing };
-  });
-  Object.values(cl).forEach(c => {
-    if (!agg[c.item]) agg[c.item] = { no: c.no, item: c.item, price: c.harga, add: 0, broken: 0, lost: 0, value: 0, opening: c.awal, stock: c.closing };
-  });
+  const m = $('#cMonth').value || thisMonth(), sec = S.hasSection ? $('#cSec').value : '';
+  const closed = S.closings.some(c => c.month === m);
+  const TYPES = ['ADD', 'BROKEN', 'LOST', 'TRANSFER IN', 'TRANSFER OUT'];
+  const logs = S.log.filter(l => l.ts.startsWith(m) && TYPES.includes(l.type) && (!sec || l.loc === sec));
+  const agg = {}, order = [];
+  const A = (name, no, price) => {
+    const k = nk(name);
+    if (!agg[k]) { agg[k] = { no: no || '', item: name, price: price || 0, opening: 0, add: 0, trf: 0, broken: 0, lost: 0, value: 0, stock: 0 }; order.push(agg[k]); }
+    if (!agg[k].price && price) agg[k].price = price;
+    return agg[k];
+  };
+  if (closed) S.closings.filter(c => c.month === m && (!sec || c.section === sec)).forEach(c => { const a = A(c.item, c.no, c.harga); a.opening += c.awal; a.stock += c.closing; });
+  else S.items.filter(r => !sec || r.section === sec).forEach(r => { const a = A(r.item, r.no, r.harga); a.opening += r.awal; a.stock += r.closing; });
   logs.forEach(l => {
-    const a = agg[l.item] || (agg[l.item] = { no: '', item: l.item, price: l.price, add: 0, broken: 0, lost: 0, value: 0, opening: '', stock: '' });
+    const a = A(l.item, '', l.price || priceOf(l.item));
     if (l.type === 'ADD') a.add += l.qty;
+    else if (l.type === 'TRANSFER IN') a.trf += l.qty;
+    else if (l.type === 'TRANSFER OUT') a.trf -= l.qty;
     else { a[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; a.value += lossVal(l); }
   });
-  let rows = Object.values(agg);
-  if (loc) rows = rows.filter(r => r.add || r.broken || r.lost);
-  const byLoc = {};
-  logs.filter(isLoss).forEach(l => {
-    const k = l.loc || '-';
-    const b = byLoc[k] || (byLoc[k] = { loc: k, broken: 0, lost: 0, value: 0 });
-    b[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; b.value += lossVal(l);
+  let rows = order;
+  if (sec) rows = rows.filter(r => r.opening || r.stock || r.add || r.trf || r.broken || r.lost);
+
+  const secList = S.hasSection ? (sec ? [sec] : S.secs) : [];
+  const bySec = secList.map(s => {
+    const o = { sec: s, opening: 0, add: 0, tin: 0, tout: 0, broken: 0, lost: 0, value: 0, stock: 0 };
+    if (closed) S.closings.filter(c => c.month === m && c.section === s).forEach(c => { o.opening += c.awal; o.stock += c.closing; });
+    else S.items.filter(r => r.section === s).forEach(r => { o.opening += r.awal; o.stock += r.closing; });
+    S.log.filter(l => l.ts.startsWith(m) && l.loc === s).forEach(l => {
+      if (l.type === 'ADD') o.add += l.qty;
+      else if (l.type === 'TRANSFER IN') o.tin += l.qty;
+      else if (l.type === 'TRANSFER OUT') o.tout += l.qty;
+      else if (isLoss(l)) { o[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; o.value += lossVal(l); }
+    });
+    return o;
   });
-  const t = rows.reduce((a, r) => ({ add: a.add + r.add, broken: a.broken + r.broken, lost: a.lost + r.lost, value: a.value + r.value }),
-    { add: 0, broken: 0, lost: 0, value: 0 });
-  return { m, loc, closed, rows, t,
-    byLoc: Object.values(byLoc).sort((a, b) => b.value - a.value || (b.broken + b.lost) - (a.broken + a.lost)),
-    detail: logs.filter(isLoss).slice().reverse() };
+  const t = rows.reduce((a, r) => {
+    ['opening', 'add', 'trf', 'broken', 'lost', 'value', 'stock'].forEach(k => a[k] += r[k]); return a;
+  }, { opening: 0, add: 0, trf: 0, broken: 0, lost: 0, value: 0, stock: 0 });
+  return {
+    m, sec, closed, rows, bySec, t,
+    incidents: logs.filter(isLoss).slice().reverse(),
+    transfers: logs.filter(l => l.type === 'TRANSFER OUT' || (sec && l.type === 'TRANSFER IN')).slice().reverse()
+  };
 }
 
 function renderRecap() {
-  const d = recapData(), P = S.hasPrice, C = d.closed, sg = sigs();
-  const cols = 6 + (P ? 2 : 0) + (C ? 1 : 0);
+  const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, sg = sigs();
+  let no = 0;
+  const cols = 7 + (P ? 2 : 0) + (T ? 1 : 0);
+  const head = `<th>No</th><th>Item</th>${P ? '<th class="n">Price</th>' : ''}<th class="n">Opening</th><th class="n">Added</th>${T ? '<th class="n">Transfer</th>' : ''}<th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing stock' : 'Current stock'}</th>`;
+  const body = d.rows.map((r, i) => `<tr><td>${esc(r.no || i + 1)}</td><td>${esc(r.item)}</td>${P ? `<td class="n">${r.price ? rp(r.price) : '-'}</td>` : ''}<td class="n">${r.opening}</td><td class="n">${r.add}</td>${T ? `<td class="n">${sgn(r.trf)}</td>` : ''}<td class="n">${r.broken}</td><td class="n">${r.lost}</td>${P ? `<td class="n">${rp(r.value)}</td>` : ''}<td class="n">${r.stock}</td></tr>`).join('');
+  const foot = `<tr><td></td><td>TOTAL</td>${P ? '<td></td>' : ''}<td class="n">${d.t.opening}</td><td class="n">${d.t.add}</td>${T ? `<td class="n">${sgn(d.t.trf)}</td>` : ''}<td class="n">${d.t.broken}</td><td class="n">${d.t.lost}</td>${P ? `<td class="n">${rp(d.t.value)}</td>` : ''}<td class="n">${d.t.stock}</td></tr>`;
+
+  const secTbl = d.bySec.length ? `<h4>${++no + 1}. By section</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Section</th><th class="n">Opening</th><th class="n">Added</th><th class="n">Trf in</th><th class="n">Trf out</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing' : 'Current'}</th></tr></thead>
+      <tbody>${d.bySec.map(s => `<tr><td>${esc(s.sec)}</td><td class="n">${s.opening}</td><td class="n">${s.add}</td><td class="n">${s.tin}</td><td class="n">${s.tout}</td><td class="n">${s.broken}</td><td class="n">${s.lost}</td>${P ? `<td class="n">${rp(s.value)}</td>` : ''}<td class="n">${s.stock}</td></tr>`).join('')}</tbody>
+    </table></div>` : '';
+
+  const incTbl = `<h4>${++no + 1}. Incident detail (broken / lost)</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Date</th><th>Type</th><th>Item</th>${S.hasSection ? '<th>Section</th>' : ''}<th class="n">Qty</th>${P ? '<th class="n">Value</th>' : ''}<th>Reported by</th><th>Note</th></tr></thead>
+      <tbody>${d.incidents.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type}</td><td>${esc(l.item)}</td>${S.hasSection ? `<td>${esc(l.loc || '-')}</td>` : ''}<td class="n">${l.qty}</td>${P ? `<td class="n">${rp(lossVal(l))}</td>` : ''}<td>${esc(l.by || '-')}</td><td>${esc(l.note)}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No incidents</td></tr>`}</tbody>
+    </table></div>`;
+
+  const trfTbl = S.hasSection ? `<h4>${++no + 1}. Transfers</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Section</th><th class="n">Qty</th><th>Detail</th><th>By</th></tr></thead>
+      <tbody>${d.transfers.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type === 'TRANSFER IN' ? 'IN' : 'OUT'}</td><td>${esc(l.item)}</td><td>${esc(l.loc)}</td><td class="n">${l.qty}</td><td>${esc(l.note)}</td><td>${esc(l.by || '-')}</td></tr>`).join('') || `<tr><td colspan="7" class="empty">No transfers</td></tr>`}</tbody>
+    </table></div>` : '';
+
   $('#rpt').innerHTML = `
     <div class="rh">
       <h2>Kitchen Utensils – Lost &amp; Breakage Report</h2>
-      <div>Period: <b>${monthLabel(d.m)}</b> · Location: <b>${esc(d.loc || 'All locations')}</b></div>
+      <div>Period: <b>${monthLabel(d.m)}</b>${S.hasSection ? ` · Section: <b>${esc(d.sec || 'All sections')}</b>` : ''}</div>
       <div>${C ? 'Month closed' : 'Month not closed yet – stock shown is current stock'} · Generated ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
     </div>
     <div class="rsum">
@@ -589,54 +746,50 @@ function renderRecap() {
       <div><small>Lost</small><b>${d.t.lost}</b></div>
       <div><small>${P ? 'Loss value' : 'Total loss'}</small><b>${P ? rp(d.t.value) : d.t.broken + d.t.lost}</b></div>
     </div>
-
-    <h4>1. Summary per item</h4>
+    <h4>1. Summary per item${d.sec ? ' – ' + esc(d.sec) : (S.hasSection ? ' (all sections combined)' : '')}</h4>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>No</th><th>Item</th>${P ? '<th class="n">Price</th>' : ''}${C ? '<th class="n">Opening</th>' : ''}<th class="n">Added</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing stock' : 'Current stock'}</th></tr></thead>
-      <tbody>${d.rows.map((r, i) => `<tr><td>${esc(r.no || i + 1)}</td><td>${esc(r.item)}</td>${P ? `<td class="n">${r.price ? rp(r.price) : '-'}</td>` : ''}${C ? `<td class="n">${r.opening}</td>` : ''}<td class="n">${r.add}</td><td class="n">${r.broken}</td><td class="n">${r.lost}</td>${P ? `<td class="n">${rp(r.value)}</td>` : ''}<td class="n">${r.stock}</td></tr>`).join('') || `<tr><td colspan="${cols}" class="empty">No data</td></tr>`}</tbody>
-      <tfoot><tr><td></td><td>TOTAL</td>${P ? '<td></td>' : ''}${C ? '<td></td>' : ''}<td class="n">${d.t.add}</td><td class="n">${d.t.broken}</td><td class="n">${d.t.lost}</td>${P ? `<td class="n">${rp(d.t.value)}</td>` : ''}<td></td></tr></tfoot>
+      <thead><tr>${head}</tr></thead>
+      <tbody>${body || `<tr><td colspan="${cols}" class="empty">No data</td></tr>`}</tbody>
+      <tfoot>${foot}</tfoot>
     </table></div>
-
-    <h4>2. Loss by location</h4>
-    <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Location</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}</tr></thead>
-      <tbody>${d.byLoc.map(b => `<tr><td>${esc(b.loc)}</td><td class="n">${b.broken}</td><td class="n">${b.lost}</td>${P ? `<td class="n">${rp(b.value)}</td>` : ''}</tr>`).join('') || `<tr><td colspan="4" class="empty">No breakage or loss this period</td></tr>`}</tbody>
-    </table></div>
-
-    <h4>3. Incident detail</h4>
-    <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Date</th><th>Type</th><th>Item</th><th class="n">Qty</th>${P ? '<th class="n">Value</th>' : ''}<th>Location</th><th>Reported by</th><th>Note</th></tr></thead>
-      <tbody>${d.detail.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type}</td><td>${esc(l.item)}</td><td class="n">${l.qty}</td>${P ? `<td class="n">${rp(lossVal(l))}</td>` : ''}<td>${esc(l.loc || '-')}</td><td>${esc(l.by || '-')}</td><td>${esc(l.note)}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No incidents</td></tr>`}</tbody>
-    </table></div>
-
+    ${secTbl}${incTbl}${trfTbl}
     <div class="sigs">${sg.map(s => `<div>${s.label}<div class="ln"></div><b>${esc(s.name) || '&nbsp;'}</b><br><span style="color:var(--mute)">${esc(s.role) || '&nbsp;'}</span></div>`).join('')}</div>`;
 }
 
 function downloadXls() {
   if (!window.XLSX) return toast('Excel library not loaded, check internet connection', 1);
-  const d = recapData(), P = S.hasPrice, C = d.closed, sg = sigs();
-  const head = [['KITCHEN UTENSILS - LOST & BREAKAGE REPORT'], ['Period', monthLabel(d.m)], ['Location', d.loc || 'All locations'],
+  const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, sg = sigs();
+  const head = [['KITCHEN UTENSILS - LOST & BREAKAGE REPORT'], ['Period', monthLabel(d.m)],
+    ['Section', d.sec || (S.hasSection ? 'All sections' : '-')],
     ['Status', C ? 'Month closed' : 'Month not closed - stock is current stock'], []];
 
-  const h1 = ['NO', 'ITEM', ...(P ? ['PRICE'] : []), ...(C ? ['OPENING'] : []), 'ADDED', 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING STOCK' : 'CURRENT STOCK'];
+  const h1 = ['NO', 'ITEM', ...(P ? ['PRICE'] : []), 'OPENING', 'ADDED', ...(T ? ['TRANSFER'] : []), 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING STOCK' : 'CURRENT STOCK'];
   const s1 = head.concat([h1]);
-  d.rows.forEach((r, i) => s1.push([r.no || i + 1, r.item, ...(P ? [r.price] : []), ...(C ? [r.opening] : []), r.add, r.broken, r.lost, ...(P ? [r.value] : []), r.stock]));
-  s1.push(['', 'TOTAL', ...(P ? [''] : []), ...(C ? [''] : []), d.t.add, d.t.broken, d.t.lost, ...(P ? [d.t.value] : []), '']);
+  d.rows.forEach((r, i) => s1.push([r.no || i + 1, r.item, ...(P ? [r.price] : []), r.opening, r.add, ...(T ? [r.trf] : []), r.broken, r.lost, ...(P ? [r.value] : []), r.stock]));
+  s1.push(['', 'TOTAL', ...(P ? [''] : []), d.t.opening, d.t.add, ...(T ? [d.t.trf] : []), d.t.broken, d.t.lost, ...(P ? [d.t.value] : []), d.t.stock]);
   s1.push([], [], [sg[0].label, '', '', sg[1].label, '', '', sg[2].label], [], [], [],
     [sg[0].name, '', '', sg[1].name, '', '', sg[2].name], [sg[0].role, '', '', sg[1].role, '', '', sg[2].role]);
 
-  const s2 = head.concat([P ? ['LOCATION', 'BROKEN', 'LOST', 'LOSS VALUE'] : ['LOCATION', 'BROKEN', 'LOST']]);
-  d.byLoc.forEach(b => s2.push(P ? [b.loc, b.broken, b.lost, b.value] : [b.loc, b.broken, b.lost]));
-
-  const s3 = head.concat([['DATE', 'TYPE', 'ITEM', 'QTY', ...(P ? ['PRICE', 'VALUE'] : []), 'LOCATION', 'REPORTED BY', 'NOTE']]);
-  d.detail.forEach(l => s3.push([l.ts, l.type, l.item, l.qty, ...(P ? [l.price || priceOf(l.item), lossVal(l)] : []), l.loc, l.by, l.note]));
-
   const wb = XLSX.utils.book_new();
   const add = (aoa, name, cols) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = cols.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, name); };
-  add(s1, 'Summary', [16, 32, 12, 10, 9, 9, 9, 14, 14]);
-  add(s2, 'By Location', [24, 10, 10, 14]);
-  add(s3, 'Detail', [17, 9, 28, 6, ...(P ? [12, 12] : []), 18, 16, 30]);
-  XLSX.writeFile(wb, 'Lost-Breakage-' + d.m + (d.loc ? '-' + d.loc.replace(/\W+/g, '_') : '') + '.xlsx');
+  add(s1, 'Summary', [16, 32, 12, 10, 9, 10, 9, 9, 14, 14]);
+
+  if (d.bySec.length) {
+    const s2 = head.concat([['SECTION', 'OPENING', 'ADDED', 'TRF IN', 'TRF OUT', 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING' : 'CURRENT']]);
+    d.bySec.forEach(s => s2.push([s.sec, s.opening, s.add, s.tin, s.tout, s.broken, s.lost, ...(P ? [s.value] : []), s.stock]));
+    add(s2, 'By Section', [22, 10, 9, 9, 9, 9, 9, 14, 10]);
+  }
+
+  const s3 = head.concat([['DATE', 'TYPE', 'ITEM', ...(S.hasSection ? ['SECTION'] : []), 'QTY', ...(P ? ['PRICE', 'VALUE'] : []), 'REPORTED BY', 'NOTE']]);
+  d.incidents.forEach(l => s3.push([l.ts, l.type, l.item, ...(S.hasSection ? [l.loc] : []), l.qty, ...(P ? [l.price || priceOf(l.item), lossVal(l)] : []), l.by, l.note]));
+  add(s3, 'Incidents', [17, 9, 28, 18, 6, 12, 12, 16, 30]);
+
+  if (S.hasSection) {
+    const s4 = head.concat([['DATE', 'TYPE', 'ITEM', 'SECTION', 'QTY', 'DETAIL', 'BY']]);
+    d.transfers.forEach(l => s4.push([l.ts, l.type, l.item, l.loc, l.qty, l.note, l.by]));
+    add(s4, 'Transfers', [17, 13, 28, 18, 6, 30, 16]);
+  }
+  XLSX.writeFile(wb, 'Lost-Breakage-' + d.m + (d.sec ? '-' + d.sec.replace(/\W+/g, '_') : '') + '.xlsx');
 }
 
 /* ---------- TABS & INIT ---------- */
@@ -648,8 +801,8 @@ function tab(t) {
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
 $('#q').oninput = renderList; $('#sort').onchange = renderList;
-$('#hType').onchange = renderHis; $('#hMonth').onchange = renderHis; $('#hLoc').onchange = renderHis;
-$('#cMonth').onchange = renderRecap; $('#cLoc').onchange = renderRecap;
+$('#hType').onchange = renderHis; $('#hMonth').onchange = renderHis; $('#hSec').onchange = renderHis;
+$('#cMonth').onchange = renderRecap; $('#cSec').onchange = renderRecap;
 SIGS.forEach(([k]) => ['n', 'r'].forEach(x => {
   const el = $('#' + k + x); el.value = ls('inv_' + k + x) || '';
   el.oninput = () => { ls('inv_' + k + x, el.value); renderRecap(); };
