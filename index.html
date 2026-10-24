@@ -31,6 +31,7 @@ h3{margin:0 0 10px;font-size:15px}h4{margin:18px 0 8px;font-size:14px}
 .bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .bar input,.bar select{flex:1;min-width:130px;width:auto}
 input,select,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+input[readonly]{background:var(--pri2);font-weight:600}
 label{display:block;font-size:13px;color:var(--mute);margin-bottom:12px}
 label input,label select,label textarea{margin-top:4px}
 .check{display:flex;gap:8px;align-items:center;margin:0;font-size:13px;color:var(--ink)}
@@ -183,7 +184,7 @@ label input,label select,label textarea{margin-top:4px}
 <div id="login" class="login" hidden>
   <div class="lcard">
     <h2>Kitchen Inventory</h2>
-    <div class="meta">Enter your PIN to continue</div>
+    <div class="meta">Enter your Staff ID / PIN</div>
     <input id="lgPin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••">
     <button class="btn full lg" id="lgBtn">Login</button>
   </div>
@@ -406,7 +407,7 @@ let DEEP = { code: URLP.get('code'), item: URLP.get('item'), sec: URLP.get('sec'
 const QR = { key: URLP.get('k') || '', g: null, fixedSec: '', type: 'BROKEN', pin: '', name: '' };
 const isSpv = () => S.role === 'spv';
 const USER_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f6f54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>';
-const whoHtml = name => `${USER_SVG}<div>Reported by: <b>${esc(name)}</b><div class="meta">Locked to your PIN</div></div>`;
+const whoHtml = name => `${USER_SVG}<div>Reported by: <b>${esc(name)}</b><div class="meta">Locked to your Staff ID</div></div>`;
 
 /* ---------- API ---------- */
 async function get(action, params = {}, pinOverride) {
@@ -421,7 +422,7 @@ async function get(action, params = {}, pinOverride) {
 async function post(body) {
   const override = !!body.pin;
   body.pin = body.pin || ls('inv_pin') || '';
-  if (isSpv()) body.by = body.by || ls('inv_by') || '';
+  if (isSpv()) body.by = body.by || S.me || ls('inv_by') || '';
   const r = await fetch(API.trim(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
   const j = await r.json();
   if (!j.ok) { if (j.error === 'Wrong PIN' && !override) logout(true); throw new Error(j.error); }
@@ -432,17 +433,17 @@ async function post(body) {
 function showLogin() { $('#login').hidden = false; $('#lgPin').value = ''; setTimeout(() => $('#lgPin').focus(), 100); }
 async function doLogin() {
   const pin = $('#lgPin').value.trim();
-  if (!pin) return toast('Enter PIN', 1);
+  if (!pin) return toast('Enter Staff ID / PIN', 1);
   const btn = $('#lgBtn'); btn.disabled = true; btn.textContent = 'Checking...';
   try {
     const r = await post({ action: 'login', pin });
     if (r.role === 'qr') throw new Error('Wrong PIN');
     ls('inv_pin', pin); ls('inv_role', r.role); S.role = r.role; S.me = r.name || '';
     $('#login').hidden = true;
-    toast(r.role === 'spv' ? 'Logged in as Supervisor' : 'Hi, ' + r.name);
+    toast(r.admin ? 'Logged in as Admin' : 'Hi, ' + r.name + (r.role === 'spv' ? ' (Supervisor)' : ''));
     applyRole(); tab(isSpv() ? 'dash' : 'rep');
     await load();
-  } catch (e) { toast(e.message === 'Wrong PIN' ? 'Wrong PIN' : e.message, 1); }
+  } catch (e) { toast(e.message === 'Wrong PIN' ? 'Wrong ID / PIN' : e.message, 1); }
   finally { btn.disabled = false; btn.textContent = 'Login'; }
 }
 function logout(silent) {
@@ -455,12 +456,12 @@ function applyRole() {
   if (S.role === 'qr') return;
   const spv = isSpv();
   $('#nav').hidden = !spv;
-  $('#roleTag').textContent = spv ? 'Supervisor' : 'Staff';
+  $('#roleTag').textContent = spv ? (S.me ? 'Supervisor · ' + S.me : 'Admin') : 'Staff' + (S.me ? ' · ' + S.me : '');
   $('#segAdd').hidden = !spv;
   $('#segTrf').hidden = !spv || !S.hasSection;
-  $('#rByWrap').hidden = !spv;
-  $('#rWho').hidden = spv || !S.me;
-  if (!spv && S.me) $('#rWho').innerHTML = whoHtml(S.me);
+  $('#rByWrap').hidden = !spv || !!S.me;       // admin types a name; supervisor & staff are locked
+  $('#rWho').hidden = !S.me;
+  if (S.me) $('#rWho').innerHTML = whoHtml(S.me);
   if (!spv) {
     if (S.type !== 'BROKEN' && S.type !== 'LOST') setType('BROKEN');
     if (currentTab() !== 'rep') tab('rep');
@@ -580,7 +581,10 @@ async function load() {
     if (isSpv()) [inv, log, cl] = await Promise.all([get('list'), get('log', { limit: 3000 }), get('closing')]);
     else inv = await get('list');
     if (inv.role === 'qr') { logout(true); return; }
-    if (inv.role && inv.role !== S.role) { S.role = inv.role; ls('inv_role', inv.role); }
+    if (inv.role && inv.role !== S.role) {
+      S.role = inv.role; ls('inv_role', inv.role);
+      if (isSpv()) return load();             // role changed to supervisor: reload with full data
+    }
     applyInv(inv);
     S.log = log; S.closings = cl;
     fillSecs(); fillReasons(); fillItems();
@@ -621,7 +625,7 @@ function buildGroups() {
   S.groups.forEach((g, i) => { g.id = i; g.rows = sortSec(g.rows); });
 }
 
-/* ---------- QR MODE: detail item + Broken/Lost, PIN after tapping ---------- */
+/* ---------- QR MODE: detail item + Broken/Lost, ID/PIN after tapping ---------- */
 async function startQr() {
   S.role = 'qr';
   $('#login').hidden = true; $('#nav').hidden = true; $('#hbtns').hidden = true;
@@ -743,22 +747,21 @@ function qrStart(t) {
 }
 function askPin(t, cb) {
   openModal(`
-    <div class="mh"><h3>Enter your PIN</h3><button class="x" onclick="closeModal()">✕</button></div>
-    <div class="meta" style="margin-bottom:10px">To report <b>${t === 'LOST' ? 'LOST' : 'BROKEN'}</b>, enter your personal staff PIN. The report will be recorded under your name.</div>
+    <div class="mh"><h3>Enter your Staff ID / PIN</h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="meta" style="margin-bottom:10px">To report <b>${t === 'LOST' ? 'LOST' : 'BROKEN'}</b>, enter your personal Staff ID / PIN. The report will be recorded under your name.</div>
     <input id="pinIn" class="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••">
     <button type="button" class="btn full lg" id="pinBtn" style="margin-top:12px">Continue</button>
-    <div class="hint" style="margin:12px 0 0">Forgot your PIN? Ask your supervisor.</div>`);
+    <div class="hint" style="margin:12px 0 0">Forgot your ID / PIN? Ask your supervisor.</div>`);
   const go = async () => {
     const pin = $('#pinIn').value.trim();
-    if (!pin) return toast('Enter your PIN', 1);
+    if (!pin) return toast('Enter your Staff ID / PIN', 1);
     const btn = $('#pinBtn'); btn.disabled = true; btn.textContent = 'Checking...';
     try {
       const r = await post({ action: 'login', pin });
-      if (r.role === 'staff') { closeModal(); cb(pin, r.name); }
-      else if (r.role === 'spv') { closeModal(); cb(pin, 'Supervisor'); }
+      if (r.role === 'staff' || r.role === 'spv') { closeModal(); cb(pin, r.name || 'Admin'); }
       else throw new Error('Wrong PIN');
     } catch (e) {
-      toast(e.message === 'Wrong PIN' ? 'Wrong PIN' : e.message, 1);
+      toast(e.message === 'Wrong PIN' ? 'Wrong ID / PIN' : e.message, 1);
       btn.disabled = false; btn.textContent = 'Continue';
       $('#pinIn').value = ''; $('#pinIn').focus();
     }
@@ -800,7 +803,7 @@ async function qrSubmit() {
       QR.g = findGroup({ code: QR.g.code, item: QR.g.item }) || QR.g;
     } catch (e) {}
   } catch (e) {
-    toast(e.message === 'Wrong PIN' ? 'PIN is no longer valid, try again' : e.message, 1);
+    toast(e.message === 'Wrong PIN' ? 'ID / PIN is no longer valid, try again' : e.message, 1);
     if (e.message === 'Wrong PIN') qrShowPick();
   }
   finally { btn.disabled = false; btn.textContent = QR.type === 'LOST' ? 'Report lost' : 'Report broken'; }
@@ -1068,7 +1071,8 @@ function renderOpname() {
   const secNow = S.hasSection ? ($('#oSec').value || S.secs[0] || '') : '';
   if (OP.sec !== secNow) { OP.sec = secNow; opLoad(); }
   if (S.hasSection) $('#oSec').value = OP.sec;
-  if (!$('#oBy').value) $('#oBy').value = ls('inv_by') || '';
+  if (S.me) { $('#oBy').value = S.me; $('#oBy').readOnly = true; }
+  else { $('#oBy').readOnly = false; if (!$('#oBy').value) $('#oBy').value = ls('inv_by') || ''; }
   const q = nk(scanCode($('#oQ').value));
   const rows = opRows().filter(r => !q || nk(r.item).includes(q) || nk(r.code).includes(q));
   $('#oList').innerHTML = rows.map(r => {
@@ -1133,8 +1137,8 @@ async function submitOpname() {
   const counts = rows.filter(r => opHas(nk(r.item))).map(r => ({ row: r.row, item: r.item, section: r.section, physical: +OP.counts[nk(r.item)] }));
   if (!counts.length) return toast('Count at least one item', 1);
   if (counts.some(c => !(c.physical >= 0) || c.physical % 1)) return toast('Counts must be whole numbers ≥ 0', 1);
-  const by = $('#oBy').value.trim(); if (!by) return toast('Fill "Counted by"', 1);
-  ls('inv_by', by);
+  const by = S.me || $('#oBy').value.trim(); if (!by) return toast('Fill "Counted by"', 1);
+  if (!S.me) ls('inv_by', by);
   const notCounted = rows.length - counts.length;
   if (!confirm(`Submit stock opname${S.hasSection ? ' for ' + OP.sec : ''}?\n\n${counts.length} items counted${notCounted ? ', ' + notCounted + ' not counted (skipped)' : ''}.\nShortages will be recorded as LOST, surpluses as ADD.`)) return;
   const btn = $('#oSubmit'); btn.disabled = true; btn.textContent = 'Submitting...';
@@ -1368,8 +1372,8 @@ $('#repForm').onsubmit = async e => {
     if (!to) return toast('Choose destination section', 1);
     if (to === i.section) return toast('Destination must be a different section', 1);
   }
-  let by = '';
-  if (isSpv()) {
+  let by = S.me || '';
+  if (isSpv() && !S.me) {                       // admin: name typed manually
     by = $('#rBy').value.trim();
     if (!by) return toast('Fill "Reported by"', 1);
     ls('inv_by', by);
@@ -1676,7 +1680,7 @@ $('#cMonth').value = thisMonth();
 
 // START
 if (QR.key && (DEEP.code || DEEP.item) && ls('inv_role') !== 'spv') {
-  startQr();                                   // scan label: item detail + Broken/Lost, PIN after tapping
+  startQr();                                   // scan label: item detail + Broken/Lost, ID/PIN after tapping
 } else if (ls('inv_pin')) {
   S.role = ls('inv_role') || 'staff'; applyRole(); tab(isSpv() ? 'dash' : 'rep'); load();
 } else {
