@@ -60,11 +60,16 @@ label input,label select,label textarea{margin-top:4px}
 .seg button.on[data-t=LOST]{background:var(--amb2);border-color:var(--amb);color:var(--amb);font-weight:600}
 .seg button.on[data-t=ADD]{background:var(--pri2);border-color:var(--pri);color:var(--pri);font-weight:600}
 .seg button.on[data-t=TRANSFER]{background:var(--blu2);border-color:var(--blu);color:var(--blu);font-weight:600}
+.seg.big button{padding:14px 6px;font-size:16px}
 .hint{font-size:13px;margin:-6px 0 12px;color:var(--mute)}
 .note{font-size:13px;color:var(--ink);background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px;line-height:1.5}
 .prev{max-width:160px;border-radius:8px;margin-bottom:12px;display:block}
 .picked{display:flex;gap:10px;align-items:center;background:var(--pri2);border-radius:10px;padding:8px;margin:-4px 0 12px}
 .picked img,.picked .ph{width:48px;height:48px;border-radius:8px;object-fit:cover;background:#fff;flex:none}
+.qitem{text-align:center;margin-bottom:14px}
+.qitem h2{margin:6px 0 2px;font-size:20px}
+.done{text-align:center;padding:28px 16px}
+.done .ok{width:64px;height:64px;border-radius:50%;background:var(--pri2);color:var(--pri);font-size:34px;line-height:64px;margin:0 auto 10px;font-weight:700}
 .tag{font-size:11px;font-weight:700;padding:4px 6px;border-radius:6px;flex:none;width:72px;text-align:center}
 .t-BROKEN{background:var(--red2);color:var(--red)}.t-LOST{background:var(--amb2);color:var(--amb)}
 .t-ADD,.t-NEWITEM{background:var(--pri2);color:var(--pri)}.t-CLOSEMONTH,.t-TRF{background:var(--blu2);color:var(--blu)}
@@ -83,14 +88,11 @@ label input,label select,label textarea{margin-top:4px}
 .flex{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 #toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;transition:.25s;z-index:40;font-size:14px;max-width:90vw}
 #toast.show{transform:translate(-50%,0)}#toast.err{background:var(--red)}
-/* Login */
 .login{position:fixed;inset:0;background:var(--pri);z-index:30;display:flex;align-items:center;justify-content:center;padding:16px}
 .lcard{background:#fff;border-radius:16px;padding:28px 22px;width:100%;max-width:340px;text-align:center}
 .lcard h2{margin:0 0 4px;font-size:20px}
 .lcard input{text-align:center;font-size:22px;letter-spacing:6px;margin:16px 0 12px}
-/* Scanner */
 #qrReader{width:100%;border-radius:10px;overflow:hidden;background:#000}
-/* Tables & reports */
 .tbl-wrap{overflow-x:auto;margin-bottom:16px}
 .tbl{width:100%;border-collapse:collapse;font-size:12px}
 .tbl th,.tbl td{border:1px solid #cfd6d1;padding:5px 6px;text-align:left;vertical-align:top}
@@ -105,13 +107,11 @@ label input,label select,label textarea{margin-top:4px}
 .rpt h4{margin:6px 0 6px}
 .sigs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;text-align:center;font-size:13px;page-break-inside:avoid}
 .sigs .ln{height:64px;border-bottom:1px solid var(--ink);margin:6px 8px 4px}
-/* Opname */
 .orow{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px}
 .orow.ok{border-color:#9fd3bd;background:#f3faf6}
 .orow.diff{border-color:#f0b4ad;background:#fff7f6}
 .ocnt{width:92px;flex:none;text-align:center;font-weight:700;font-size:16px}
 .osticky{position:sticky;bottom:0;z-index:3;box-shadow:0 -4px 14px rgba(0,0,0,.06)}
-/* QR labels */
 .labels{display:grid;gap:2mm;justify-content:center}
 .labels.lqm{grid-template-columns:repeat(auto-fill,60mm)}
 .labels.lqs{grid-template-columns:repeat(auto-fill,45mm)}
@@ -178,7 +178,7 @@ label input,label select,label textarea{margin-top:4px}
 <div class="top">
   <header>
     <div><h1>Kitchen Inventory</h1><small><span class="role" id="roleTag">-</span><span id="sub">Inventory · Lost · Breakage</span></small></div>
-    <div class="hbtns">
+    <div class="hbtns" id="hbtns">
       <button class="icon" id="refresh" title="Refresh">↻</button>
       <button class="icon" id="logoutBtn" title="Logout">Logout</button>
     </div>
@@ -195,6 +195,26 @@ label input,label select,label textarea{margin-top:4px}
 
 <main>
   <section id="dash"><p class="empty">Loading...</p></section>
+
+  <!-- QR mode: one item, Broken/Lost only, no login -->
+  <section id="qrv" hidden>
+    <div class="card" id="qrCard">
+      <div id="qItem"><p class="empty">Loading item...</p></div>
+      <label id="qSecWrap" hidden>Section<select id="qSec"></select></label>
+      <div class="seg big" id="qSeg">
+        <button type="button" data-t="BROKEN" class="on">Broken</button>
+        <button type="button" data-t="LOST">Lost</button>
+      </div>
+      <label>Quantity<input id="qQty" type="number" min="1" step="1" inputmode="numeric"></label>
+      <label id="qReasonWrap">Cause<select id="qReason"></select></label>
+      <label>Reported by<input id="qBy"></label>
+      <label>Note<textarea id="qNote" rows="2" placeholder="e.g. table 12, dinner service"></textarea></label>
+      <label>Photo (optional)<input id="qPhoto" type="file" accept="image/*"></label>
+      <img id="qPrev" class="prev" hidden>
+      <button type="button" class="btn full red lg" id="qSubmit">Report broken</button>
+    </div>
+    <div class="card done" id="qDone" hidden></div>
+  </section>
 
   <section id="inv" hidden>
     <div class="chips" id="secChips"></div>
@@ -333,7 +353,7 @@ label input,label select,label textarea{margin-top:4px}
         </label>
         <label>QR content
           <select id="lMode">
-            <option value="link">Link to app (scan with phone camera)</option>
+            <option value="link">Link – staff report without login</option>
             <option value="code">Code only (for USB/Bluetooth scanner)</option>
           </select>
         </label>
@@ -356,31 +376,34 @@ const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoo
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let S = { role: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], hasLost: false, hasPrice: false,
+let S = { role: '', qrKey: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], hasLost: false, hasPrice: false,
           hasSection: false, hasTrf: false, hasCode: false, hasMin: false, codePrefix: 'KU-', low: 5, type: 'BROKEN', sec: '' };
 let LBL = { only: null, skip: new Set(), cur: [] };
 let OP = { sec: null, counts: {} };
 let SCN = null;
 const APP_URL = location.href.split(/[?#]/)[0];
-let DEEP = (() => { const p = new URLSearchParams(location.search); return { code: p.get('code'), item: p.get('item'), sec: p.get('sec') }; })();
+const URLP = new URLSearchParams(location.search);
+let DEEP = { code: URLP.get('code'), item: URLP.get('item'), sec: URLP.get('sec') };
+const QR = { key: URLP.get('k') || '', g: null, fixedSec: '', type: 'BROKEN' };
 const isSpv = () => S.role === 'spv';
 
 /* ---------- API ---------- */
-async function get(action, params = {}) {
+async function get(action, params = {}, pinOverride) {
   const u = new URL(API.trim());
   u.searchParams.set('action', action);
-  u.searchParams.set('pin', ls('inv_pin') || '');
+  u.searchParams.set('pin', pinOverride || ls('inv_pin') || '');
   for (const k in params) u.searchParams.set(k, params[k]);
   const j = await (await fetch(u)).json();
-  if (!j.ok) { if (j.error === 'Wrong PIN') logout(true); throw new Error(j.error); }
+  if (!j.ok) { if (j.error === 'Wrong PIN' && !pinOverride) logout(true); throw new Error(j.error); }
   return j.data;
 }
 async function post(body) {
+  const override = !!body.pin;
   body.pin = body.pin || ls('inv_pin') || '';
   body.by = body.by || ls('inv_by') || '';
   const r = await fetch(API.trim(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
   const j = await r.json();
-  if (!j.ok) { if (j.error === 'Wrong PIN' && body.action !== 'login') logout(true); throw new Error(j.error); }
+  if (!j.ok) { if (j.error === 'Wrong PIN' && !override) logout(true); throw new Error(j.error); }
   return j.data;
 }
 
@@ -407,6 +430,7 @@ function logout(silent) {
   showLogin();
 }
 function applyRole() {
+  if (S.role === 'qr') return;
   const spv = isSpv();
   $('#nav').hidden = !spv;
   $('#roleTag').textContent = spv ? 'Supervisor' : 'Staff';
@@ -414,7 +438,7 @@ function applyRole() {
   $('#segTrf').hidden = !spv || !S.hasSection;
   if (!spv) {
     if (S.type !== 'BROKEN' && S.type !== 'LOST') setType('BROKEN');
-    if (!['rep'].includes(currentTab())) tab('rep');
+    if (currentTab() !== 'rep') tab('rep');
   }
 }
 function currentTab() { const s = [...document.querySelectorAll('main section')].find(x => !x.hidden); return s ? s.id : ''; }
@@ -464,6 +488,7 @@ function parseScan(txt) {
 }
 const scanCode = v => { const p = parseScan(v); return /^https?:/i.test(String(v).trim()) ? (p.code || p.item) : v; };
 function findGroup(p) {
+  p = p || {};
   return S.groups.find(g => (p.code && nk(g.code) === nk(p.code)) || (p.item && nk(g.item) === nk(p.item)) || (!p.item && p.code && nk(g.item) === nk(p.code)));
 }
 function sigBlock(labels, names) {
@@ -510,7 +535,16 @@ function stopScanner() {
 }
 
 /* ---------- LOAD ---------- */
+function applyInv(inv) {
+  S.items = inv.items; S.secs = inv.sections || []; S.reasons = inv.reasons || [];
+  S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice; S.hasSection = inv.hasSection; S.hasTrf = inv.hasTrf;
+  S.hasCode = inv.hasCode; S.hasMin = inv.hasMin; S.codePrefix = inv.codePrefix || 'KU-';
+  S.low = inv.lowStock; S.qrKey = inv.qrKey || S.qrKey || '';
+  if (S.sec && S.secs.indexOf(S.sec) < 0) S.sec = '';
+  buildGroups();
+}
 async function load() {
+  if (S.role === 'qr') return;
   if (!ls('inv_pin')) { showLogin(); return; }
   S.role = ls('inv_role') || S.role || 'staff';
   applyRole();
@@ -520,12 +554,8 @@ async function load() {
     if (isSpv()) [inv, log, cl] = await Promise.all([get('list'), get('log', { limit: 3000 }), get('closing')]);
     else inv = await get('list');
     if (inv.role && inv.role !== S.role) { S.role = inv.role; ls('inv_role', inv.role); }
-    S.items = inv.items; S.secs = inv.sections || []; S.reasons = inv.reasons || [];
-    S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice; S.hasSection = inv.hasSection; S.hasTrf = inv.hasTrf;
-    S.hasCode = inv.hasCode; S.hasMin = inv.hasMin; S.codePrefix = inv.codePrefix || 'KU-';
-    S.low = inv.lowStock; S.log = log; S.closings = cl;
-    if (S.sec && S.secs.indexOf(S.sec) < 0) S.sec = '';
-    buildGroups();
+    applyInv(inv);
+    S.log = log; S.closings = cl;
     fillSecs(); fillReasons(); fillItems();
     if (isSpv()) {
       renderChips(); renderDash(); renderList(); renderHis(); renderCloseInfo(); renderRecap();
@@ -564,6 +594,122 @@ function buildGroups() {
   S.groups.forEach((g, i) => { g.id = i; g.rows = sortSec(g.rows); });
 }
 
+/* ---------- QR MODE (no login, one item) ---------- */
+async function startQr() {
+  S.role = 'qr';
+  $('#login').hidden = true; $('#nav').hidden = true; $('#hbtns').hidden = true;
+  $('#roleTag').textContent = 'Report';
+  $('#sub').textContent = 'Loading...';
+  document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== 'qrv');
+  $('#qBy').value = ls('inv_by') || '';
+  try {
+    const inv = await get('list', {}, QR.key);
+    applyInv(inv);
+    const d = DEEP || {}; DEEP = null;
+    const g = findGroup(d);
+    if (!g) { qrMessage('Item not found', 'This label is not linked to an item. Please inform your supervisor.'); return; }
+    QR.g = g;
+    QR.fixedSec = (d.sec && g.rows.some(r => r.section === d.sec)) ? d.sec : '';
+    qrRender(true);
+    $('#sub').textContent = 'Lost · Breakage report';
+  } catch (e) {
+    qrMessage('Cannot open this label', e.message === 'Wrong PIN'
+      ? 'This QR label is no longer valid. Please ask your supervisor for a new label.' : e.message);
+  }
+}
+function qrMessage(title, text) {
+  $('#qrCard').hidden = true;
+  $('#qDone').hidden = false;
+  $('#qDone').innerHTML = `<h3>${esc(title)}</h3><div class="meta">${esc(text)}</div>`;
+  $('#sub').textContent = '';
+}
+function qrRow() {
+  const rows = QR.g.rows;
+  if (!S.hasSection) return rows[0];
+  const s = QR.fixedSec || (rows.length === 1 ? rows[0].section : $('#qSec').value);
+  return rows.find(r => r.section === s) || null;
+}
+function qrRender(first) {
+  const g = QR.g, rows = g.rows, sel = $('#qSec');
+  if (!S.hasSection || QR.fixedSec || rows.length === 1) {
+    $('#qSecWrap').hidden = true;
+  } else if (first || !sel.options.length) {
+    $('#qSecWrap').hidden = false;
+    sel.innerHTML = '<option value="">— choose section —</option>' + rows.map(r => `<option>${esc(r.section)}</option>`).join('');
+  }
+  qrInfo();
+  qrType(QR.type);
+}
+function qrInfo() {
+  const g = QR.g, r = qrRow();
+  $('#qItem').innerHTML = `
+    ${g.photo ? `<img class="big" src="${esc(g.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
+    <div class="qitem">
+      ${g.code ? `<div>${codeTag(g.code)}</div>` : ''}
+      <h2>${esc(g.item)}</h2>
+      ${r && r.section ? `<div class="meta"><b>${esc(r.section)}</b></div>` : ''}
+      ${r ? `<div class="meta">Current stock: <b>${r.closing}</b></div>` : '<div class="meta">Choose the section below</div>'}
+    </div>`;
+}
+function qrType(t) {
+  QR.type = t;
+  document.querySelectorAll('#qSeg button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  const btn = $('#qSubmit');
+  btn.textContent = t === 'LOST' ? 'Report lost' : 'Report broken';
+  btn.className = 'btn full lg ' + (t === 'LOST' ? 'amb' : 'red');
+  const s = $('#qReason'), v = s.value;
+  const list = S.reasons.filter(r => r.type === 'ALL' || r.type === t);
+  s.innerHTML = '<option value="">— choose cause —</option>' + list.map(r => `<option>${esc(r.name)}</option>`).join('');
+  if (v && list.some(r => r.name === v)) s.value = v;
+  $('#qReasonWrap').hidden = !list.length;
+}
+async function qrSubmit() {
+  const r = qrRow();
+  if (!r) return toast('Choose the section', 1);
+  const qty = +$('#qQty').value;
+  if (!(qty > 0) || qty % 1) return toast('Enter quantity', 1);
+  if (qty > r.closing) return toast('Quantity is more than current stock (' + r.closing + ')', 1);
+  const reason = $('#qReason').value;
+  if (!$('#qReasonWrap').hidden && !reason) return toast('Choose a cause', 1);
+  const by = $('#qBy').value.trim();
+  if (!by) return toast('Fill "Reported by"', 1);
+  ls('inv_by', by);
+  const btn = $('#qSubmit'), f = $('#qPhoto').files[0];
+  btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    await post({
+      action: 'movement', pin: QR.key, type: QR.type, row: r.row, item: r.item, section: r.section,
+      qty, by, reason, note: $('#qNote').value.trim(), photo: f ? await compress(f) : ''
+    });
+    $('#qrCard').hidden = true;
+    $('#qDone').hidden = false;
+    $('#qDone').innerHTML = `
+      <div class="ok">✓</div>
+      <h3>Recorded</h3>
+      <div class="meta"><b>${qty} × ${esc(r.item)}</b> · ${QR.type === 'LOST' ? 'Lost' : 'Broken'}${r.section ? ' · ' + esc(r.section) : ''}</div>
+      <div class="meta">Reported by ${esc(by)}</div>
+      <button class="btn ghost full" style="margin-top:18px" onclick="qrAgain()">Report again for this item</button>
+      <div class="hint" style="margin:14px 0 0">To report another item, scan its QR label.</div>`;
+    try {
+      const inv = await get('list', {}, QR.key);
+      applyInv(inv);
+      QR.g = findGroup({ code: QR.g.code, item: QR.g.item }) || QR.g;
+    } catch (e) {}
+  } catch (e) { toast(e.message, 1); }
+  finally { btn.disabled = false; qrType(QR.type); }
+}
+function qrAgain() {
+  $('#qQty').value = ''; $('#qNote').value = ''; $('#qPhoto').value = ''; $('#qPrev').hidden = true; $('#qReason').value = '';
+  $('#qDone').hidden = true; $('#qrCard').hidden = false;
+  qrRender(false);
+  scrollTo(0, 0);
+}
+document.querySelectorAll('#qSeg button').forEach(b => b.onclick = () => qrType(b.dataset.t));
+$('#qSec').onchange = qrInfo;
+$('#qSubmit').onclick = qrSubmit;
+previewOn('#qPhoto', '#qPrev');
+
+/* ---------- SELECTS ---------- */
 function fillSecs() {
   const opts = S.secs.map(s => `<option>${esc(s)}</option>`).join('');
   const set = (id, first) => {
@@ -929,6 +1075,7 @@ function qrText(x) {
   if ($('#lMode').value === 'code') return g.code || g.item;
   let q = g.code ? 'code=' + encodeURIComponent(g.code) : 'item=' + encodeURIComponent(g.item);
   if (x.sec) q += '&sec=' + encodeURIComponent(x.sec);
+  if (S.qrKey) q += '&k=' + encodeURIComponent(S.qrKey);
   return APP_URL + '?' + q;
 }
 function openLabels(only) {
@@ -999,6 +1146,7 @@ function renderLabels() {
   const noCode = list.filter(x => !x.g.code).length;
   let info = `${list.length} item${list.length === 1 ? '' : 's'} × ${copies} = <b>${list.length * copies}</b> labels`;
   if (noCode) info += ` · <span class="neg">${noCode} without code</span>`;
+  if ($('#lMode').value === 'link' && !S.qrKey) info += ` · <span class="neg">QR_KEY not set in Code.gs – staff will need a PIN</span>`;
   if (LBL.skip.size) info += ` · ${LBL.skip.size} hidden <button class="link" onclick="LBL.skip.clear();renderLabels()">show</button>`;
   if (LBL.only !== null) info += ` · <button class="link" onclick="LBL.only=null;renderLabels()">show all items</button>`;
   $('#lInfo').innerHTML = info;
@@ -1349,7 +1497,8 @@ function downloadXls() {
 
 /* ---------- TABS & INIT ---------- */
 function tab(t) {
-  if (!isSpv() && t !== 'rep') t = 'rep';
+  if (S.role === 'qr') t = 'qrv';
+  else if (!isSpv() && t !== 'rep') t = 'rep';
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t || (t === 'lab' && b.dataset.tab === 'inv')));
   document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== t);
   if (t === 'rec') renderRecap();
@@ -1370,7 +1519,6 @@ SIGS.forEach(([k]) => ['n', 'r'].forEach(x => {
   const el = $('#' + k + x); el.value = ls('inv_' + k + x) || '';
   el.oninput = () => { ls('inv_' + k + x, el.value); renderRecap(); };
 }));
-// Opname
 $('#oSec').onchange = () => { $('#opRpt').hidden = true; renderOpname(); };
 $('#oQ').oninput = () => {
   const v = scanCode($('#oQ').value);
@@ -1392,7 +1540,6 @@ $('#oScan').onclick = () => openScanner(txt => {
 $('#oSheet').onclick = printCountSheet;
 $('#oClear').onclick = () => { if (confirm('Clear all counts for this section?')) { OP.counts = {}; opSave(); renderOpname(); } };
 $('#oSubmit').onclick = submitOpname;
-// Labels
 $('#lblBtn').onclick = () => openLabels(null);
 $('#lSec').onchange = () => { LBL.only = null; renderLabels(); };
 $('#lQ').oninput = () => { LBL.only = null; renderLabels(); };
@@ -1400,7 +1547,6 @@ $('#lSize').onchange = renderLabels;
 $('#lMode').onchange = renderLabels;
 $('#lCopies').oninput = renderLabels;
 $('#lPrint').onclick = printLabels;
-// Others
 $('#closeBtn').onclick = openClose;
 $('#cPrint').onclick = () => { renderRecap(); window.print(); };
 $('#cXls').onclick = downloadXls;
@@ -1412,8 +1558,14 @@ $('#rBy').value = ls('inv_by') || '';
 $('#hMonth').value = thisMonth();
 $('#cMonth').value = thisMonth();
 
-if (ls('inv_pin')) { S.role = ls('inv_role') || 'staff'; applyRole(); tab(isSpv() ? 'dash' : 'rep'); load(); }
-else showLogin();
+// START
+if (QR.key && (DEEP.code || DEEP.item) && ls('inv_role') !== 'spv') {
+  startQr();                                   // staff scan label: no login, one item only
+} else if (ls('inv_pin')) {
+  S.role = ls('inv_role') || 'staff'; applyRole(); tab(isSpv() ? 'dash' : 'rep'); load();
+} else {
+  showLogin();
+}
 </script>
 </body>
 </html>
