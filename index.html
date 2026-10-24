@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kitchen Inventory</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style>
 :root{--bg:#f4f5f3;--card:#fff;--ink:#1d2621;--mute:#6a756e;--line:#e1e5e1;--pri:#1f6f54;--pri2:#e5f1ec;--red:#c0392b;--red2:#fbecea;--amb:#b26b00;--amb2:#fdf3e1;--blu:#2b5797;--blu2:#e8eef7}
 *{box-sizing:border-box}
@@ -88,23 +88,27 @@ label input,label select,label textarea{margin-top:4px}
 .rpt h4{margin:6px 0 6px}
 .sigs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;text-align:center;font-size:13px;page-break-inside:avoid}
 .sigs .ln{height:64px;border-bottom:1px solid var(--ink);margin:6px 8px 4px}
-/* Labels */
+/* QR labels */
 .labels{display:grid;gap:2mm;justify-content:center}
 .labels.lm{grid-template-columns:repeat(auto-fill,60mm)}
 .labels.ll{grid-template-columns:repeat(auto-fill,90mm)}
 .labels.ls{grid-template-columns:repeat(auto-fill,44mm)}
 .lbl{position:relative;background:#fff;border:1px dashed #b9c2bc;border-radius:2mm;display:flex;gap:2.5mm;padding:2.5mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid;color:#000}
-.lm .lbl{width:60mm;height:38mm}.ll .lbl{width:90mm;height:50mm}.ls .lbl{width:44mm;height:28mm;padding:2mm}
-.lph{flex:none;border-radius:1.5mm;background:#f1f3f1;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px}
-.lm .lph{width:19mm;height:19mm}.ll .lph{width:30mm;height:30mm}
+.lm .lbl{width:60mm;height:38mm}.ll .lbl{width:90mm;height:50mm}.ls .lbl{width:44mm;height:28mm;padding:2mm;gap:2mm}
+.lqrw{flex:none;display:flex;align-items:center;justify-content:center}
+.lm .lqrw{width:31mm}.ll .lqrw{width:43mm}.ls .lqrw{width:23mm}
+.lqr{width:100%;height:auto;display:block}
+.lbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:1mm}
+.lph{flex:none;border-radius:1.5mm;background:#f1f3f1;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:16px}
+.lm .lph{width:13mm;height:13mm}.ll .lph{width:22mm;height:22mm}
 .lph img{width:100%;height:100%;object-fit:cover}
-.lbody{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
-.lname{font-weight:700;font-size:9.5pt;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.ll .lname{font-size:12pt}.ls .lname{font-size:8pt;-webkit-line-clamp:1}
-.lsec{font-size:7pt;color:#555;margin-top:.5mm}
+.lname{font-weight:700;font-size:8.5pt;line-height:1.15;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.ll .lname{font-size:11pt}.ls .lname{font-size:7.5pt;-webkit-line-clamp:3}
+.lsec{font-size:6.5pt;color:#555}
 .ll .lsec{font-size:8.5pt}
-.lbc{width:100%;height:auto;display:block}
-.lnocode{font-size:8pt;color:#c0392b}
+.lcode{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:9pt;margin-top:auto;letter-spacing:.3px}
+.ll .lcode{font-size:12pt}.ls .lcode{font-size:8pt}
+.lcode.none{color:#c0392b;font-family:inherit;font-weight:500;font-size:7pt}
 .lx{position:absolute;top:1mm;right:1mm;border:0;background:#fbecea;color:#c0392b;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:20px;padding:0}
 @media(max-width:520px){.rsum{grid-template-columns:repeat(2,1fr)}}
 @media print{
@@ -150,7 +154,7 @@ label input,label select,label textarea{margin-top:4px}
         <option value="broken">Most broken/lost</option>
         <option value="price">Highest price</option>
       </select>
-      <button class="btn ghost" id="lblBtn">Labels</button>
+      <button class="btn ghost" id="lblBtn">QR Labels</button>
       <button class="btn" id="newBtn">+ New item</button>
     </div>
     <div id="list"></div>
@@ -223,7 +227,7 @@ label input,label select,label textarea{margin-top:4px}
   <section id="lab" hidden>
     <div class="card noprint">
       <div class="flex" style="margin-bottom:12px">
-        <h3 style="margin:0">Barcode labels</h3>
+        <h3 style="margin:0">QR code labels</h3>
         <button class="btn ghost" onclick="tab('inv')">← Back</button>
       </div>
       <div class="bar">
@@ -236,6 +240,12 @@ label input,label select,label textarea{margin-top:4px}
             <option value="m">Medium · 60 × 38 mm (3 per row)</option>
             <option value="l">Large · 90 × 50 mm (2 per row)</option>
             <option value="s">Small · 44 × 28 mm (4 per row, no photo)</option>
+          </select>
+        </label>
+        <label>QR content
+          <select id="lMode">
+            <option value="link">Link to app (scan with phone camera)</option>
+            <option value="code">Code only (for USB/Bluetooth scanner)</option>
           </select>
         </label>
         <label>Copies per item<input id="lCopies" type="number" min="1" max="20" value="1" inputmode="numeric"></label>
@@ -260,6 +270,8 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 let S = { items: [], groups: [], log: [], secs: [], closings: [], hasLost: false, hasPrice: false, hasSection: false, hasTrf: false,
           hasCode: false, codePrefix: 'KU-', low: 5, pin: false, type: 'BROKEN', sec: '' };
 let LBL = { only: null, skip: new Set(), cur: [] };
+const APP_URL = location.href.split(/[?#]/)[0];
+let DEEP = (() => { const p = new URLSearchParams(location.search); return { code: p.get('code'), item: p.get('item') }; })();
 
 /* ---------- API ---------- */
 async function get(action, params = {}) {
@@ -354,7 +366,18 @@ async function load() {
     fillSecs(); renderChips(); renderDash(); renderList(); fillItems(); renderHis(); renderCloseInfo(); renderRecap();
     if (!$('#lab').hidden) renderLabels();
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    handleDeepLink();
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
+}
+
+// Dibuka dari scan QR: ?code=KU-001 atau ?item=Nama
+function handleDeepLink() {
+  if (!DEEP || (!DEEP.code && !DEEP.item)) return;
+  const d = DEEP; DEEP = null;
+  try { history.replaceState(null, '', APP_URL); } catch (e) {}
+  const g = S.groups.find(g => (d.code && nk(g.code) === nk(d.code)) || (d.item && nk(g.item) === nk(d.item)));
+  if (g) { tab('inv'); openItem(g.id); }
+  else toast('Item ' + (d.code || d.item) + ' not found', 1);
 }
 
 function buildGroups() {
@@ -516,7 +539,7 @@ function openItem(id) {
       <button class="btn" onclick="goReport(${g.id},'ADD')">Add</button>
       ${S.hasSection ? `<button class="btn blu" onclick="goReport(${g.id},'TRANSFER')">Transfer</button>` : ''}
     </div>
-    <button class="btn ghost full" style="margin-bottom:14px" onclick="openLabels(${g.id})">Print barcode label</button>
+    <button class="btn ghost full" style="margin-bottom:14px" onclick="openLabels(${g.id})">Print QR label</button>
     <div class="two">
       ${S.hasCode ? `<label>Code<input id="eCode" value="${esc(g.code)}" autocapitalize="characters"></label>` : ''}
       ${S.hasPrice ? `<label>Price per pcs (Rp)<input id="eHarga" type="number" min="0" inputmode="numeric" value="${g.harga || ''}"></label>` : ''}
@@ -585,7 +608,20 @@ async function saveNew() {
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Add item'; }
 }
 
-/* ---------- LABELS ---------- */
+/* ---------- QR LABELS ---------- */
+function qrSvg(text) {
+  const qr = qrcode(0, 'M');
+  qr.addData(text);
+  qr.make();
+  const n = qr.getModuleCount(), m = 2;
+  let d = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${c + m} ${r + m}h1v1h-1z`;
+  return `<svg class="lqr" viewBox="0 0 ${n + 2 * m} ${n + 2 * m}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}
+function qrText(g) {
+  if ($('#lMode').value === 'code') return g.code || g.item;
+  return APP_URL + '?' + (g.code ? 'code=' + encodeURIComponent(g.code) : 'item=' + encodeURIComponent(g.item));
+}
 function openLabels(only) {
   closeModal();
   LBL.only = (only === undefined || only === null) ? null : only;
@@ -609,46 +645,31 @@ function labelList() {
   return list.filter(x => !LBL.skip.has(x.g.item + '|' + x.sec));
 }
 function renderLabels() {
+  if (!window.qrcode) { toast('QR library not loaded, check internet connection', 1); return; }
   const size = $('#lSize').value;
   const copies = Math.max(1, Math.min(20, Math.round(+$('#lCopies').value || 1)));
   const list = labelList();
   LBL.cur = list;
-  const ids = [];
   let html = '';
   list.forEach((x, i) => {
+    let svg = '';
+    try { svg = qrSvg(qrText(x.g)); } catch (e) { svg = '<div class="lcode none">QR error</div>'; }
+    const one = `
+      ${size !== 's' ? `<div class="lph">${x.g.photo ? `<img src="${esc(x.g.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : '🍽'}</div>` : ''}
+      <div class="lname">${esc(x.g.item)}</div>
+      ${x.sec ? `<div class="lsec">${esc(x.sec)}</div>` : ''}
+      ${x.g.code ? `<div class="lcode">${esc(x.g.code)}</div>` : '<div class="lcode none">No code yet</div>'}`;
     for (let c = 0; c < copies; c++) {
-      const id = 'bc' + i + '_' + c;
-      if (x.g.code) ids.push([id, x.g.code]);
       html += `<div class="lbl">
         ${c === 0 ? `<button class="lx noprint" title="Hide this item" onclick="skipLabel(${i})">✕</button>` : ''}
-        ${size !== 's' ? `<div class="lph">${x.g.photo ? `<img src="${esc(x.g.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : '🍽'}</div>` : ''}
-        <div class="lbody">
-          <div><div class="lname">${esc(x.g.item)}</div>${x.sec ? `<div class="lsec">${esc(x.sec)}</div>` : ''}</div>
-          ${x.g.code ? `<svg id="${id}" class="lbc"></svg>` : '<div class="lnocode">No code yet</div>'}
-        </div>
+        <div class="lqrw">${svg}</div>
+        <div class="lbody">${one}</div>
       </div>`;
     }
   });
   const box = $('#labels');
   box.className = 'labels l' + size;
   box.innerHTML = html || '<p class="empty noprint">No items to print</p>';
-
-  if (window.JsBarcode) {
-    const opt = {
-      l: { height: 40, width: 1.8, fontSize: 14 },
-      m: { height: 30, width: 1.5, fontSize: 12 },
-      s: { height: 26, width: 1.3, fontSize: 11 }
-    }[size];
-    ids.forEach(([id, code]) => {
-      try {
-        const el = document.getElementById(id);
-        JsBarcode(el, code, { format: 'CODE128', displayValue: true, margin: 0, textMargin: 1, font: 'monospace', ...opt });
-        const w = el.getAttribute('width'), h = el.getAttribute('height');
-        el.setAttribute('viewBox', '0 0 ' + parseFloat(w) + ' ' + parseFloat(h));
-        el.removeAttribute('width'); el.removeAttribute('height');
-      } catch (e) {}
-    });
-  } else toast('Barcode library not loaded, check internet connection', 1);
 
   const noCode = list.filter(x => !x.g.code).length;
   let info = `${list.length} item${list.length === 1 ? '' : 's'} × ${copies} = <b>${list.length * copies}</b> labels`;
@@ -966,7 +987,13 @@ function tab(t) {
   scrollTo(0, 0);
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
-$('#q').oninput = renderList; $('#sort').onchange = renderList;
+// Scanner USB yang membaca QR berisi link: ambil kodenya saja
+$('#q').oninput = () => {
+  const m = $('#q').value.match(/[?&]code=([^&#\s]+)/);
+  if (m) $('#q').value = decodeURIComponent(m[1]);
+  renderList();
+};
+$('#sort').onchange = renderList;
 $('#hType').onchange = renderHis; $('#hMonth').onchange = renderHis; $('#hSec').onchange = renderHis;
 $('#cMonth').onchange = renderRecap; $('#cSec').onchange = renderRecap;
 SIGS.forEach(([k]) => ['n', 'r'].forEach(x => {
@@ -977,6 +1004,7 @@ $('#lblBtn').onclick = () => openLabels(null);
 $('#lSec').onchange = () => { LBL.only = null; renderLabels(); };
 $('#lQ').oninput = () => { LBL.only = null; renderLabels(); };
 $('#lSize').onchange = renderLabels;
+$('#lMode').onchange = renderLabels;
 $('#lCopies').oninput = renderLabels;
 $('#lPrint').onclick = printLabels;
 $('#closeBtn').onclick = openClose;
