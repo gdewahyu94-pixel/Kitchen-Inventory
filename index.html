@@ -88,28 +88,47 @@ label input,label select,label textarea{margin-top:4px}
 .rpt h4{margin:6px 0 6px}
 .sigs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;text-align:center;font-size:13px;page-break-inside:avoid}
 .sigs .ln{height:64px;border-bottom:1px solid var(--ink);margin:6px 8px 4px}
-/* QR labels */
+/* ---------- QR labels ---------- */
 .labels{display:grid;gap:2mm;justify-content:center}
+.labels.lqm{grid-template-columns:repeat(auto-fill,60mm)}
+.labels.lqs{grid-template-columns:repeat(auto-fill,45mm)}
 .labels.lm{grid-template-columns:repeat(auto-fill,60mm)}
 .labels.ll{grid-template-columns:repeat(auto-fill,90mm)}
 .labels.ls{grid-template-columns:repeat(auto-fill,44mm)}
 .lbl{position:relative;background:#fff;border:1px dashed #b9c2bc;border-radius:2mm;display:flex;gap:2.5mm;padding:2.5mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid;color:#000}
+.lqm .lbl{width:60mm;height:85mm}.lqs .lbl{width:45mm;height:65mm}
 .lm .lbl{width:60mm;height:38mm}.ll .lbl{width:90mm;height:50mm}.ls .lbl{width:44mm;height:28mm;padding:2mm;gap:2mm}
+.lqr{width:100%;height:auto;display:block}
+.lph{flex:none;border-radius:1.5mm;background:#f1f3f1;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:14px}
+.lph img{width:100%;height:100%;object-fit:cover}
+.lx{position:absolute;top:1mm;right:1mm;border:0;background:#fbecea;color:#c0392b;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:20px;padding:0;z-index:2}
+/* QRIS card (portrait) */
+.lbl.qc{flex-direction:column;padding:0;gap:0;border-radius:3mm;border:1px solid #cfd6d1}
+.qh{background:#1f6f54;color:#fff;text-align:center;padding:2.2mm 2mm 1.8mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.qh b{display:block;font-size:8.5pt;letter-spacing:1px}
+.qh span{display:block;font-size:7pt;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.3mm}
+.lqs .qh{padding:1.6mm 1.5mm 1.2mm}.lqs .qh b{font-size:7pt}.lqs .qh span{font-size:6pt}
+.qbody{flex:1;display:flex;flex-direction:column;align-items:center;padding:2.5mm 3mm 2.5mm;gap:1.2mm;min-height:0}
+.lqs .qbody{padding:2mm 2.5mm;gap:1mm}
+.qqr{width:48mm}.lqs .qqr{width:36mm}
+.qcode{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:12pt;letter-spacing:1.5px}
+.lqs .qcode{font-size:9pt;letter-spacing:1px}
+.qcode.none{color:#c0392b;font-family:inherit;font-weight:500;font-size:8pt;letter-spacing:0}
+.qfoot{display:flex;align-items:center;gap:2mm;width:100%;margin-top:auto;border-top:1px dashed #ccc;padding-top:1.8mm}
+.qfoot .lph{width:11mm;height:11mm}.lqs .qfoot .lph{width:8mm;height:8mm;font-size:10px}
+.qname{flex:1;min-width:0;font-weight:700;font-size:9pt;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.lqs .qname{font-size:7pt}
+/* Landscape layouts */
 .lqrw{flex:none;display:flex;align-items:center;justify-content:center}
 .lm .lqrw{width:31mm}.ll .lqrw{width:43mm}.ls .lqrw{width:23mm}
-.lqr{width:100%;height:auto;display:block}
 .lbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:1mm}
-.lph{flex:none;border-radius:1.5mm;background:#f1f3f1;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:16px}
 .lm .lph{width:13mm;height:13mm}.ll .lph{width:22mm;height:22mm}
-.lph img{width:100%;height:100%;object-fit:cover}
 .lname{font-weight:700;font-size:8.5pt;line-height:1.15;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
-.ll .lname{font-size:11pt}.ls .lname{font-size:7.5pt;-webkit-line-clamp:3}
-.lsec{font-size:6.5pt;color:#555}
-.ll .lsec{font-size:8.5pt}
+.ll .lname{font-size:11pt}.ls .lname{font-size:7.5pt}
+.lsec{font-size:6.5pt;color:#555}.ll .lsec{font-size:8.5pt}
 .lcode{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:9pt;margin-top:auto;letter-spacing:.3px}
 .ll .lcode{font-size:12pt}.ls .lcode{font-size:8pt}
 .lcode.none{color:#c0392b;font-family:inherit;font-weight:500;font-size:7pt}
-.lx{position:absolute;top:1mm;right:1mm;border:0;background:#fbecea;color:#c0392b;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:20px;padding:0}
 @media(max-width:520px){.rsum{grid-template-columns:repeat(2,1fr)}}
 @media print{
   @page{size:A4;margin:12mm}
@@ -117,10 +136,11 @@ label input,label select,label textarea{margin-top:4px}
   .top,.noprint,#toast,#modal{display:none!important}
   main{padding:0;max-width:none}
   #rpt{border:0;padding:0;margin:0}
-  .tbl th,.lph{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tbl th,.lph,.qh{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .tbl-wrap{overflow:visible}
   .labels{justify-content:start}
   .lbl{border:1px dashed #999}
+  .lbl.qc{border:1px solid #999}
 }
 </style>
 </head>
@@ -235,11 +255,13 @@ label input,label select,label textarea{margin-top:4px}
         <input id="lQ" placeholder="Filter name or code...">
       </div>
       <div class="two">
-        <label>Label size
+        <label>Label style &amp; size
           <select id="lSize">
-            <option value="m">Medium · 60 × 38 mm (3 per row)</option>
-            <option value="l">Large · 90 × 50 mm (2 per row)</option>
-            <option value="s">Small · 44 × 28 mm (4 per row, no photo)</option>
+            <option value="qm">QRIS card · 60 × 85 mm (3 per row)</option>
+            <option value="qs">QRIS card small · 45 × 65 mm (4 per row)</option>
+            <option value="m">Landscape medium · 60 × 38 mm (3 per row)</option>
+            <option value="l">Landscape large · 90 × 50 mm (2 per row)</option>
+            <option value="s">Landscape small · 44 × 28 mm (4 per row, no photo)</option>
           </select>
         </label>
         <label>QR content
@@ -255,7 +277,7 @@ label input,label select,label textarea{margin-top:4px}
         <button class="btn" id="lPrint">Print labels</button>
       </div>
     </div>
-    <div id="labels" class="labels lm"></div>
+    <div id="labels" class="labels lqm"></div>
   </section>
 </main>
 
@@ -370,7 +392,7 @@ async function load() {
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
 }
 
-// Dibuka dari scan QR: ?code=KU-001 atau ?item=Nama
+// Dibuka dari scan QR: ?code=KTC-001 atau ?item=Nama
 function handleDeepLink() {
   if (!DEEP || (!DEEP.code && !DEEP.item)) return;
   const d = DEEP; DEEP = null;
@@ -644,9 +666,31 @@ function labelList() {
   list.sort((a, b) => byCode(a.g, b.g));
   return list.filter(x => !LBL.skip.has(x.g.item + '|' + x.sec));
 }
+function labelHtml(x, svg, size) {
+  const g = x.g;
+  const photo = `<div class="lph">${g.photo ? `<img src="${esc(g.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : '🍽'}</div>`;
+  if (size === 'qm' || size === 'qs') {
+    return `
+      <div class="qh"><b>KITCHEN UTENSILS</b><span>${esc(x.sec || 'Scan for details')}</span></div>
+      <div class="qbody">
+        <div class="qqr">${svg}</div>
+        ${g.code ? `<div class="qcode">${esc(g.code)}</div>` : '<div class="qcode none">No code yet</div>'}
+        <div class="qfoot">${photo}<div class="qname">${esc(g.item)}</div></div>
+      </div>`;
+  }
+  return `
+    <div class="lqrw">${svg}</div>
+    <div class="lbody">
+      ${size !== 's' ? photo : ''}
+      <div class="lname">${esc(g.item)}</div>
+      ${x.sec ? `<div class="lsec">${esc(x.sec)}</div>` : ''}
+      ${g.code ? `<div class="lcode">${esc(g.code)}</div>` : '<div class="lcode none">No code yet</div>'}
+    </div>`;
+}
 function renderLabels() {
   if (!window.qrcode) { toast('QR library not loaded, check internet connection', 1); return; }
   const size = $('#lSize').value;
+  const isCard = size === 'qm' || size === 'qs';
   const copies = Math.max(1, Math.min(20, Math.round(+$('#lCopies').value || 1)));
   const list = labelList();
   LBL.cur = list;
@@ -654,16 +698,11 @@ function renderLabels() {
   list.forEach((x, i) => {
     let svg = '';
     try { svg = qrSvg(qrText(x.g)); } catch (e) { svg = '<div class="lcode none">QR error</div>'; }
-    const one = `
-      ${size !== 's' ? `<div class="lph">${x.g.photo ? `<img src="${esc(x.g.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : '🍽'}</div>` : ''}
-      <div class="lname">${esc(x.g.item)}</div>
-      ${x.sec ? `<div class="lsec">${esc(x.sec)}</div>` : ''}
-      ${x.g.code ? `<div class="lcode">${esc(x.g.code)}</div>` : '<div class="lcode none">No code yet</div>'}`;
+    const inner = labelHtml(x, svg, size);
     for (let c = 0; c < copies; c++) {
-      html += `<div class="lbl">
+      html += `<div class="lbl${isCard ? ' qc' : ''}">
         ${c === 0 ? `<button class="lx noprint" title="Hide this item" onclick="skipLabel(${i})">✕</button>` : ''}
-        <div class="lqrw">${svg}</div>
-        <div class="lbody">${one}</div>
+        ${inner}
       </div>`;
     }
   });
