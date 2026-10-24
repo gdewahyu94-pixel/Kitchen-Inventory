@@ -6,14 +6,18 @@
 <title>Kitchen Inventory</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
 :root{--bg:#f4f5f3;--card:#fff;--ink:#1d2621;--mute:#6a756e;--line:#e1e5e1;--pri:#1f6f54;--pri2:#e5f1ec;--red:#c0392b;--red2:#fbecea;--amb:#b26b00;--amb2:#fdf3e1;--blu:#2b5797;--blu2:#e8eef7}
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+[hidden]{display:none!important}
 .top{position:sticky;top:0;z-index:5}
-header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
-header h1{font-size:17px;margin:0}header small{opacity:.8;font-size:12px}
-.icon{background:rgba(255,255,255,.15);border:0;color:#fff;font-size:18px;width:36px;height:36px;border-radius:8px;cursor:pointer}
+header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+header h1{font-size:17px;margin:0}header small{opacity:.85;font-size:12px}
+.role{display:inline-block;background:rgba(255,255,255,.2);border-radius:4px;padding:0 6px;margin-right:6px;font-weight:600}
+.hbtns{display:flex;gap:8px}
+.icon{background:rgba(255,255,255,.15);border:0;color:#fff;font-size:15px;min-width:36px;height:36px;border-radius:8px;cursor:pointer;padding:0 10px;font-weight:600}
 nav{display:flex;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto}
 nav button{flex:1;border:0;background:none;padding:12px 4px;font:inherit;font-size:12.5px;color:var(--mute);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
 nav button.on{color:var(--pri);border-color:var(--pri);font-weight:600}
@@ -33,7 +37,7 @@ label input,label select,label textarea{margin-top:4px}
 .check input{width:auto;margin:0}
 .btn{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:600;background:var(--pri);color:#fff;cursor:pointer;white-space:nowrap}
 .btn.red{background:var(--red)}.btn.amb{background:var(--amb)}.btn.blu{background:var(--blu)}.btn.ghost{background:var(--pri2);color:var(--pri)}
-.btn.full{width:100%}.btn:disabled{opacity:.6}
+.btn.full{width:100%}.btn.lg{padding:14px;font-size:16px}.btn:disabled{opacity:.6}
 .link{border:0;background:none;color:var(--pri);font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
 .chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
 .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 14px;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer;color:var(--ink)}
@@ -59,6 +63,8 @@ label input,label select,label textarea{margin-top:4px}
 .hint{font-size:13px;margin:-6px 0 12px;color:var(--mute)}
 .note{font-size:13px;color:var(--ink);background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px;line-height:1.5}
 .prev{max-width:160px;border-radius:8px;margin-bottom:12px;display:block}
+.picked{display:flex;gap:10px;align-items:center;background:var(--pri2);border-radius:10px;padding:8px;margin:-4px 0 12px}
+.picked img,.picked .ph{width:48px;height:48px;border-radius:8px;object-fit:cover;background:#fff;flex:none}
 .tag{font-size:11px;font-weight:700;padding:4px 6px;border-radius:6px;flex:none;width:72px;text-align:center}
 .t-BROKEN{background:var(--red2);color:var(--red)}.t-LOST{background:var(--amb2);color:var(--amb)}
 .t-ADD,.t-NEWITEM{background:var(--pri2);color:var(--pri)}.t-CLOSEMONTH,.t-TRF{background:var(--blu2);color:var(--blu)}
@@ -67,7 +73,6 @@ label input,label select,label textarea{margin-top:4px}
 .row span:last-child{text-align:right;white-space:nowrap}
 .empty{color:var(--mute);text-align:center;padding:20px;font-size:14px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;z-index:10}
-.modal[hidden]{display:none}
 .sheet{background:#fff;width:100%;max-width:600px;max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px}
 @media(min-width:600px){.modal{align-items:center}.sheet{border-radius:16px}}
 .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.mh h3{margin:0;font-size:17px}
@@ -76,8 +81,16 @@ label input,label select,label textarea{margin-top:4px}
 .acts{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.acts .btn{flex:1}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .flex{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-#toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;transition:.25s;z-index:20;font-size:14px;max-width:90vw}
+#toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;transition:.25s;z-index:40;font-size:14px;max-width:90vw}
 #toast.show{transform:translate(-50%,0)}#toast.err{background:var(--red)}
+/* Login */
+.login{position:fixed;inset:0;background:var(--pri);z-index:30;display:flex;align-items:center;justify-content:center;padding:16px}
+.lcard{background:#fff;border-radius:16px;padding:28px 22px;width:100%;max-width:340px;text-align:center}
+.lcard h2{margin:0 0 4px;font-size:20px}
+.lcard input{text-align:center;font-size:22px;letter-spacing:6px;margin:16px 0 12px}
+/* Scanner */
+#qrReader{width:100%;border-radius:10px;overflow:hidden;background:#000}
+/* Tables & reports */
 .tbl-wrap{overflow-x:auto;margin-bottom:16px}
 .tbl{width:100%;border-collapse:collapse;font-size:12px}
 .tbl th,.tbl td{border:1px solid #cfd6d1;padding:5px 6px;text-align:left;vertical-align:top}
@@ -141,7 +154,7 @@ label input,label select,label textarea{margin-top:4px}
 @media print{
   @page{size:A4;margin:12mm}
   body{background:#fff}
-  .top,.noprint,#toast,#modal{display:none!important}
+  .top,.noprint,#toast,#modal,#login{display:none!important}
   main{padding:0;max-width:none}
   #rpt,#opRpt{border:0;padding:0;margin:0}
   .tbl th,.lph,.qh{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -153,12 +166,24 @@ label input,label select,label textarea{margin-top:4px}
 </style>
 </head>
 <body>
+<div id="login" class="login" hidden>
+  <div class="lcard">
+    <h2>Kitchen Inventory</h2>
+    <div class="meta">Enter your PIN to continue</div>
+    <input id="lgPin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••">
+    <button class="btn full lg" id="lgBtn">Login</button>
+  </div>
+</div>
+
 <div class="top">
   <header>
-    <div><h1>Kitchen Inventory</h1><small id="sub">Inventory · Lost · Breakage</small></div>
-    <button class="icon" id="refresh" title="Refresh">↻</button>
+    <div><h1>Kitchen Inventory</h1><small><span class="role" id="roleTag">-</span><span id="sub">Inventory · Lost · Breakage</span></small></div>
+    <div class="hbtns">
+      <button class="icon" id="refresh" title="Refresh">↻</button>
+      <button class="icon" id="logoutBtn" title="Logout">Logout</button>
+    </div>
   </header>
-  <nav>
+  <nav id="nav" hidden>
     <button data-tab="dash" class="on">Dashboard</button>
     <button data-tab="inv">Inventory</button>
     <button data-tab="rep">Input</button>
@@ -191,14 +216,16 @@ label input,label select,label textarea{margin-top:4px}
 
   <section id="rep" hidden>
     <form id="repForm" class="card">
+      <button type="button" class="btn blu full lg" id="scanBtn" style="margin-bottom:14px">Scan QR label</button>
       <div class="seg" id="seg">
         <button type="button" data-t="BROKEN" class="on">Broken</button>
         <button type="button" data-t="LOST">Lost</button>
-        <button type="button" data-t="ADD">Add</button>
+        <button type="button" data-t="ADD" id="segAdd">Add</button>
         <button type="button" data-t="TRANSFER" id="segTrf">Transfer</button>
       </div>
       <label id="rSecWrap"><span id="rSecLbl">Section</span><select id="rSec"></select></label>
       <label>Item<select id="rItem" required></select></label>
+      <div id="rPicked"></div>
       <div id="rInfo" class="hint"></div>
       <div class="two">
         <label>Quantity<input id="rQty" type="number" min="1" step="1" inputmode="numeric" required></label>
@@ -212,7 +239,7 @@ label input,label select,label textarea{margin-top:4px}
         <label>Photo (optional)<input id="rPhoto" type="file" accept="image/*"></label>
         <img id="rPrev" class="prev" hidden>
       </div>
-      <button class="btn full red" id="rSubmit">Report broken</button>
+      <button class="btn full red lg" id="rSubmit">Report broken</button>
     </form>
   </section>
 
@@ -223,6 +250,7 @@ label input,label select,label textarea{margin-top:4px}
         <div class="bar">
           <select id="oSec"></select>
           <input id="oQ" placeholder="Search or scan code...">
+          <button class="btn blu" id="oScan">Scan QR</button>
         </div>
         <div class="flex">
           <label class="check"><input type="checkbox" id="oBlind"> Blind count sheet (hide system stock)</label>
@@ -328,35 +356,68 @@ const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoo
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let S = { items: [], groups: [], log: [], secs: [], closings: [], reasons: [], hasLost: false, hasPrice: false, hasSection: false,
-          hasTrf: false, hasCode: false, hasMin: false, codePrefix: 'KU-', low: 5, pin: false, type: 'BROKEN', sec: '' };
+let S = { role: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], hasLost: false, hasPrice: false,
+          hasSection: false, hasTrf: false, hasCode: false, hasMin: false, codePrefix: 'KU-', low: 5, type: 'BROKEN', sec: '' };
 let LBL = { only: null, skip: new Set(), cur: [] };
 let OP = { sec: null, counts: {} };
+let SCN = null;
 const APP_URL = location.href.split(/[?#]/)[0];
-let DEEP = (() => { const p = new URLSearchParams(location.search); return { code: p.get('code'), item: p.get('item') }; })();
+let DEEP = (() => { const p = new URLSearchParams(location.search); return { code: p.get('code'), item: p.get('item'), sec: p.get('sec') }; })();
+const isSpv = () => S.role === 'spv';
 
 /* ---------- API ---------- */
 async function get(action, params = {}) {
   const u = new URL(API.trim());
   u.searchParams.set('action', action);
+  u.searchParams.set('pin', ls('inv_pin') || '');
   for (const k in params) u.searchParams.set(k, params[k]);
   const j = await (await fetch(u)).json();
-  if (!j.ok) throw new Error(j.error);
+  if (!j.ok) { if (j.error === 'Wrong PIN') logout(true); throw new Error(j.error); }
   return j.data;
 }
 async function post(body) {
-  if (S.pin && !ls('inv_pin')) {
-    const p = prompt('Enter PIN');
-    if (!p) throw new Error('PIN required');
-    ls('inv_pin', p);
-  }
-  body.pin = ls('inv_pin') || '';
+  body.pin = body.pin || ls('inv_pin') || '';
   body.by = body.by || ls('inv_by') || '';
   const r = await fetch(API.trim(), { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
   const j = await r.json();
-  if (!j.ok) { if (j.error === 'Wrong PIN') ls('inv_pin', null); throw new Error(j.error); }
+  if (!j.ok) { if (j.error === 'Wrong PIN' && body.action !== 'login') logout(true); throw new Error(j.error); }
   return j.data;
 }
+
+/* ---------- LOGIN ---------- */
+function showLogin() { $('#login').hidden = false; $('#lgPin').value = ''; setTimeout(() => $('#lgPin').focus(), 100); }
+async function doLogin() {
+  const pin = $('#lgPin').value.trim();
+  if (!pin) return toast('Enter PIN', 1);
+  const btn = $('#lgBtn'); btn.disabled = true; btn.textContent = 'Checking...';
+  try {
+    const r = await post({ action: 'login', pin });
+    ls('inv_pin', pin); ls('inv_role', r.role); S.role = r.role;
+    $('#login').hidden = true;
+    toast('Logged in as ' + (r.role === 'spv' ? 'Supervisor' : 'Staff'));
+    applyRole(); tab(isSpv() ? 'dash' : 'rep');
+    await load();
+  } catch (e) { toast(e.message === 'Wrong PIN' ? 'Wrong PIN' : e.message, 1); }
+  finally { btn.disabled = false; btn.textContent = 'Login'; }
+}
+function logout(silent) {
+  ls('inv_pin', null); ls('inv_role', null); S.role = '';
+  closeModal();
+  if (!silent) toast('Logged out');
+  showLogin();
+}
+function applyRole() {
+  const spv = isSpv();
+  $('#nav').hidden = !spv;
+  $('#roleTag').textContent = spv ? 'Supervisor' : 'Staff';
+  $('#segAdd').hidden = !spv;
+  $('#segTrf').hidden = !spv || !S.hasSection;
+  if (!spv) {
+    if (S.type !== 'BROKEN' && S.type !== 'LOST') setType('BROKEN');
+    if (!['rep'].includes(currentTab())) tab('rep');
+  }
+}
+function currentTab() { const s = [...document.querySelectorAll('main section')].find(x => !x.hidden); return s ? s.id : ''; }
 
 /* ---------- UTILS ---------- */
 function ls(k, v) {
@@ -394,7 +455,17 @@ const ym = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'
 const thisMonth = () => ym(new Date());
 function monthLabel(m) { const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleString('en', { month: 'long', year: 'numeric' }); }
 const closedMonths = () => [...new Set(S.closings.map(c => c.month))].sort();
-const scanCode = v => { const m = String(v).match(/[?&]code=([^&#\s]+)/); return m ? decodeURIComponent(m[1]) : v; };
+function parseScan(txt) {
+  txt = String(txt || '').trim();
+  try {
+    const u = new URL(txt);
+    return { code: u.searchParams.get('code') || '', item: u.searchParams.get('item') || '', sec: u.searchParams.get('sec') || '' };
+  } catch (e) { return { code: txt, item: '', sec: '' }; }
+}
+const scanCode = v => { const p = parseScan(v); return /^https?:/i.test(String(v).trim()) ? (p.code || p.item) : v; };
+function findGroup(p) {
+  return S.groups.find(g => (p.code && nk(g.code) === nk(p.code)) || (p.item && nk(g.item) === nk(p.item)) || (!p.item && p.code && nk(g.item) === nk(p.code)));
+}
 function sigBlock(labels, names) {
   return `<div class="sigs">${labels.map((l, i) => `<div>${l}<div class="ln"></div><b>${esc((names && names[i]) || '') || '&nbsp;'}</b></div>`).join('')}</div>`;
 }
@@ -420,20 +491,48 @@ function previewOn(inputId, imgId) {
   };
 }
 
+/* ---------- SCANNER ---------- */
+function openScanner(onCode) {
+  if (!window.Html5Qrcode) return toast('Scanner not available – choose the item from the list', 1);
+  openModal(`
+    <div class="mh"><h3>Scan QR label</h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div id="qrReader"></div>
+    <div class="hint" style="margin:10px 0 0">Point the camera at the QR code on the label.</div>`);
+  SCN = new Html5Qrcode('qrReader');
+  SCN.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 230, height: 230 } },
+    txt => { closeModal(); onCode(txt); }, () => {})
+    .catch(err => { toast('Camera error: ' + err, 1); closeModal(); });
+}
+function stopScanner() {
+  if (!SCN) return;
+  const s = SCN; SCN = null;
+  s.stop().then(() => s.clear()).catch(() => {});
+}
+
 /* ---------- LOAD ---------- */
 async function load() {
+  if (!ls('inv_pin')) { showLogin(); return; }
+  S.role = ls('inv_role') || S.role || 'staff';
+  applyRole();
   $('#sub').textContent = 'Loading...';
   try {
-    const [inv, log, cl] = await Promise.all([get('list'), get('log', { limit: 3000 }), get('closing')]);
+    let inv, log = [], cl = [];
+    if (isSpv()) [inv, log, cl] = await Promise.all([get('list'), get('log', { limit: 3000 }), get('closing')]);
+    else inv = await get('list');
+    if (inv.role && inv.role !== S.role) { S.role = inv.role; ls('inv_role', inv.role); }
     S.items = inv.items; S.secs = inv.sections || []; S.reasons = inv.reasons || [];
     S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice; S.hasSection = inv.hasSection; S.hasTrf = inv.hasTrf;
     S.hasCode = inv.hasCode; S.hasMin = inv.hasMin; S.codePrefix = inv.codePrefix || 'KU-';
-    S.low = inv.lowStock; S.pin = inv.pinRequired; S.log = log; S.closings = cl;
+    S.low = inv.lowStock; S.log = log; S.closings = cl;
     if (S.sec && S.secs.indexOf(S.sec) < 0) S.sec = '';
     buildGroups();
-    fillSecs(); fillReasons(); renderChips(); renderDash(); renderList(); fillItems(); renderHis(); renderCloseInfo(); renderRecap();
-    if (!$('#lab').hidden) renderLabels();
-    if (!$('#opn').hidden) renderOpname();
+    fillSecs(); fillReasons(); fillItems();
+    if (isSpv()) {
+      renderChips(); renderDash(); renderList(); renderHis(); renderCloseInfo(); renderRecap();
+      if (!$('#lab').hidden) renderLabels();
+      if (!$('#opn').hidden) renderOpname();
+    }
+    applyRole();
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     handleDeepLink();
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
@@ -443,9 +542,10 @@ function handleDeepLink() {
   if (!DEEP || (!DEEP.code && !DEEP.item)) return;
   const d = DEEP; DEEP = null;
   try { history.replaceState(null, '', APP_URL); } catch (e) {}
-  const g = S.groups.find(g => (d.code && nk(g.code) === nk(d.code)) || (d.item && nk(g.item) === nk(d.item)));
-  if (g) { tab('inv'); openItem(g.id); }
-  else toast('Item ' + (d.code || d.item) + ' not found', 1);
+  const g = findGroup(d);
+  if (!g) return toast('Item ' + (d.code || d.item) + ' not found', 1);
+  if (isSpv()) { tab('inv'); openItem(g.id); }
+  else selectForReport(g, d.sec);
 }
 
 function buildGroups() {
@@ -474,7 +574,7 @@ function fillSecs() {
   set('#rSec', ''); set('#rTo', '— choose section —'); set('#hSec', 'All sections'); set('#cSec', 'All sections');
   set('#lSec', 'All items (one label per item)'); set('#oSec', '');
   if (OP.sec && S.secs.indexOf(OP.sec) > -1) $('#oSec').value = OP.sec;
-  ['#rSecWrap', '#segTrf', '#hSec', '#cSec', '#lSec', '#oSec'].forEach(id => $(id).hidden = !S.hasSection);
+  ['#rSecWrap', '#hSec', '#cSec', '#lSec', '#oSec'].forEach(id => $(id).hidden = !S.hasSection);
 }
 
 function fillReasons() {
@@ -594,11 +694,12 @@ function renderList() {
   $('#list').innerHTML = html || '<p class="empty">No items found</p>';
 }
 
-function openModal(html) { $('#sheet').innerHTML = html; $('#modal').hidden = false; }
-function closeModal() { $('#modal').hidden = true; }
+function openModal(html) { stopScanner(); $('#sheet').innerHTML = html; $('#modal').hidden = false; }
+function closeModal() { stopScanner(); $('#modal').hidden = true; }
 $('#modal').onclick = e => { if (e.target.id === 'modal') closeModal(); };
 
 function openItem(id) {
+  if (!isSpv()) return;
   const g = S.groups[id]; if (!g) return;
   const rows = g.rows, T = k => rows.reduce((a, r) => a + r[k], 0);
   const h = S.log.filter(l => nk(l.item) === nk(g.item)).slice(0, 10);
@@ -823,9 +924,12 @@ function qrSvg(text) {
   for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${c + m} ${r + m}h1v1h-1z`;
   return `<svg class="lqr" viewBox="0 0 ${n + 2 * m} ${n + 2 * m}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
 }
-function qrText(g) {
+function qrText(x) {
+  const g = x.g;
   if ($('#lMode').value === 'code') return g.code || g.item;
-  return APP_URL + '?' + (g.code ? 'code=' + encodeURIComponent(g.code) : 'item=' + encodeURIComponent(g.item));
+  let q = g.code ? 'code=' + encodeURIComponent(g.code) : 'item=' + encodeURIComponent(g.item);
+  if (x.sec) q += '&sec=' + encodeURIComponent(x.sec);
+  return APP_URL + '?' + q;
 }
 function openLabels(only) {
   closeModal();
@@ -854,7 +958,7 @@ function labelHtml(x, svg, size) {
   const photo = `<div class="lph">${g.photo ? `<img src="${esc(g.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : '🍽'}</div>`;
   if (size === 'qm' || size === 'qs') {
     return `
-      <div class="qh"><b>KITCHEN UTENSILS</b><span>${esc(x.sec || 'Scan for details')}</span></div>
+      <div class="qh"><b>KITCHEN UTENSILS</b><span>${esc(x.sec || 'Scan to report')}</span></div>
       <div class="qbody">
         <div class="qqr">${svg}</div>
         ${g.code ? `<div class="qcode">${esc(g.code)}</div>` : '<div class="qcode none">No code yet</div>'}
@@ -880,7 +984,7 @@ function renderLabels() {
   let html = '';
   list.forEach((x, i) => {
     let svg = '';
-    try { svg = qrSvg(qrText(x.g)); } catch (e) { svg = '<div class="lcode none">QR error</div>'; }
+    try { svg = qrSvg(qrText(x)); } catch (e) { svg = '<div class="lcode none">QR error</div>'; }
     const inner = labelHtml(x, svg, size);
     for (let c = 0; c < copies; c++) {
       html += `<div class="lbl${isCard ? ' qc' : ''}">
@@ -926,7 +1030,9 @@ function fillItems() {
 }
 function showInfo() {
   const i = byRow($('#rItem').value);
-  let info = i ? `Current stock${i.section ? ' in ' + esc(i.section) : ''}: <b>${i.closing}</b>${S.hasPrice && i.harga ? ' · ' + rp(i.harga) + ' / pcs' : ''}` : '';
+  const g = i ? groupOf(i.item) : null;
+  $('#rPicked').innerHTML = g ? `<div class="picked">${g.photo ? `<img src="${esc(g.photo)}" referrerpolicy="no-referrer" onerror="noImg(this)">` : '<div class="ph">🍽</div>'}<div><b>${codeTag(g.code)}${esc(g.item)}</b>${i.section ? `<div class="meta">${esc(i.section)}</div>` : ''}</div></div>` : '';
+  let info = i ? `Current stock${i.section ? ' in ' + esc(i.section) : ''}: <b>${i.closing}</b>${isSpv() && S.hasPrice && i.harga ? ' · ' + rp(i.harga) + ' / pcs' : ''}` : '';
   if (i && S.type === 'TRANSFER') {
     const to = $('#rTo').value;
     if (to) {
@@ -936,15 +1042,16 @@ function showInfo() {
   }
   $('#rInfo').innerHTML = info;
   const q = +$('#rQty').value;
-  $('#rVal').innerHTML = (i && q > 0 && S.hasPrice && i.harga && (S.type === 'BROKEN' || S.type === 'LOST'))
+  $('#rVal').innerHTML = (isSpv() && i && q > 0 && S.hasPrice && i.harga && (S.type === 'BROKEN' || S.type === 'LOST'))
     ? `Loss value: <b class="neg">${rp(q * i.harga)}</b>` : '';
 }
 function setType(t) {
+  if (!isSpv() && t !== 'BROKEN' && t !== 'LOST') t = 'BROKEN';
   S.type = t;
   document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
   const btn = $('#rSubmit');
   btn.textContent = { BROKEN: 'Report broken', LOST: 'Report lost', ADD: 'Add stock', TRANSFER: 'Transfer stock' }[t];
-  btn.className = 'btn full ' + { BROKEN: 'red', LOST: 'amb', ADD: '', TRANSFER: 'blu' }[t];
+  btn.className = 'btn full lg ' + { BROKEN: 'red', LOST: 'amb', ADD: '', TRANSFER: 'blu' }[t];
   $('#rToWrap').hidden = t !== 'TRANSFER';
   $('#rTo').required = t === 'TRANSFER';
   $('#rPhotoWrap').hidden = t === 'TRANSFER';
@@ -952,17 +1059,26 @@ function setType(t) {
   fillReasons();
   showInfo();
 }
-function goReport(id, t) {
-  const g = S.groups[id];
-  closeModal(); tab('rep'); setType(t);
+function selectForReport(g, sec, type) {
+  tab('rep');
+  if (type) setType(type);
   if (S.hasSection) {
-    const sec = (S.sec && g.rows.some(r => r.section === S.sec)) ? S.sec : g.rows[0].section;
-    $('#rSec').value = sec;
+    const cur = $('#rSec').value;
+    const s = (sec && g.rows.some(r => r.section === sec)) ? sec
+      : (g.rows.some(r => r.section === cur) ? cur : g.rows[0].section);
+    $('#rSec').value = s;
   }
   fillItems();
   const r = g.rows.find(r => !S.hasSection || r.section === $('#rSec').value);
   if (r) $('#rItem').value = r.row;
-  showInfo(); $('#rQty').focus();
+  showInfo();
+  if (S.hasSection && g.rows.length > 1 && !sec) toast(g.item + ' – check the section is correct');
+  $('#rQty').focus();
+}
+function goReport(id, t) {
+  const g = S.groups[id];
+  closeModal();
+  selectForReport(g, S.sec, t);
 }
 
 document.querySelectorAll('#seg button').forEach(b => b.onclick = () => setType(b.dataset.t));
@@ -971,10 +1087,17 @@ $('#rItem').onchange = showInfo;
 $('#rTo').onchange = showInfo;
 $('#rQty').oninput = showInfo;
 previewOn('#rPhoto', '#rPrev');
+$('#scanBtn').onclick = () => openScanner(txt => {
+  const p = parseScan(txt);
+  const g = findGroup(p);
+  if (!g) return toast('Item not found: ' + (p.code || p.item || txt), 1);
+  selectForReport(g, p.sec);
+  toast('Selected: ' + g.item);
+});
 
 $('#repForm').onsubmit = async e => {
   e.preventDefault();
-  const i = byRow($('#rItem').value); if (!i) return toast('Choose an item', 1);
+  const i = byRow($('#rItem').value); if (!i) return toast('Choose an item or scan QR', 1);
   const qty = +$('#rQty').value;
   if (!(qty > 0)) return toast('Enter quantity', 1);
   if (S.type !== 'ADD' && qty > i.closing) return toast('Quantity is more than current stock (' + i.closing + ')', 1);
@@ -985,7 +1108,8 @@ $('#repForm').onsubmit = async e => {
     if (!to) return toast('Choose destination section', 1);
     if (to === i.section) return toast('Destination must be a different section', 1);
   }
-  const by = $('#rBy').value.trim(); ls('inv_by', by);
+  const by = $('#rBy').value.trim(); if (!by) return toast('Fill "Reported by"', 1);
+  ls('inv_by', by);
   const btn = $('#rSubmit'), f = $('#rPhoto').files[0];
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
@@ -998,9 +1122,10 @@ $('#repForm').onsubmit = async e => {
         reason: loss ? $('#rReason').value : '',
         note: $('#rNote').value.trim(), photo: f ? await compress(f) : ''
       });
-      toast('Saved');
+      toast((S.type === 'BROKEN' ? 'Broken' : S.type === 'LOST' ? 'Lost' : 'Stock') + ' saved – ' + qty + ' × ' + i.item);
     }
     $('#rQty').value = ''; $('#rNote').value = ''; $('#rPhoto').value = ''; $('#rPrev').hidden = true; $('#rReason').value = '';
+    if (!isSpv()) $('#rItem').value = '';
     await load();
   } catch (err) { toast(err.message, 1); }
   finally { btn.disabled = false; setType(S.type); }
@@ -1085,193 +1210,4 @@ function recapData() {
     if (!agg[k].price && price) agg[k].price = price;
     return agg[k];
   };
-  if (closed) S.closings.filter(c => c.month === m && (!sec || c.section === sec)).forEach(c => { const a = A(c.item, c.no, c.harga); a.opening += c.awal; a.stock += c.closing; });
-  else S.items.filter(r => !sec || r.section === sec).forEach(r => { const a = A(r.item, r.no, r.harga); a.opening += r.awal; a.stock += r.closing; });
-  logs.forEach(l => {
-    const a = A(l.item, '', l.price || priceOf(l.item));
-    if (l.type === 'ADD') a.add += l.qty;
-    else if (l.type === 'TRANSFER IN') a.trf += l.qty;
-    else if (l.type === 'TRANSFER OUT') a.trf -= l.qty;
-    else { a[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; a.value += lossVal(l); }
-  });
-  let rows = order;
-  if (sec) rows = rows.filter(r => r.opening || r.stock || r.add || r.trf || r.broken || r.lost);
-  if (S.hasCode) rows = [...rows].sort(byCode);
-
-  const secList = S.hasSection ? (sec ? [sec] : S.secs) : [];
-  const bySec = secList.map(s => {
-    const o = { sec: s, opening: 0, add: 0, tin: 0, tout: 0, broken: 0, lost: 0, value: 0, stock: 0 };
-    if (closed) S.closings.filter(c => c.month === m && c.section === s).forEach(c => { o.opening += c.awal; o.stock += c.closing; });
-    else S.items.filter(r => r.section === s).forEach(r => { o.opening += r.awal; o.stock += r.closing; });
-    S.log.filter(l => l.ts.startsWith(m) && l.loc === s).forEach(l => {
-      if (l.type === 'ADD') o.add += l.qty;
-      else if (l.type === 'TRANSFER IN') o.tin += l.qty;
-      else if (l.type === 'TRANSFER OUT') o.tout += l.qty;
-      else if (isLoss(l)) { o[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; o.value += lossVal(l); }
-    });
-    return o;
-  });
-  const cz = {};
-  logs.filter(isLoss).forEach(l => {
-    const k = l.reason || '(not specified)';
-    const o = cz[k] || (cz[k] = { cause: k, broken: 0, lost: 0, value: 0 });
-    o[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; o.value += lossVal(l);
-  });
-  const t = rows.reduce((a, r) => {
-    ['opening', 'add', 'trf', 'broken', 'lost', 'value', 'stock'].forEach(k => a[k] += r[k]); return a;
-  }, { opening: 0, add: 0, trf: 0, broken: 0, lost: 0, value: 0, stock: 0 });
-  return {
-    m, sec, closed, rows, bySec, t,
-    causes: Object.values(cz).sort((a, b) => b.value - a.value || (b.broken + b.lost) - (a.broken + a.lost)),
-    incidents: logs.filter(isLoss).slice().reverse(),
-    transfers: logs.filter(l => l.type === 'TRANSFER OUT' || (sec && l.type === 'TRANSFER IN')).slice().reverse()
-  };
-}
-
-function renderRecap() {
-  const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, K = S.hasCode, sg = sigs();
-  let no = 1;
-  const cols = 7 + (P ? 2 : 0) + (T ? 1 : 0) + (K ? 1 : 0);
-  const head = `<th>No</th>${K ? '<th>Code</th>' : ''}<th>Item</th>${P ? '<th class="n">Price</th>' : ''}<th class="n">Opening</th><th class="n">Added</th>${T ? '<th class="n">Transfer</th>' : ''}<th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing stock' : 'Current stock'}</th>`;
-  const body = d.rows.map((r, i) => `<tr><td>${i + 1}</td>${K ? `<td>${esc(r.code)}</td>` : ''}<td>${esc(r.item)}</td>${P ? `<td class="n">${r.price ? rp(r.price) : '-'}</td>` : ''}<td class="n">${r.opening}</td><td class="n">${r.add}</td>${T ? `<td class="n">${sgn(r.trf)}</td>` : ''}<td class="n">${r.broken}</td><td class="n">${r.lost}</td>${P ? `<td class="n">${rp(r.value)}</td>` : ''}<td class="n">${r.stock}</td></tr>`).join('');
-  const foot = `<tr><td></td>${K ? '<td></td>' : ''}<td>TOTAL</td>${P ? '<td></td>' : ''}<td class="n">${d.t.opening}</td><td class="n">${d.t.add}</td>${T ? `<td class="n">${sgn(d.t.trf)}</td>` : ''}<td class="n">${d.t.broken}</td><td class="n">${d.t.lost}</td>${P ? `<td class="n">${rp(d.t.value)}</td>` : ''}<td class="n">${d.t.stock}</td></tr>`;
-
-  const secTbl = d.bySec.length ? `<h4>${++no}. By section</h4>
-    <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Section</th><th class="n">Opening</th><th class="n">Added</th><th class="n">Trf in</th><th class="n">Trf out</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing' : 'Current'}</th></tr></thead>
-      <tbody>${d.bySec.map(s => `<tr><td>${esc(s.sec)}</td><td class="n">${s.opening}</td><td class="n">${s.add}</td><td class="n">${s.tin}</td><td class="n">${s.tout}</td><td class="n">${s.broken}</td><td class="n">${s.lost}</td>${P ? `<td class="n">${rp(s.value)}</td>` : ''}<td class="n">${s.stock}</td></tr>`).join('')}</tbody>
-    </table></div>` : '';
-
-  const causeTbl = `<h4>${++no}. Loss by cause</h4>
-    <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Cause</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}</tr></thead>
-      <tbody>${d.causes.map(c => `<tr><td>${esc(c.cause)}</td><td class="n">${c.broken}</td><td class="n">${c.lost}</td>${P ? `<td class="n">${rp(c.value)}</td>` : ''}</tr>`).join('') || `<tr><td colspan="4" class="empty">No breakage or loss this period</td></tr>`}</tbody>
-    </table></div>`;
-
-  const incTbl = `<h4>${++no}. Incident detail (broken / lost)</h4>
-    <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Date</th><th>Type</th>${K ? '<th>Code</th>' : ''}<th>Item</th>${S.hasSection ? '<th>Section</th>' : ''}<th class="n">Qty</th>${P ? '<th class="n">Value</th>' : ''}<th>Cause</th><th>Reported by</th><th>Note</th></tr></thead>
-      <tbody>${d.incidents.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type}</td>${K ? `<td>${esc(codeOf(l.item))}</td>` : ''}<td>${esc(l.item)}</td>${S.hasSection ? `<td>${esc(l.loc || '-')}</td>` : ''}<td class="n">${l.qty}</td>${P ? `<td class="n">${rp(lossVal(l))}</td>` : ''}<td>${esc(l.reason || '-')}</td><td>${esc(l.by || '-')}</td><td>${esc(l.note)}</td></tr>`).join('') || `<tr><td colspan="10" class="empty">No incidents</td></tr>`}</tbody>
-    </table></div>`;
-
-  const trfTbl = S.hasSection ? `<h4>${++no}. Transfers</h4>
-    <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Date</th><th>Type</th>${K ? '<th>Code</th>' : ''}<th>Item</th><th>Section</th><th class="n">Qty</th><th>Detail</th><th>By</th></tr></thead>
-      <tbody>${d.transfers.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type === 'TRANSFER IN' ? 'IN' : 'OUT'}</td>${K ? `<td>${esc(codeOf(l.item))}</td>` : ''}<td>${esc(l.item)}</td><td>${esc(l.loc)}</td><td class="n">${l.qty}</td><td>${esc(l.note)}</td><td>${esc(l.by || '-')}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No transfers</td></tr>`}</tbody>
-    </table></div>` : '';
-
-  $('#rpt').innerHTML = `
-    <div class="rh">
-      <h2>Kitchen Utensils – Lost &amp; Breakage Report</h2>
-      <div>Period: <b>${monthLabel(d.m)}</b>${S.hasSection ? ` · Section: <b>${esc(d.sec || 'All sections')}</b>` : ''}</div>
-      <div>${C ? 'Month closed' : 'Month not closed yet – stock shown is current stock'} · Generated ${new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
-    </div>
-    <div class="rsum">
-      <div><small>Added</small><b>${d.t.add}</b></div>
-      <div><small>Broken</small><b>${d.t.broken}</b></div>
-      <div><small>Lost</small><b>${d.t.lost}</b></div>
-      <div><small>${P ? 'Loss value' : 'Total loss'}</small><b>${P ? rp(d.t.value) : d.t.broken + d.t.lost}</b></div>
-    </div>
-    <h4>1. Summary per item${d.sec ? ' – ' + esc(d.sec) : (S.hasSection ? ' (all sections combined)' : '')}</h4>
-    <div class="tbl-wrap"><table class="tbl">
-      <thead><tr>${head}</tr></thead>
-      <tbody>${body || `<tr><td colspan="${cols}" class="empty">No data</td></tr>`}</tbody>
-      <tfoot>${foot}</tfoot>
-    </table></div>
-    ${secTbl}${causeTbl}${incTbl}${trfTbl}
-    <div class="sigs">${sg.map(s => `<div>${s.label}<div class="ln"></div><b>${esc(s.name) || '&nbsp;'}</b><br><span style="color:var(--mute)">${esc(s.role) || '&nbsp;'}</span></div>`).join('')}</div>`;
-}
-
-function downloadXls() {
-  if (!window.XLSX) return toast('Excel library not loaded, check internet connection', 1);
-  const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, K = S.hasCode, sg = sigs();
-  const head = [['KITCHEN UTENSILS - LOST & BREAKAGE REPORT'], ['Period', monthLabel(d.m)],
-    ['Section', d.sec || (S.hasSection ? 'All sections' : '-')],
-    ['Status', C ? 'Month closed' : 'Month not closed - stock is current stock'], []];
-
-  const h1 = ['NO', ...(K ? ['CODE'] : []), 'ITEM', ...(P ? ['PRICE'] : []), 'OPENING', 'ADDED', ...(T ? ['TRANSFER'] : []), 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING STOCK' : 'CURRENT STOCK'];
-  const s1 = head.concat([h1]);
-  d.rows.forEach((r, i) => s1.push([i + 1, ...(K ? [r.code] : []), r.item, ...(P ? [r.price] : []), r.opening, r.add, ...(T ? [r.trf] : []), r.broken, r.lost, ...(P ? [r.value] : []), r.stock]));
-  s1.push(['', ...(K ? [''] : []), 'TOTAL', ...(P ? [''] : []), d.t.opening, d.t.add, ...(T ? [d.t.trf] : []), d.t.broken, d.t.lost, ...(P ? [d.t.value] : []), d.t.stock]);
-  s1.push([], [], [sg[0].label, '', '', sg[1].label, '', '', sg[2].label], [], [], [],
-    [sg[0].name, '', '', sg[1].name, '', '', sg[2].name], [sg[0].role, '', '', sg[1].role, '', '', sg[2].role]);
-
-  const wb = XLSX.utils.book_new();
-  const add = (aoa, name, cols) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = cols.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, name); };
-  add(s1, 'Summary', [16, ...(K ? [10] : []), 32, 12, 10, 9, 10, 9, 9, 14, 14]);
-
-  if (d.bySec.length) {
-    const s2 = head.concat([['SECTION', 'OPENING', 'ADDED', 'TRF IN', 'TRF OUT', 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : []), C ? 'CLOSING' : 'CURRENT']]);
-    d.bySec.forEach(s => s2.push([s.sec, s.opening, s.add, s.tin, s.tout, s.broken, s.lost, ...(P ? [s.value] : []), s.stock]));
-    add(s2, 'By Section', [22, 10, 9, 9, 9, 9, 9, 14, 10]);
-  }
-
-  const sc = head.concat([['CAUSE', 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : [])]]);
-  d.causes.forEach(c => sc.push([c.cause, c.broken, c.lost, ...(P ? [c.value] : [])]));
-  add(sc, 'Causes', [32, 10, 10, 14]);
-
-  const s3 = head.concat([['DATE', 'TYPE', ...(K ? ['CODE'] : []), 'ITEM', ...(S.hasSection ? ['SECTION'] : []), 'QTY', ...(P ? ['PRICE', 'VALUE'] : []), 'CAUSE', 'REPORTED BY', 'NOTE']]);
-  d.incidents.forEach(l => s3.push([l.ts, l.type, ...(K ? [codeOf(l.item)] : []), l.item, ...(S.hasSection ? [l.loc] : []), l.qty, ...(P ? [l.price || priceOf(l.item), lossVal(l)] : []), l.reason, l.by, l.note]));
-  add(s3, 'Incidents', [17, 9, ...(K ? [10] : []), 28, 18, 6, 12, 12, 26, 16, 30]);
-
-  if (S.hasSection) {
-    const s4 = head.concat([['DATE', 'TYPE', ...(K ? ['CODE'] : []), 'ITEM', 'SECTION', 'QTY', 'DETAIL', 'BY']]);
-    d.transfers.forEach(l => s4.push([l.ts, l.type, ...(K ? [codeOf(l.item)] : []), l.item, l.loc, l.qty, l.note, l.by]));
-    add(s4, 'Transfers', [17, 13, ...(K ? [10] : []), 28, 18, 6, 30, 16]);
-  }
-  XLSX.writeFile(wb, 'Lost-Breakage-' + d.m + (d.sec ? '-' + d.sec.replace(/\W+/g, '_') : '') + '.xlsx');
-}
-
-/* ---------- TABS & INIT ---------- */
-function tab(t) {
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t || (t === 'lab' && b.dataset.tab === 'inv')));
-  document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== t);
-  if (t === 'rec') renderRecap();
-  if (t === 'lab') renderLabels();
-  if (t === 'opn') renderOpname();
-  scrollTo(0, 0);
-}
-document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
-$('#q').oninput = () => {
-  const v = scanCode($('#q').value);
-  if (v !== $('#q').value) $('#q').value = v;
-  renderList();
-};
-$('#sort').onchange = renderList;
-$('#hType').onchange = renderHis; $('#hMonth').onchange = renderHis; $('#hSec').onchange = renderHis;
-$('#cMonth').onchange = renderRecap; $('#cSec').onchange = renderRecap;
-SIGS.forEach(([k]) => ['n', 'r'].forEach(x => {
-  const el = $('#' + k + x); el.value = ls('inv_' + k + x) || '';
-  el.oninput = () => { ls('inv_' + k + x, el.value); renderRecap(); };
-}));
-// Opname
-$('#oSec').onchange = () => { $('#opRpt').hidden = true; renderOpname(); };
-$('#oQ').oninput = () => {
-  const v = scanCode($('#oQ').value);
-  if (v !== $('#oQ').value) $('#oQ').value = v;
-  renderOpname();
-  const inputs = document.querySelectorAll('#oList .ocnt');
-  if (inputs.length === 1 && v) inputs[0].focus();
-};
-$('#oSheet').onclick = printCountSheet;
-$('#oClear').onclick = () => { if (confirm('Clear all counts for this section?')) { OP.counts = {}; opSave(); renderOpname(); } };
-$('#oSubmit').onclick = submitOpname;
-// Labels
-$('#lblBtn').onclick = () => openLabels(null);
-$('#lSec').onchange = () => { LBL.only = null; renderLabels(); };
-$('#lQ').oninput = () => { LBL.only = null; renderLabels(); };
-$('#lSize').onchange = renderLabels;
-$('#lMode').onchange = renderLabels;
-$('#lCopies').oninput = renderLabels;
-$('#lPrint').onclick = printLabels;
-$('#closeBtn').onclick = openClose;
-$('#cPrint').onclick = () => { renderRecap(); window.print(); };
-$('#cXls').onclick = downloadXls;
-$('#refresh').onclick = load;
-$('#rBy').value = ls('inv_by') || '';
-$('#hMonth').value = thisMonth();
-$('#cMonth').value = thisMonth();
-load();
-</script>
-</body>
-</html>
+  if (closed) S.closings.filter(c
