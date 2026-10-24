@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kitchen Inventory</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <style>
 :root{--bg:#f4f5f3;--card:#fff;--ink:#1d2621;--mute:#6a756e;--line:#e1e5e1;--pri:#1f6f54;--pri2:#e5f1ec;--red:#c0392b;--red2:#fbecea;--amb:#b26b00;--amb2:#fdf3e1;--blu:#2b5797;--blu2:#e8eef7}
 *{box-sizing:border-box}
@@ -31,6 +32,7 @@ label input,label select,label textarea{margin-top:4px}
 .btn{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:600;background:var(--pri);color:#fff;cursor:pointer;white-space:nowrap}
 .btn.red{background:var(--red)}.btn.amb{background:var(--amb)}.btn.blu{background:var(--blu)}.btn.ghost{background:var(--pri2);color:var(--pri)}
 .btn.full{width:100%}.btn:disabled{opacity:.6}
+.link{border:0;background:none;color:var(--pri);font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
 .chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
 .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 14px;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer;color:var(--ink)}
 .chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}
@@ -86,6 +88,24 @@ label input,label select,label textarea{margin-top:4px}
 .rpt h4{margin:6px 0 6px}
 .sigs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;text-align:center;font-size:13px;page-break-inside:avoid}
 .sigs .ln{height:64px;border-bottom:1px solid var(--ink);margin:6px 8px 4px}
+/* Labels */
+.labels{display:grid;gap:2mm;justify-content:center}
+.labels.lm{grid-template-columns:repeat(auto-fill,60mm)}
+.labels.ll{grid-template-columns:repeat(auto-fill,90mm)}
+.labels.ls{grid-template-columns:repeat(auto-fill,44mm)}
+.lbl{position:relative;background:#fff;border:1px dashed #b9c2bc;border-radius:2mm;display:flex;gap:2.5mm;padding:2.5mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid;color:#000}
+.lm .lbl{width:60mm;height:38mm}.ll .lbl{width:90mm;height:50mm}.ls .lbl{width:44mm;height:28mm;padding:2mm}
+.lph{flex:none;border-radius:1.5mm;background:#f1f3f1;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px}
+.lm .lph{width:19mm;height:19mm}.ll .lph{width:30mm;height:30mm}
+.lph img{width:100%;height:100%;object-fit:cover}
+.lbody{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
+.lname{font-weight:700;font-size:9.5pt;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ll .lname{font-size:12pt}.ls .lname{font-size:8pt;-webkit-line-clamp:1}
+.lsec{font-size:7pt;color:#555;margin-top:.5mm}
+.ll .lsec{font-size:8.5pt}
+.lbc{width:100%;height:auto;display:block}
+.lnocode{font-size:8pt;color:#c0392b}
+.lx{position:absolute;top:1mm;right:1mm;border:0;background:#fbecea;color:#c0392b;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:20px;padding:0}
 @media(max-width:520px){.rsum{grid-template-columns:repeat(2,1fr)}}
 @media print{
   @page{size:A4;margin:12mm}
@@ -93,8 +113,10 @@ label input,label select,label textarea{margin-top:4px}
   .top,.noprint,#toast,#modal{display:none!important}
   main{padding:0;max-width:none}
   #rpt{border:0;padding:0;margin:0}
-  .tbl th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tbl th,.lph{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .tbl-wrap{overflow:visible}
+  .labels{justify-content:start}
+  .lbl{border:1px dashed #999}
 }
 </style>
 </head>
@@ -128,6 +150,7 @@ label input,label select,label textarea{margin-top:4px}
         <option value="broken">Most broken/lost</option>
         <option value="price">Highest price</option>
       </select>
+      <button class="btn ghost" id="lblBtn">Labels</button>
       <button class="btn" id="newBtn">+ New item</button>
     </div>
     <div id="list"></div>
@@ -196,6 +219,34 @@ label input,label select,label textarea{margin-top:4px}
     </div>
     <div id="rpt" class="card rpt"></div>
   </section>
+
+  <section id="lab" hidden>
+    <div class="card noprint">
+      <div class="flex" style="margin-bottom:12px">
+        <h3 style="margin:0">Barcode labels</h3>
+        <button class="btn ghost" onclick="tab('inv')">← Back</button>
+      </div>
+      <div class="bar">
+        <select id="lSec"></select>
+        <input id="lQ" placeholder="Filter name or code...">
+      </div>
+      <div class="two">
+        <label>Label size
+          <select id="lSize">
+            <option value="m">Medium · 60 × 38 mm (3 per row)</option>
+            <option value="l">Large · 90 × 50 mm (2 per row)</option>
+            <option value="s">Small · 44 × 28 mm (4 per row, no photo)</option>
+          </select>
+        </label>
+        <label>Copies per item<input id="lCopies" type="number" min="1" max="20" value="1" inputmode="numeric"></label>
+      </div>
+      <div class="flex">
+        <div class="meta" id="lInfo"></div>
+        <button class="btn" id="lPrint">Print labels</button>
+      </div>
+    </div>
+    <div id="labels" class="labels lm"></div>
+  </section>
 </main>
 
 <div id="modal" class="modal" hidden><div class="sheet" id="sheet"></div></div>
@@ -208,6 +259,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let S = { items: [], groups: [], log: [], secs: [], closings: [], hasLost: false, hasPrice: false, hasSection: false, hasTrf: false,
           hasCode: false, codePrefix: 'KU-', low: 5, pin: false, type: 'BROKEN', sec: '' };
+let LBL = { only: null, skip: new Set(), cur: [] };
 
 /* ---------- API ---------- */
 async function get(action, params = {}) {
@@ -300,6 +352,7 @@ async function load() {
     if (S.sec && S.secs.indexOf(S.sec) < 0) S.sec = '';
     buildGroups();
     fillSecs(); renderChips(); renderDash(); renderList(); fillItems(); renderHis(); renderCloseInfo(); renderRecap();
+    if (!$('#lab').hidden) renderLabels();
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
 }
@@ -328,10 +381,12 @@ function fillSecs() {
     if (v && [...s.options].some(o => o.value === v)) s.value = v;
   };
   set('#rSec', ''); set('#rTo', '— choose section —'); set('#hSec', 'All sections'); set('#cSec', 'All sections');
+  set('#lSec', 'All items (one label per item)');
   $('#rSecWrap').hidden = !S.hasSection;
   $('#segTrf').hidden = !S.hasSection;
   $('#hSec').hidden = !S.hasSection;
   $('#cSec').hidden = !S.hasSection;
+  $('#lSec').hidden = !S.hasSection;
 }
 
 /* ---------- DASHBOARD ---------- */
@@ -461,6 +516,7 @@ function openItem(id) {
       <button class="btn" onclick="goReport(${g.id},'ADD')">Add</button>
       ${S.hasSection ? `<button class="btn blu" onclick="goReport(${g.id},'TRANSFER')">Transfer</button>` : ''}
     </div>
+    <button class="btn ghost full" style="margin-bottom:14px" onclick="openLabels(${g.id})">Print barcode label</button>
     <div class="two">
       ${S.hasCode ? `<label>Code<input id="eCode" value="${esc(g.code)}" autocapitalize="characters"></label>` : ''}
       ${S.hasPrice ? `<label>Price per pcs (Rp)<input id="eHarga" type="number" min="0" inputmode="numeric" value="${g.harga || ''}"></label>` : ''}
@@ -527,6 +583,94 @@ async function saveNew() {
     });
     toast('Item added' + (r && r.code ? ' · ' + r.code : '')); closeModal(); load();
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Add item'; }
+}
+
+/* ---------- LABELS ---------- */
+function openLabels(only) {
+  closeModal();
+  LBL.only = (only === undefined || only === null) ? null : only;
+  LBL.skip.clear();
+  if (LBL.only !== null) { $('#lQ').value = ''; $('#lSec').value = ''; }
+  tab('lab');
+}
+function labelList() {
+  const sec = $('#lSec').value, q = nk($('#lQ').value);
+  let list;
+  if (LBL.only !== null) {
+    const g = S.groups[LBL.only];
+    list = g ? [{ g, sec: '' }] : [];
+  } else if (sec) {
+    list = S.items.filter(r => r.section === sec).map(r => ({ g: groupOf(r.item), sec }));
+  } else {
+    list = S.groups.map(g => ({ g, sec: '' }));
+  }
+  list = list.filter(x => x.g && (nk(x.g.item).includes(q) || nk(x.g.code).includes(q)));
+  list.sort((a, b) => byCode(a.g, b.g));
+  return list.filter(x => !LBL.skip.has(x.g.item + '|' + x.sec));
+}
+function renderLabels() {
+  const size = $('#lSize').value;
+  const copies = Math.max(1, Math.min(20, Math.round(+$('#lCopies').value || 1)));
+  const list = labelList();
+  LBL.cur = list;
+  const ids = [];
+  let html = '';
+  list.forEach((x, i) => {
+    for (let c = 0; c < copies; c++) {
+      const id = 'bc' + i + '_' + c;
+      if (x.g.code) ids.push([id, x.g.code]);
+      html += `<div class="lbl">
+        ${c === 0 ? `<button class="lx noprint" title="Hide this item" onclick="skipLabel(${i})">✕</button>` : ''}
+        ${size !== 's' ? `<div class="lph">${x.g.photo ? `<img src="${esc(x.g.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : '🍽'}</div>` : ''}
+        <div class="lbody">
+          <div><div class="lname">${esc(x.g.item)}</div>${x.sec ? `<div class="lsec">${esc(x.sec)}</div>` : ''}</div>
+          ${x.g.code ? `<svg id="${id}" class="lbc"></svg>` : '<div class="lnocode">No code yet</div>'}
+        </div>
+      </div>`;
+    }
+  });
+  const box = $('#labels');
+  box.className = 'labels l' + size;
+  box.innerHTML = html || '<p class="empty noprint">No items to print</p>';
+
+  if (window.JsBarcode) {
+    const opt = {
+      l: { height: 40, width: 1.8, fontSize: 14 },
+      m: { height: 30, width: 1.5, fontSize: 12 },
+      s: { height: 26, width: 1.3, fontSize: 11 }
+    }[size];
+    ids.forEach(([id, code]) => {
+      try {
+        const el = document.getElementById(id);
+        JsBarcode(el, code, { format: 'CODE128', displayValue: true, margin: 0, textMargin: 1, font: 'monospace', ...opt });
+        const w = el.getAttribute('width'), h = el.getAttribute('height');
+        el.setAttribute('viewBox', '0 0 ' + parseFloat(w) + ' ' + parseFloat(h));
+        el.removeAttribute('width'); el.removeAttribute('height');
+      } catch (e) {}
+    });
+  } else toast('Barcode library not loaded, check internet connection', 1);
+
+  const noCode = list.filter(x => !x.g.code).length;
+  let info = `${list.length} item${list.length === 1 ? '' : 's'} × ${copies} = <b>${list.length * copies}</b> labels`;
+  if (noCode) info += ` · <span style="color:var(--red)">${noCode} without code</span>`;
+  if (LBL.skip.size) info += ` · ${LBL.skip.size} hidden <button class="link" onclick="LBL.skip.clear();renderLabels()">show</button>`;
+  if (LBL.only !== null) info += ` · <button class="link" onclick="LBL.only=null;renderLabels()">show all items</button>`;
+  $('#lInfo').innerHTML = info;
+}
+function skipLabel(i) {
+  const x = LBL.cur[i]; if (!x) return;
+  LBL.skip.add(x.g.item + '|' + x.sec);
+  renderLabels();
+}
+async function printLabels() {
+  const imgs = [...document.querySelectorAll('#labels img')];
+  const btn = $('#lPrint'); btn.disabled = true; btn.textContent = 'Loading photos...';
+  await Promise.race([
+    Promise.all(imgs.map(im => im.complete ? 1 : new Promise(r => { im.onload = im.onerror = r; }))),
+    new Promise(r => setTimeout(r, 5000))
+  ]);
+  btn.disabled = false; btn.textContent = 'Print labels';
+  window.print();
 }
 
 /* ---------- INPUT ---------- */
@@ -815,9 +959,10 @@ function downloadXls() {
 
 /* ---------- TABS & INIT ---------- */
 function tab(t) {
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t || (t === 'lab' && b.dataset.tab === 'inv')));
   document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== t);
   if (t === 'rec') renderRecap();
+  if (t === 'lab') renderLabels();
   scrollTo(0, 0);
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
@@ -828,6 +973,12 @@ SIGS.forEach(([k]) => ['n', 'r'].forEach(x => {
   const el = $('#' + k + x); el.value = ls('inv_' + k + x) || '';
   el.oninput = () => { ls('inv_' + k + x, el.value); renderRecap(); };
 }));
+$('#lblBtn').onclick = () => openLabels(null);
+$('#lSec').onchange = () => { LBL.only = null; renderLabels(); };
+$('#lQ').oninput = () => { LBL.only = null; renderLabels(); };
+$('#lSize').onchange = renderLabels;
+$('#lCopies').oninput = renderLabels;
+$('#lPrint').onclick = printLabels;
 $('#closeBtn').onclick = openClose;
 $('#cPrint').onclick = () => { renderRecap(); window.print(); };
 $('#cXls').onclick = downloadXls;
