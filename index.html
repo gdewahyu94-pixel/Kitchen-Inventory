@@ -14,8 +14,8 @@ body{margin:0;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif
 header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
 header h1{font-size:17px;margin:0}header small{opacity:.8;font-size:12px}
 .icon{background:rgba(255,255,255,.15);border:0;color:#fff;font-size:18px;width:36px;height:36px;border-radius:8px;cursor:pointer}
-nav{display:flex;background:#fff;border-bottom:1px solid var(--line)}
-nav button{flex:1;border:0;background:none;padding:12px 2px;font:inherit;font-size:13px;color:var(--mute);border-bottom:3px solid transparent;cursor:pointer}
+nav{display:flex;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{flex:1;border:0;background:none;padding:12px 4px;font:inherit;font-size:12.5px;color:var(--mute);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
 nav button.on{color:var(--pri);border-color:var(--pri);font-weight:600}
 main{max-width:900px;margin:0 auto;padding:16px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
@@ -29,6 +29,8 @@ h3{margin:0 0 10px;font-size:15px}h4{margin:18px 0 8px;font-size:14px}
 input,select,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
 label{display:block;font-size:13px;color:var(--mute);margin-bottom:12px}
 label input,label select,label textarea{margin-top:4px}
+.check{display:flex;gap:8px;align-items:center;margin:0;font-size:13px;color:var(--ink)}
+.check input{width:auto;margin:0}
 .btn{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:600;background:var(--pri);color:#fff;cursor:pointer;white-space:nowrap}
 .btn.red{background:var(--red)}.btn.amb{background:var(--amb)}.btn.blu{background:var(--blu)}.btn.ghost{background:var(--pri2);color:var(--pri)}
 .btn.full{width:100%}.btn:disabled{opacity:.6}
@@ -47,6 +49,7 @@ label input,label select,label textarea{margin-top:4px}
 .qty{text-align:center;font-size:22px;font-weight:700;color:var(--pri);min-width:60px}
 .qty small{display:block;font-size:11px;font-weight:500;color:var(--mute)}
 .qty.low{color:var(--red)}
+.neg{color:var(--red)!important}.pos{color:var(--pri)!important}
 .seg{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .seg button{flex:1;padding:10px 6px;border:1px solid var(--line);background:#fff;border-radius:8px;font:inherit;font-size:14px;cursor:pointer;color:var(--mute)}
 .seg button.on[data-t=BROKEN]{background:var(--red2);border-color:var(--red);color:var(--red);font-weight:600}
@@ -81,6 +84,7 @@ label input,label select,label textarea{margin-top:4px}
 .tbl th{background:var(--pri2);font-weight:600;white-space:nowrap}
 .tbl .n{text-align:right;white-space:nowrap}
 .tbl tfoot td{font-weight:700;background:var(--bg)}
+.tbl.write td{height:8mm;vertical-align:middle}
 .rh{text-align:center;margin-bottom:14px}.rh h2{margin:0 0 4px;font-size:17px}.rh div{font-size:13px;color:var(--mute)}
 .rsum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
 .rsum div{border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center}
@@ -88,7 +92,13 @@ label input,label select,label textarea{margin-top:4px}
 .rpt h4{margin:6px 0 6px}
 .sigs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;text-align:center;font-size:13px;page-break-inside:avoid}
 .sigs .ln{height:64px;border-bottom:1px solid var(--ink);margin:6px 8px 4px}
-/* ---------- QR labels ---------- */
+/* Opname */
+.orow{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px}
+.orow.ok{border-color:#9fd3bd;background:#f3faf6}
+.orow.diff{border-color:#f0b4ad;background:#fff7f6}
+.ocnt{width:92px;flex:none;text-align:center;font-weight:700;font-size:16px}
+.osticky{position:sticky;bottom:0;z-index:3;box-shadow:0 -4px 14px rgba(0,0,0,.06)}
+/* QR labels */
 .labels{display:grid;gap:2mm;justify-content:center}
 .labels.lqm{grid-template-columns:repeat(auto-fill,60mm)}
 .labels.lqs{grid-template-columns:repeat(auto-fill,45mm)}
@@ -102,7 +112,6 @@ label input,label select,label textarea{margin-top:4px}
 .lph{flex:none;border-radius:1.5mm;background:#f1f3f1;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:14px}
 .lph img{width:100%;height:100%;object-fit:cover}
 .lx{position:absolute;top:1mm;right:1mm;border:0;background:#fbecea;color:#c0392b;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:20px;padding:0;z-index:2}
-/* QRIS card (portrait) */
 .lbl.qc{flex-direction:column;padding:0;gap:0;border-radius:3mm;border:1px solid #cfd6d1}
 .qh{background:#1f6f54;color:#fff;text-align:center;padding:2.2mm 2mm 1.8mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .qh b{display:block;font-size:8.5pt;letter-spacing:1px}
@@ -118,7 +127,6 @@ label input,label select,label textarea{margin-top:4px}
 .qfoot .lph{width:11mm;height:11mm}.lqs .qfoot .lph{width:8mm;height:8mm;font-size:10px}
 .qname{flex:1;min-width:0;font-weight:700;font-size:9pt;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 .lqs .qname{font-size:7pt}
-/* Landscape layouts */
 .lqrw{flex:none;display:flex;align-items:center;justify-content:center}
 .lm .lqrw{width:31mm}.ll .lqrw{width:43mm}.ls .lqrw{width:23mm}
 .lbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:1mm}
@@ -135,7 +143,7 @@ label input,label select,label textarea{margin-top:4px}
   body{background:#fff}
   .top,.noprint,#toast,#modal{display:none!important}
   main{padding:0;max-width:none}
-  #rpt{border:0;padding:0;margin:0}
+  #rpt,#opRpt{border:0;padding:0;margin:0}
   .tbl th,.lph,.qh{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .tbl-wrap{overflow:visible}
   .labels{justify-content:start}
@@ -154,6 +162,7 @@ label input,label select,label textarea{margin-top:4px}
     <button data-tab="dash" class="on">Dashboard</button>
     <button data-tab="inv">Inventory</button>
     <button data-tab="rep">Input</button>
+    <button data-tab="opn">Opname</button>
     <button data-tab="his">History</button>
     <button data-tab="rec">Recap</button>
   </nav>
@@ -195,15 +204,45 @@ label input,label select,label textarea{margin-top:4px}
         <label>Quantity<input id="rQty" type="number" min="1" step="1" inputmode="numeric" required></label>
         <label id="rToWrap" hidden>To section<select id="rTo"></select></label>
       </div>
+      <label id="rReasonWrap">Cause<select id="rReason"></select></label>
       <div id="rVal" class="hint"></div>
       <label>Reported by<input id="rBy" required></label>
-      <label>Note<textarea id="rNote" rows="2" placeholder="e.g. dropped during dinner service"></textarea></label>
+      <label>Note<textarea id="rNote" rows="2" placeholder="e.g. table 12, dinner service"></textarea></label>
       <div id="rPhotoWrap">
         <label>Photo (optional)<input id="rPhoto" type="file" accept="image/*"></label>
         <img id="rPrev" class="prev" hidden>
       </div>
       <button class="btn full red" id="rSubmit">Report broken</button>
     </form>
+  </section>
+
+  <section id="opn" hidden>
+    <div class="noprint">
+      <div class="card">
+        <h3>Stock opname</h3>
+        <div class="bar">
+          <select id="oSec"></select>
+          <input id="oQ" placeholder="Search or scan code...">
+        </div>
+        <div class="flex">
+          <label class="check"><input type="checkbox" id="oBlind"> Blind count sheet (hide system stock)</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn ghost" id="oSheet">Print count sheet</button>
+            <button class="btn ghost" id="oClear">Clear counts</button>
+          </div>
+        </div>
+      </div>
+      <div id="oList"></div>
+      <div class="card osticky">
+        <div class="meta" id="oSum" style="margin:0 0 10px"></div>
+        <div class="two">
+          <input id="oBy" placeholder="Counted by">
+          <input id="oNote" placeholder="Note (optional)">
+        </div>
+        <button class="btn full" id="oSubmit" style="margin-top:10px">Submit opname</button>
+      </div>
+    </div>
+    <div id="opRpt" class="card rpt" hidden></div>
   </section>
 
   <section id="his" hidden>
@@ -289,9 +328,10 @@ const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoo
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let S = { items: [], groups: [], log: [], secs: [], closings: [], hasLost: false, hasPrice: false, hasSection: false, hasTrf: false,
-          hasCode: false, codePrefix: 'KU-', low: 5, pin: false, type: 'BROKEN', sec: '' };
+let S = { items: [], groups: [], log: [], secs: [], closings: [], reasons: [], hasLost: false, hasPrice: false, hasSection: false,
+          hasTrf: false, hasCode: false, hasMin: false, codePrefix: 'KU-', low: 5, pin: false, type: 'BROKEN', sec: '' };
 let LBL = { only: null, skip: new Set(), cur: [] };
+let OP = { sec: null, counts: {} };
 const APP_URL = location.href.split(/[?#]/)[0];
 let DEEP = (() => { const p = new URLSearchParams(location.search); return { code: p.get('code'), item: p.get('item') }; })();
 
@@ -334,7 +374,7 @@ function thumb(src, cls = 'th') {
   return src ? `<img class="${cls}" src="${esc(src)}" loading="lazy" referrerpolicy="no-referrer" onerror="noImg(this)">`
              : `<div class="${cls} ph">🍽</div>`;
 }
-const rp = n => 'Rp ' + Math.round(n || 0).toLocaleString('id-ID');
+const rp = n => (n < 0 ? '−' : '') + 'Rp ' + Math.round(Math.abs(n || 0)).toLocaleString('id-ID');
 const sgn = n => n > 0 ? '+' + n : String(n);
 const nk = s => String(s || '').trim().toLowerCase();
 const byRow = r => S.items.find(i => i.row == r);
@@ -345,6 +385,8 @@ const withCode = name => { const c = codeOf(name); return (c ? c + ' · ' : '') 
 const priceOf = name => (groupOf(name) || {}).harga || 0;
 const lossVal = l => l.value || l.qty * (l.price || priceOf(l.item));
 const isLoss = l => l.type === 'BROKEN' || l.type === 'LOST';
+const minOf = r => (S.hasMin && r.min > 0) ? r.min : S.low;
+const isLow = r => r.closing <= minOf(r);
 const secIdx = s => { const i = S.secs.indexOf(s); return i < 0 ? 999 : i; };
 const sortSec = rows => [...rows].sort((a, b) => secIdx(a.section) - secIdx(b.section));
 const byCode = (a, b) => (a.code || '~').localeCompare(b.code || '~', undefined, { numeric: true }) || a.item.localeCompare(b.item);
@@ -352,6 +394,10 @@ const ym = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'
 const thisMonth = () => ym(new Date());
 function monthLabel(m) { const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleString('en', { month: 'long', year: 'numeric' }); }
 const closedMonths = () => [...new Set(S.closings.map(c => c.month))].sort();
+const scanCode = v => { const m = String(v).match(/[?&]code=([^&#\s]+)/); return m ? decodeURIComponent(m[1]) : v; };
+function sigBlock(labels, names) {
+  return `<div class="sigs">${labels.map((l, i) => `<div>${l}<div class="ln"></div><b>${esc((names && names[i]) || '') || '&nbsp;'}</b></div>`).join('')}</div>`;
+}
 function compress(file) {
   return new Promise((res, rej) => {
     const img = new Image();
@@ -379,20 +425,20 @@ async function load() {
   $('#sub').textContent = 'Loading...';
   try {
     const [inv, log, cl] = await Promise.all([get('list'), get('log', { limit: 3000 }), get('closing')]);
-    S.items = inv.items; S.secs = inv.sections || [];
+    S.items = inv.items; S.secs = inv.sections || []; S.reasons = inv.reasons || [];
     S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice; S.hasSection = inv.hasSection; S.hasTrf = inv.hasTrf;
-    S.hasCode = inv.hasCode; S.codePrefix = inv.codePrefix || 'KU-';
+    S.hasCode = inv.hasCode; S.hasMin = inv.hasMin; S.codePrefix = inv.codePrefix || 'KU-';
     S.low = inv.lowStock; S.pin = inv.pinRequired; S.log = log; S.closings = cl;
     if (S.sec && S.secs.indexOf(S.sec) < 0) S.sec = '';
     buildGroups();
-    fillSecs(); renderChips(); renderDash(); renderList(); fillItems(); renderHis(); renderCloseInfo(); renderRecap();
+    fillSecs(); fillReasons(); renderChips(); renderDash(); renderList(); fillItems(); renderHis(); renderCloseInfo(); renderRecap();
     if (!$('#lab').hidden) renderLabels();
+    if (!$('#opn').hidden) renderOpname();
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     handleDeepLink();
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
 }
 
-// Dibuka dari scan QR: ?code=KTC-001 atau ?item=Nama
 function handleDeepLink() {
   if (!DEEP || (!DEEP.code && !DEEP.item)) return;
   const d = DEEP; DEEP = null;
@@ -426,12 +472,19 @@ function fillSecs() {
     if (v && [...s.options].some(o => o.value === v)) s.value = v;
   };
   set('#rSec', ''); set('#rTo', '— choose section —'); set('#hSec', 'All sections'); set('#cSec', 'All sections');
-  set('#lSec', 'All items (one label per item)');
-  $('#rSecWrap').hidden = !S.hasSection;
-  $('#segTrf').hidden = !S.hasSection;
-  $('#hSec').hidden = !S.hasSection;
-  $('#cSec').hidden = !S.hasSection;
-  $('#lSec').hidden = !S.hasSection;
+  set('#lSec', 'All items (one label per item)'); set('#oSec', '');
+  if (OP.sec && S.secs.indexOf(OP.sec) > -1) $('#oSec').value = OP.sec;
+  ['#rSecWrap', '#segTrf', '#hSec', '#cSec', '#lSec', '#oSec'].forEach(id => $(id).hidden = !S.hasSection);
+}
+
+function fillReasons() {
+  const s = $('#rReason'), v = s.value;
+  const list = S.reasons.filter(r => r.type === 'ALL' || r.type === S.type);
+  s.innerHTML = '<option value="">— choose cause —</option>' + list.map(r => `<option>${esc(r.name)}</option>`).join('');
+  if (v && list.some(r => r.name === v)) s.value = v;
+  const show = (S.type === 'BROKEN' || S.type === 'LOST') && S.reasons.length > 0;
+  $('#rReasonWrap').hidden = !show;
+  s.required = show;
 }
 
 /* ---------- DASHBOARD ---------- */
@@ -442,13 +495,16 @@ function renderDash() {
   const loss = m.filter(isLoss);
   const lossTotal = loss.reduce((a, l) => a + lossVal(l), 0);
   const stock = S.items.reduce((a, i) => a + i.closing, 0);
-  const low = S.items.filter(i => i.closing <= S.low).sort((a, b) => a.closing - b.closing);
-
-  const byItem = {};
-  loss.forEach(l => { const a = byItem[l.item] || (byItem[l.item] = { q: 0, v: 0 }); a.q += l.qty; a.v += lossVal(l); });
+  const low = S.items.filter(isLow).sort((a, b) => (a.closing - minOf(a)) - (b.closing - minOf(b)));
   const key = S.hasPrice ? 'v' : 'q';
-  const top = Object.entries(byItem).sort((a, b) => b[1][key] - a[1][key]).slice(0, 5);
-  const line = ([n, o]) => `<div class="row"><span>${codeTag(codeOf(n))}${esc(n)}</span><span><b>${o.q}</b> pcs${S.hasPrice ? ' · ' + rp(o.v) : ''}</span></div>`;
+  const agg = (arr, kf) => {
+    const o = {};
+    arr.forEach(l => { const k = kf(l); const a = o[k] || (o[k] = { q: 0, v: 0 }); a.q += l.qty; a.v += lossVal(l); });
+    return Object.entries(o).sort((a, b) => b[1][key] - a[1][key]);
+  };
+  const top = agg(loss, l => l.item).slice(0, 5);
+  const causes = agg(loss.filter(l => l.reason), l => l.reason).slice(0, 5);
+  const line = ([n, o], code) => `<div class="row"><span>${code ? codeTag(codeOf(n)) : ''}${esc(n)}</span><span><b>${o.q}</b> pcs${S.hasPrice ? ' · ' + rp(o.v) : ''}</span></div>`;
 
   let secHtml = '';
   if (S.hasSection) {
@@ -474,15 +530,17 @@ function renderDash() {
       <div class="stat r"><small>Broken · ${mn}</small><b>${sum('BROKEN')}</b></div>
       <div class="stat a"><small>Lost · ${mn}</small><b>${sum('LOST')}</b></div>
       ${S.hasPrice ? `<div class="stat r"><small>Loss value · ${mn}</small><b>${rp(lossTotal)}</b></div>` : ''}
-      <div class="stat g"><small>Added · ${mn}</small><b>${sum('ADD')}</b></div>
+      <div class="stat ${low.length ? 'r' : 'g'}"><small>Below minimum</small><b>${low.length}</b></div>
     </div>
-    ${S.hasSection ? '' : '<div class="card hint" style="margin:0 0 12px">Add a <b>SECTION</b> column to the sheet to split stock per section.</div>'}
     ${secHtml}
-    <div class="card"><h3>Top broken / lost items · ${mn}</h3>
-      ${top.length ? top.map(line).join('') : '<p class="empty">Nothing reported this month</p>'}
+    <div class="card"><h3>Top causes · ${mn}</h3>
+      ${causes.length ? causes.map(c => line(c, false)).join('') : '<p class="empty">No causes recorded this month</p>'}
     </div>
-    <div class="card"><h3>Low stock (≤ ${S.low})</h3>
-      ${low.length ? low.map(i => `<div class="row"><span>${codeTag(codeOf(i.item))}${esc(i.item)}${i.section ? ' · <span style="color:var(--mute)">' + esc(i.section) + '</span>' : ''}</span><b style="color:var(--red)">${i.closing}</b></div>`).join('') : '<p class="empty">All items above minimum</p>'}
+    <div class="card"><h3>Top broken / lost items · ${mn}</h3>
+      ${top.length ? top.map(c => line(c, true)).join('') : '<p class="empty">Nothing reported this month</p>'}
+    </div>
+    <div class="card"><h3>Below minimum stock</h3>
+      ${low.length ? low.map(i => `<div class="row"><span>${codeTag(codeOf(i.item))}${esc(i.item)}${i.section ? ' · <span style="color:var(--mute)">' + esc(i.section) + '</span>' : ''}</span><span><b class="neg">${i.closing}</b> / min ${minOf(i)}</span></div>`).join('') : '<p class="empty">All items above minimum</p>'}
     </div>`;
 }
 
@@ -512,10 +570,10 @@ function renderList() {
   if (!S.sec) {
     const a = sortList(S.groups.filter(g => match(g.item, g.code)), sort, 'total');
     html = a.map(g => {
-      const low = g.rows.some(r => r.closing <= S.low);
+      const low = g.rows.some(isLow);
       const r0 = g.rows[0];
       const per = S.hasSection
-        ? g.rows.map(r => `${esc(r.section || '-')} <b>${r.closing}</b>`).join(' · ')
+        ? g.rows.map(r => `${esc(r.section || '-')} <b class="${isLow(r) ? 'neg' : ''}">${r.closing}</b>`).join(' · ')
         : `Awal ${r0.awal} · +${r0.add} · Broken ${r0.broken}${S.hasLost ? ' · Lost ' + r0.lost : ''}`;
       return `<div class="item" onclick="openItem(${g.id})">${thumb(g.photo)}
         <div class="info"><b>${codeTag(g.code)}${esc(g.item)}</b><div class="meta">${per}</div>
@@ -525,12 +583,12 @@ function renderList() {
   } else {
     const a = sortList(S.items.filter(r => r.section === S.sec && match(r.item, codeOf(r.item))).map(r => Object.assign({}, r, { code: codeOf(r.item) })), sort, 'closing');
     html = a.map(r => {
-      const g = groupOf(r.item), low = r.closing <= S.low;
+      const g = groupOf(r.item), low = isLow(r);
       return `<div class="item" onclick="openItem(${g.id})">${thumb(g.photo)}
         <div class="info"><b>${codeTag(r.code)}${esc(r.item)}</b>
-          <div class="meta">Awal ${r.awal} · +${r.add}${r.trf ? ' · Trf ' + sgn(r.trf) : ''} · Broken ${r.broken}${S.hasLost ? ' · Lost ' + r.lost : ''}</div>
+          <div class="meta">Awal ${r.awal} · +${r.add}${r.trf ? ' · Trf ' + sgn(r.trf) : ''} · Broken ${r.broken}${S.hasLost ? ' · Lost ' + r.lost : ''} · Min ${minOf(r)}</div>
           ${S.hasPrice ? `<div class="meta">${r.harga ? rp(r.harga) + ' / pcs' : 'No price'}</div>` : ''}</div>
-        <div class="qty ${low ? 'low' : ''}">${r.closing}<small>${low ? 'low' : 'in stock'}</small></div></div>`;
+        <div class="qty ${low ? 'low' : ''}">${r.closing}<small>${low ? 'below min' : 'in stock'}</small></div></div>`;
     }).join('');
   }
   $('#list').innerHTML = html || '<p class="empty">No items found</p>';
@@ -544,8 +602,8 @@ function openItem(id) {
   const g = S.groups[id]; if (!g) return;
   const rows = g.rows, T = k => rows.reduce((a, r) => a + r[k], 0);
   const h = S.log.filter(l => nk(l.item) === nk(g.item)).slice(0, 10);
-  const th = `<th>${S.hasSection ? 'Section' : ''}</th><th class="n">Awal</th><th class="n">Add</th>${S.hasSection ? '<th class="n">Trf</th>' : ''}<th class="n">Broken</th>${S.hasLost ? '<th class="n">Lost</th>' : ''}<th class="n">Stock</th>`;
-  const tr = (label, o) => `<td>${label}</td><td class="n">${o.awal}</td><td class="n">${o.add}</td>${S.hasSection ? `<td class="n">${sgn(o.trf)}</td>` : ''}<td class="n">${o.broken}</td>${S.hasLost ? `<td class="n">${o.lost}</td>` : ''}<td class="n"><b>${o.closing}</b></td>`;
+  const th = `<th>${S.hasSection ? 'Section' : ''}</th><th class="n">Awal</th><th class="n">Add</th>${S.hasSection ? '<th class="n">Trf</th>' : ''}<th class="n">Broken</th>${S.hasLost ? '<th class="n">Lost</th>' : ''}<th class="n">Stock</th><th class="n">Min</th>`;
+  const tr = (label, o, isTotal) => `<td>${label}</td><td class="n">${o.awal}</td><td class="n">${o.add}</td>${S.hasSection ? `<td class="n">${sgn(o.trf)}</td>` : ''}<td class="n">${o.broken}</td>${S.hasLost ? `<td class="n">${o.lost}</td>` : ''}<td class="n"><b class="${!isTotal && isLow(o) ? 'neg' : ''}">${o.closing}</b></td><td class="n">${isTotal ? '' : minOf(o)}</td>`;
   openModal(`
     <div class="mh"><h3>${codeTag(g.code)}${esc(g.item)}</h3><button class="x" onclick="closeModal()">✕</button></div>
     ${g.photo ? `<img class="big" src="${esc(g.photo)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}
@@ -553,7 +611,7 @@ function openItem(id) {
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr>${th}</tr></thead>
       <tbody>${rows.map(r => `<tr>${tr(esc(r.section || '-'), r)}</tr>`).join('')}</tbody>
-      ${rows.length > 1 ? `<tfoot><tr>${tr('Total', { awal: T('awal'), add: T('add'), trf: T('trf'), broken: T('broken'), lost: T('lost'), closing: T('closing') })}</tr></tfoot>` : ''}
+      ${rows.length > 1 ? `<tfoot><tr>${tr('Total', { awal: T('awal'), add: T('add'), trf: T('trf'), broken: T('broken'), lost: T('lost'), closing: T('closing') }, true)}</tr></tfoot>` : ''}
     </table></div>
     <div class="acts">
       <button class="btn red" onclick="goReport(${g.id},'BROKEN')">Broken</button>
@@ -566,10 +624,12 @@ function openItem(id) {
       ${S.hasCode ? `<label>Code<input id="eCode" value="${esc(g.code)}" autocapitalize="characters"></label>` : ''}
       ${S.hasPrice ? `<label>Price per pcs (Rp)<input id="eHarga" type="number" min="0" inputmode="numeric" value="${g.harga || ''}"></label>` : ''}
     </div>
+    ${S.hasMin ? `<h4 style="margin-top:4px">Minimum stock${S.hasSection ? ' per section' : ''}</h4>
+      <div class="two">${rows.map(r => `<label>${esc(r.section || 'Minimum')}<input class="eMin" data-row="${r.row}" data-old="${r.min || ''}" type="number" min="0" step="1" inputmode="numeric" value="${r.min || ''}" placeholder="Default ${S.low}"></label>`).join('')}</div>` : ''}
     <label>Remarks<input id="eRem" value="${esc(g.remarks)}"></label>
     <label>Change photo<input id="ePhoto" type="file" accept="image/*"></label>
     <img id="ePrev" class="prev" hidden>
-    <button class="btn full ghost" id="eSave" onclick="saveEdit(${g.id})">Save changes${S.hasSection ? ' (all sections)' : ''}</button>
+    <button class="btn full ghost" id="eSave" onclick="saveEdit(${g.id})">Save changes</button>
     <h4>Recent history</h4>
     ${h.length ? h.map(logRow).join('') : '<p class="empty">No history yet</p>'}`);
   previewOn('#ePhoto', '#ePrev');
@@ -578,12 +638,15 @@ function openItem(id) {
 async function saveEdit(id) {
   const g = S.groups[id], btn = $('#eSave'), f = $('#ePhoto').files[0];
   const code = $('#eCode') ? $('#eCode').value.trim().toUpperCase() : undefined;
+  const mins = {};
+  document.querySelectorAll('.eMin').forEach(el => { if (el.value !== el.dataset.old) mins[el.dataset.row] = el.value; });
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     await post({
       action: 'updateItem', item: g.item, remarks: $('#eRem').value.trim(),
       code: code && code !== g.code ? code : undefined,
       harga: $('#eHarga') ? $('#eHarga').value : undefined,
+      mins: Object.keys(mins).length ? mins : undefined,
       photo: f ? await compress(f) : ''
     });
     toast('Saved'); closeModal(); load();
@@ -602,6 +665,7 @@ $('#newBtn').onclick = () => {
     <div class="two">
       ${S.hasCode ? `<label>Code (optional)<input id="nCode" placeholder="Auto, e.g. ${esc(S.codePrefix)}012" autocapitalize="characters"></label>` : ''}
       ${S.hasPrice ? '<label>Price per pcs (Rp)<input id="nHarga" type="number" min="0" inputmode="numeric"></label>' : ''}
+      ${S.hasMin ? `<label>Min stock${S.hasSection ? ' (each section)' : ''}<input id="nMin" type="number" min="0" step="1" inputmode="numeric" placeholder="Default ${S.low}"></label>` : ''}
     </div>
     ${secInputs}
     <label>Remarks<input id="nRem"></label>
@@ -624,10 +688,129 @@ async function saveNew() {
     const r = await post({
       action: 'addItem', item: name, code: $('#nCode') ? $('#nCode').value.trim().toUpperCase() : '',
       harga: $('#nHarga') ? $('#nHarga').value || 0 : 0,
+      min: $('#nMin') ? $('#nMin').value : '',
       stocks, remarks: $('#nRem').value.trim(), photo: f ? await compress(f) : ''
     });
     toast('Item added' + (r && r.code ? ' · ' + r.code : '')); closeModal(); load();
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Add item'; }
+}
+
+/* ---------- STOCK OPNAME ---------- */
+function opKey() { return 'op_' + (OP.sec || 'all'); }
+function opLoad() { try { OP.counts = JSON.parse(ls(opKey()) || '{}') || {}; } catch (e) { OP.counts = {}; } }
+function opSave() { ls(opKey(), JSON.stringify(OP.counts)); }
+function opRows() {
+  return S.items.filter(r => !S.hasSection || r.section === OP.sec)
+    .map(r => Object.assign({}, r, { code: codeOf(r.item) })).sort(byCode);
+}
+function opHas(k) { const v = OP.counts[k]; return v !== undefined && v !== ''; }
+
+function renderOpname() {
+  const secNow = S.hasSection ? ($('#oSec').value || S.secs[0] || '') : '';
+  if (OP.sec !== secNow) { OP.sec = secNow; opLoad(); }
+  if (S.hasSection) $('#oSec').value = OP.sec;
+  if (!$('#oBy').value) $('#oBy').value = ls('inv_by') || '';
+  const q = nk(scanCode($('#oQ').value));
+  const rows = opRows().filter(r => !q || nk(r.item).includes(q) || nk(r.code).includes(q));
+  $('#oList').innerHTML = rows.map(r => {
+    const k = nk(r.item);
+    return `<div class="orow" data-k="${esc(k)}">
+      <div class="info"><b>${codeTag(r.code)}${esc(r.item)}</b><div class="meta" data-m="1"></div></div>
+      <input class="ocnt" type="number" min="0" step="1" inputmode="numeric" placeholder="Count" data-k="${esc(k)}" value="${opHas(k) ? esc(OP.counts[k]) : ''}">
+    </div>`;
+  }).join('') || '<p class="empty">No items</p>';
+  document.querySelectorAll('#oList .ocnt').forEach(el => {
+    el.oninput = () => {
+      const k = el.dataset.k;
+      if (el.value === '') delete OP.counts[k]; else OP.counts[k] = el.value;
+      opSave(); opRowState(k); opSummary();
+    };
+    opRowState(el.dataset.k);
+  });
+  opSummary();
+}
+function opRowState(k) {
+  const row = document.querySelector(`#oList .orow[data-k="${CSS.escape(k)}"]`); if (!row) return;
+  const r = opRows().find(x => nk(x.item) === k); if (!r) return;
+  const meta = row.querySelector('[data-m]');
+  row.classList.remove('ok', 'diff');
+  let html = `System: <b>${r.closing}</b>`;
+  if (opHas(k)) {
+    const d = +OP.counts[k] - r.closing;
+    row.classList.add(d === 0 ? 'ok' : 'diff');
+    html += d === 0 ? ' · <span class="pos">match</span>'
+      : ` · <b class="${d < 0 ? 'neg' : 'pos'}">${sgn(d)}</b>${S.hasPrice && r.harga ? ` <span class="${d < 0 ? 'neg' : 'pos'}">(${rp(d * r.harga)})</span>` : ''}`;
+  }
+  meta.innerHTML = html;
+}
+function opSummary() {
+  const rows = opRows();
+  let counted = 0, diff = 0, short = 0, over = 0, val = 0;
+  rows.forEach(r => {
+    const k = nk(r.item); if (!opHas(k)) return;
+    counted++;
+    const d = +OP.counts[k] - r.closing;
+    if (d) { diff++; if (d < 0) short -= d; else over += d; val += d * (r.harga || 0); }
+  });
+  $('#oSum').innerHTML = `${S.hasSection ? '<b>' + esc(OP.sec) + '</b> · ' : ''}Counted <b>${counted}</b> / ${rows.length} · Variance items <b>${diff}</b> · Short <b class="neg">${short}</b> · Over <b class="pos">${over}</b>${S.hasPrice ? ' · Value <b class="' + (val < 0 ? 'neg' : 'pos') + '">' + rp(val) + '</b>' : ''}`;
+}
+function printCountSheet() {
+  const rows = opRows(), blind = $('#oBlind').checked, K = S.hasCode;
+  $('#opRpt').innerHTML = `
+    <div class="rh"><h2>Stock Opname – Count Sheet</h2>
+      <div>${S.hasSection ? 'Section: <b>' + esc(OP.sec) + '</b> · ' : ''}Date: ____________________ · Counted by: ____________________</div></div>
+    <div class="tbl-wrap"><table class="tbl write">
+      <thead><tr><th>No</th>${K ? '<th>Code</th>' : ''}<th>Item</th>${blind ? '' : '<th class="n">System</th>'}<th class="n" style="width:24mm">Physical</th>${blind ? '' : '<th class="n" style="width:20mm">Variance</th>'}<th style="width:40mm">Note</th></tr></thead>
+      <tbody>${rows.map((r, i) => `<tr><td>${i + 1}</td>${K ? `<td>${esc(r.code)}</td>` : ''}<td>${esc(r.item)}</td>${blind ? '' : `<td class="n">${r.closing}</td>`}<td></td>${blind ? '' : '<td></td>'}<td></td></tr>`).join('')}</tbody>
+    </table></div>
+    ${sigBlock(['Counted by', 'Checked by', 'Approved by'])}
+    <div class="acts noprint" style="margin-top:14px"><button class="btn" onclick="window.print()">Print</button><button class="btn ghost" onclick="$('#opRpt').hidden=true">Close</button></div>`;
+  $('#opRpt').hidden = false;
+  $('#opRpt').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => window.print(), 300);
+}
+async function submitOpname() {
+  const rows = opRows();
+  const counts = rows.filter(r => opHas(nk(r.item))).map(r => ({ row: r.row, item: r.item, section: r.section, physical: +OP.counts[nk(r.item)] }));
+  if (!counts.length) return toast('Count at least one item', 1);
+  if (counts.some(c => !(c.physical >= 0) || c.physical % 1)) return toast('Counts must be whole numbers ≥ 0', 1);
+  const by = $('#oBy').value.trim(); if (!by) return toast('Fill "Counted by"', 1);
+  ls('inv_by', by);
+  const notCounted = rows.length - counts.length;
+  if (!confirm(`Submit stock opname${S.hasSection ? ' for ' + OP.sec : ''}?\n\n${counts.length} items counted${notCounted ? ', ' + notCounted + ' not counted (skipped)' : ''}.\nShortages will be recorded as LOST, surpluses as ADD.`)) return;
+  const btn = $('#oSubmit'); btn.disabled = true; btn.textContent = 'Submitting...';
+  try {
+    const r = await post({ action: 'opname', section: OP.sec, counts, by, note: $('#oNote').value.trim() });
+    OP.counts = {}; opSave(); $('#oNote').value = '';
+    toast('Opname saved · ' + r.rows.length + ' items');
+    await load();
+    renderOpResult(r);
+  } catch (e) { toast(e.message, 1); }
+  finally { btn.disabled = false; btn.textContent = 'Submit opname'; }
+}
+function renderOpResult(r) {
+  const P = S.hasPrice, K = S.hasCode, rows = r.rows;
+  let short = 0, over = 0, val = 0, diff = 0;
+  rows.forEach(x => { if (x.variance) { diff++; if (x.variance < 0) short -= x.variance; else over += x.variance; val += x.value; } });
+  $('#opRpt').innerHTML = `
+    <div class="rh"><h2>Stock Opname Result</h2>
+      <div>${S.hasSection ? 'Section: <b>' + esc(r.section || '-') + '</b> · ' : ''}${esc(r.ts)} · Counted by <b>${esc(r.by)}</b></div>
+      ${r.note ? `<div>${esc(r.note)}</div>` : ''}</div>
+    <div class="rsum">
+      <div><small>Items counted</small><b>${rows.length}</b></div>
+      <div><small>With variance</small><b>${diff}</b></div>
+      <div><small>Short / Over</small><b><span class="neg">${short}</span> / <span class="pos">${over}</span></b></div>
+      <div><small>${P ? 'Variance value' : 'Net variance'}</small><b class="${val < 0 ? 'neg' : ''}">${P ? rp(val) : sgn(over - short)}</b></div>
+    </div>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>No</th>${K ? '<th>Code</th>' : ''}<th>Item</th><th class="n">System</th><th class="n">Physical</th><th class="n">Variance</th>${P ? '<th class="n">Value</th>' : ''}</tr></thead>
+      <tbody>${rows.map((x, i) => `<tr><td>${i + 1}</td>${K ? `<td>${esc(x.code)}</td>` : ''}<td>${esc(x.item)}</td><td class="n">${x.system}</td><td class="n">${x.physical}</td><td class="n"><b class="${x.variance < 0 ? 'neg' : x.variance > 0 ? 'pos' : ''}">${sgn(x.variance)}</b></td>${P ? `<td class="n">${x.variance ? rp(x.value) : '-'}</td>` : ''}</tr>`).join('')}</tbody>
+    </table></div>
+    <div class="note noprint">Shortages were recorded as LOST (cause: Selisih stock opname) and surpluses as ADD. Details are saved in the OPNAME tab.</div>
+    ${sigBlock(['Counted by', 'Checked by', 'Approved by'], [r.by, '', ''])}
+    <div class="acts noprint" style="margin-top:14px"><button class="btn" onclick="window.print()">Print / Save PDF</button><button class="btn ghost" onclick="$('#opRpt').hidden=true">Close</button></div>`;
+  $('#opRpt').hidden = false;
+  $('#opRpt').scrollIntoView({ behavior: 'smooth' });
 }
 
 /* ---------- QR LABELS ---------- */
@@ -709,10 +892,9 @@ function renderLabels() {
   const box = $('#labels');
   box.className = 'labels l' + size;
   box.innerHTML = html || '<p class="empty noprint">No items to print</p>';
-
   const noCode = list.filter(x => !x.g.code).length;
   let info = `${list.length} item${list.length === 1 ? '' : 's'} × ${copies} = <b>${list.length * copies}</b> labels`;
-  if (noCode) info += ` · <span style="color:var(--red)">${noCode} without code</span>`;
+  if (noCode) info += ` · <span class="neg">${noCode} without code</span>`;
   if (LBL.skip.size) info += ` · ${LBL.skip.size} hidden <button class="link" onclick="LBL.skip.clear();renderLabels()">show</button>`;
   if (LBL.only !== null) info += ` · <button class="link" onclick="LBL.only=null;renderLabels()">show all items</button>`;
   $('#lInfo').innerHTML = info;
@@ -755,7 +937,7 @@ function showInfo() {
   $('#rInfo').innerHTML = info;
   const q = +$('#rQty').value;
   $('#rVal').innerHTML = (i && q > 0 && S.hasPrice && i.harga && (S.type === 'BROKEN' || S.type === 'LOST'))
-    ? `Loss value: <b style="color:var(--red)">${rp(q * i.harga)}</b>` : '';
+    ? `Loss value: <b class="neg">${rp(q * i.harga)}</b>` : '';
 }
 function setType(t) {
   S.type = t;
@@ -767,6 +949,7 @@ function setType(t) {
   $('#rTo').required = t === 'TRANSFER';
   $('#rPhotoWrap').hidden = t === 'TRANSFER';
   $('#rSecLbl').textContent = t === 'TRANSFER' ? 'From section' : 'Section';
+  fillReasons();
   showInfo();
 }
 function goReport(id, t) {
@@ -795,6 +978,8 @@ $('#repForm').onsubmit = async e => {
   const qty = +$('#rQty').value;
   if (!(qty > 0)) return toast('Enter quantity', 1);
   if (S.type !== 'ADD' && qty > i.closing) return toast('Quantity is more than current stock (' + i.closing + ')', 1);
+  const loss = S.type === 'BROKEN' || S.type === 'LOST';
+  if (loss && S.reasons.length && !$('#rReason').value) return toast('Choose a cause', 1);
   const to = $('#rTo').value;
   if (S.type === 'TRANSFER') {
     if (!to) return toast('Choose destination section', 1);
@@ -810,11 +995,12 @@ $('#repForm').onsubmit = async e => {
     } else {
       await post({
         action: 'movement', type: S.type, row: i.row, item: i.item, section: i.section, qty, by,
+        reason: loss ? $('#rReason').value : '',
         note: $('#rNote').value.trim(), photo: f ? await compress(f) : ''
       });
       toast('Saved');
     }
-    $('#rQty').value = ''; $('#rNote').value = ''; $('#rPhoto').value = ''; $('#rPrev').hidden = true;
+    $('#rQty').value = ''; $('#rNote').value = ''; $('#rPhoto').value = ''; $('#rPrev').hidden = true; $('#rReason').value = '';
     await load();
   } catch (err) { toast(err.message, 1); }
   finally { btn.disabled = false; setType(S.type); }
@@ -833,6 +1019,7 @@ function logRow(l) {
   const val = isLoss(l) && S.hasPrice ? ' · ' + rp(lossVal(l)) : '';
   return `<div class="log"><span class="tag t-${cls}">${esc(tag)}</span>
     <div class="info"><b>${codeTag(codeOf(l.item))}${esc(l.item)}</b> <span class="q">${sign}${l.qty}</span>${val}
+      ${l.reason ? `<div class="meta">Cause: <b>${esc(l.reason)}</b></div>` : ''}
       <div class="meta">${esc(l.ts)}${l.loc ? ' · ' + esc(l.loc) : ''} · ${esc(l.by || '-')}${l.note ? ' · ' + esc(l.note) : ''}</div></div>
     ${l.photo ? `<a href="${esc(l.photo)}" target="_blank">${thumb(l.photo, 'th sm')}</a>` : ''}</div>`;
 }
@@ -864,6 +1051,7 @@ function openClose() {
       1. A snapshot is saved to tab <b>ARSIP yyyy-mm</b> and to the <b>CLOSING</b> history.<br>
       2. Closing stock becomes the new Stock Awal for every item in every section.<br>
       3. Additional, Transfer, Broken and Lost are reset to 0. Inputs made after the month ended are carried into the new month.<br>
+      Tip: do a stock opname first so the closing stock is accurate.<br>
       This cannot be undone from the app.
     </div>
     <label>Type <b>TUTUP</b> to confirm<input id="clC" autocomplete="off" autocapitalize="characters"></label>
@@ -923,11 +1111,18 @@ function recapData() {
     });
     return o;
   });
+  const cz = {};
+  logs.filter(isLoss).forEach(l => {
+    const k = l.reason || '(not specified)';
+    const o = cz[k] || (cz[k] = { cause: k, broken: 0, lost: 0, value: 0 });
+    o[l.type === 'BROKEN' ? 'broken' : 'lost'] += l.qty; o.value += lossVal(l);
+  });
   const t = rows.reduce((a, r) => {
     ['opening', 'add', 'trf', 'broken', 'lost', 'value', 'stock'].forEach(k => a[k] += r[k]); return a;
   }, { opening: 0, add: 0, trf: 0, broken: 0, lost: 0, value: 0, stock: 0 });
   return {
     m, sec, closed, rows, bySec, t,
+    causes: Object.values(cz).sort((a, b) => b.value - a.value || (b.broken + b.lost) - (a.broken + a.lost)),
     incidents: logs.filter(isLoss).slice().reverse(),
     transfers: logs.filter(l => l.type === 'TRANSFER OUT' || (sec && l.type === 'TRANSFER IN')).slice().reverse()
   };
@@ -935,25 +1130,31 @@ function recapData() {
 
 function renderRecap() {
   const d = recapData(), P = S.hasPrice, C = d.closed, T = !!d.sec, K = S.hasCode, sg = sigs();
-  let no = 0;
+  let no = 1;
   const cols = 7 + (P ? 2 : 0) + (T ? 1 : 0) + (K ? 1 : 0);
   const head = `<th>No</th>${K ? '<th>Code</th>' : ''}<th>Item</th>${P ? '<th class="n">Price</th>' : ''}<th class="n">Opening</th><th class="n">Added</th>${T ? '<th class="n">Transfer</th>' : ''}<th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing stock' : 'Current stock'}</th>`;
   const body = d.rows.map((r, i) => `<tr><td>${i + 1}</td>${K ? `<td>${esc(r.code)}</td>` : ''}<td>${esc(r.item)}</td>${P ? `<td class="n">${r.price ? rp(r.price) : '-'}</td>` : ''}<td class="n">${r.opening}</td><td class="n">${r.add}</td>${T ? `<td class="n">${sgn(r.trf)}</td>` : ''}<td class="n">${r.broken}</td><td class="n">${r.lost}</td>${P ? `<td class="n">${rp(r.value)}</td>` : ''}<td class="n">${r.stock}</td></tr>`).join('');
   const foot = `<tr><td></td>${K ? '<td></td>' : ''}<td>TOTAL</td>${P ? '<td></td>' : ''}<td class="n">${d.t.opening}</td><td class="n">${d.t.add}</td>${T ? `<td class="n">${sgn(d.t.trf)}</td>` : ''}<td class="n">${d.t.broken}</td><td class="n">${d.t.lost}</td>${P ? `<td class="n">${rp(d.t.value)}</td>` : ''}<td class="n">${d.t.stock}</td></tr>`;
 
-  const secTbl = d.bySec.length ? `<h4>${++no + 1}. By section</h4>
+  const secTbl = d.bySec.length ? `<h4>${++no}. By section</h4>
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr><th>Section</th><th class="n">Opening</th><th class="n">Added</th><th class="n">Trf in</th><th class="n">Trf out</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}<th class="n">${C ? 'Closing' : 'Current'}</th></tr></thead>
       <tbody>${d.bySec.map(s => `<tr><td>${esc(s.sec)}</td><td class="n">${s.opening}</td><td class="n">${s.add}</td><td class="n">${s.tin}</td><td class="n">${s.tout}</td><td class="n">${s.broken}</td><td class="n">${s.lost}</td>${P ? `<td class="n">${rp(s.value)}</td>` : ''}<td class="n">${s.stock}</td></tr>`).join('')}</tbody>
     </table></div>` : '';
 
-  const incTbl = `<h4>${++no + 1}. Incident detail (broken / lost)</h4>
+  const causeTbl = `<h4>${++no}. Loss by cause</h4>
     <div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Date</th><th>Type</th>${K ? '<th>Code</th>' : ''}<th>Item</th>${S.hasSection ? '<th>Section</th>' : ''}<th class="n">Qty</th>${P ? '<th class="n">Value</th>' : ''}<th>Reported by</th><th>Note</th></tr></thead>
-      <tbody>${d.incidents.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type}</td>${K ? `<td>${esc(codeOf(l.item))}</td>` : ''}<td>${esc(l.item)}</td>${S.hasSection ? `<td>${esc(l.loc || '-')}</td>` : ''}<td class="n">${l.qty}</td>${P ? `<td class="n">${rp(lossVal(l))}</td>` : ''}<td>${esc(l.by || '-')}</td><td>${esc(l.note)}</td></tr>`).join('') || `<tr><td colspan="9" class="empty">No incidents</td></tr>`}</tbody>
+      <thead><tr><th>Cause</th><th class="n">Broken</th><th class="n">Lost</th>${P ? '<th class="n">Loss value</th>' : ''}</tr></thead>
+      <tbody>${d.causes.map(c => `<tr><td>${esc(c.cause)}</td><td class="n">${c.broken}</td><td class="n">${c.lost}</td>${P ? `<td class="n">${rp(c.value)}</td>` : ''}</tr>`).join('') || `<tr><td colspan="4" class="empty">No breakage or loss this period</td></tr>`}</tbody>
     </table></div>`;
 
-  const trfTbl = S.hasSection ? `<h4>${++no + 1}. Transfers</h4>
+  const incTbl = `<h4>${++no}. Incident detail (broken / lost)</h4>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Date</th><th>Type</th>${K ? '<th>Code</th>' : ''}<th>Item</th>${S.hasSection ? '<th>Section</th>' : ''}<th class="n">Qty</th>${P ? '<th class="n">Value</th>' : ''}<th>Cause</th><th>Reported by</th><th>Note</th></tr></thead>
+      <tbody>${d.incidents.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type}</td>${K ? `<td>${esc(codeOf(l.item))}</td>` : ''}<td>${esc(l.item)}</td>${S.hasSection ? `<td>${esc(l.loc || '-')}</td>` : ''}<td class="n">${l.qty}</td>${P ? `<td class="n">${rp(lossVal(l))}</td>` : ''}<td>${esc(l.reason || '-')}</td><td>${esc(l.by || '-')}</td><td>${esc(l.note)}</td></tr>`).join('') || `<tr><td colspan="10" class="empty">No incidents</td></tr>`}</tbody>
+    </table></div>`;
+
+  const trfTbl = S.hasSection ? `<h4>${++no}. Transfers</h4>
     <div class="tbl-wrap"><table class="tbl">
       <thead><tr><th>Date</th><th>Type</th>${K ? '<th>Code</th>' : ''}<th>Item</th><th>Section</th><th class="n">Qty</th><th>Detail</th><th>By</th></tr></thead>
       <tbody>${d.transfers.map(l => `<tr><td>${esc(l.ts)}</td><td>${l.type === 'TRANSFER IN' ? 'IN' : 'OUT'}</td>${K ? `<td>${esc(codeOf(l.item))}</td>` : ''}<td>${esc(l.item)}</td><td>${esc(l.loc)}</td><td class="n">${l.qty}</td><td>${esc(l.note)}</td><td>${esc(l.by || '-')}</td></tr>`).join('') || `<tr><td colspan="8" class="empty">No transfers</td></tr>`}</tbody>
@@ -977,7 +1178,7 @@ function renderRecap() {
       <tbody>${body || `<tr><td colspan="${cols}" class="empty">No data</td></tr>`}</tbody>
       <tfoot>${foot}</tfoot>
     </table></div>
-    ${secTbl}${incTbl}${trfTbl}
+    ${secTbl}${causeTbl}${incTbl}${trfTbl}
     <div class="sigs">${sg.map(s => `<div>${s.label}<div class="ln"></div><b>${esc(s.name) || '&nbsp;'}</b><br><span style="color:var(--mute)">${esc(s.role) || '&nbsp;'}</span></div>`).join('')}</div>`;
 }
 
@@ -1005,9 +1206,13 @@ function downloadXls() {
     add(s2, 'By Section', [22, 10, 9, 9, 9, 9, 9, 14, 10]);
   }
 
-  const s3 = head.concat([['DATE', 'TYPE', ...(K ? ['CODE'] : []), 'ITEM', ...(S.hasSection ? ['SECTION'] : []), 'QTY', ...(P ? ['PRICE', 'VALUE'] : []), 'REPORTED BY', 'NOTE']]);
-  d.incidents.forEach(l => s3.push([l.ts, l.type, ...(K ? [codeOf(l.item)] : []), l.item, ...(S.hasSection ? [l.loc] : []), l.qty, ...(P ? [l.price || priceOf(l.item), lossVal(l)] : []), l.by, l.note]));
-  add(s3, 'Incidents', [17, 9, ...(K ? [10] : []), 28, 18, 6, 12, 12, 16, 30]);
+  const sc = head.concat([['CAUSE', 'BROKEN', 'LOST', ...(P ? ['LOSS VALUE'] : [])]]);
+  d.causes.forEach(c => sc.push([c.cause, c.broken, c.lost, ...(P ? [c.value] : [])]));
+  add(sc, 'Causes', [32, 10, 10, 14]);
+
+  const s3 = head.concat([['DATE', 'TYPE', ...(K ? ['CODE'] : []), 'ITEM', ...(S.hasSection ? ['SECTION'] : []), 'QTY', ...(P ? ['PRICE', 'VALUE'] : []), 'CAUSE', 'REPORTED BY', 'NOTE']]);
+  d.incidents.forEach(l => s3.push([l.ts, l.type, ...(K ? [codeOf(l.item)] : []), l.item, ...(S.hasSection ? [l.loc] : []), l.qty, ...(P ? [l.price || priceOf(l.item), lossVal(l)] : []), l.reason, l.by, l.note]));
+  add(s3, 'Incidents', [17, 9, ...(K ? [10] : []), 28, 18, 6, 12, 12, 26, 16, 30]);
 
   if (S.hasSection) {
     const s4 = head.concat([['DATE', 'TYPE', ...(K ? ['CODE'] : []), 'ITEM', 'SECTION', 'QTY', 'DETAIL', 'BY']]);
@@ -1023,13 +1228,13 @@ function tab(t) {
   document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== t);
   if (t === 'rec') renderRecap();
   if (t === 'lab') renderLabels();
+  if (t === 'opn') renderOpname();
   scrollTo(0, 0);
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
-// Scanner USB yang membaca QR berisi link: ambil kodenya saja
 $('#q').oninput = () => {
-  const m = $('#q').value.match(/[?&]code=([^&#\s]+)/);
-  if (m) $('#q').value = decodeURIComponent(m[1]);
+  const v = scanCode($('#q').value);
+  if (v !== $('#q').value) $('#q').value = v;
   renderList();
 };
 $('#sort').onchange = renderList;
@@ -1039,6 +1244,19 @@ SIGS.forEach(([k]) => ['n', 'r'].forEach(x => {
   const el = $('#' + k + x); el.value = ls('inv_' + k + x) || '';
   el.oninput = () => { ls('inv_' + k + x, el.value); renderRecap(); };
 }));
+// Opname
+$('#oSec').onchange = () => { $('#opRpt').hidden = true; renderOpname(); };
+$('#oQ').oninput = () => {
+  const v = scanCode($('#oQ').value);
+  if (v !== $('#oQ').value) $('#oQ').value = v;
+  renderOpname();
+  const inputs = document.querySelectorAll('#oList .ocnt');
+  if (inputs.length === 1 && v) inputs[0].focus();
+};
+$('#oSheet').onclick = printCountSheet;
+$('#oClear').onclick = () => { if (confirm('Clear all counts for this section?')) { OP.counts = {}; opSave(); renderOpname(); } };
+$('#oSubmit').onclick = submitOpname;
+// Labels
 $('#lblBtn').onclick = () => openLabels(null);
 $('#lSec').onchange = () => { LBL.only = null; renderLabels(); };
 $('#lQ').oninput = () => { LBL.only = null; renderLabels(); };
