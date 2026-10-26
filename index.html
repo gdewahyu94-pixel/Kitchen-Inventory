@@ -38,6 +38,7 @@ label input,label select,label textarea{margin-top:4px}
 .check input{width:auto;margin:0}
 .btn{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:600;background:var(--pri);color:#fff;cursor:pointer;white-space:nowrap}
 .btn.red{background:var(--red)}.btn.amb{background:var(--amb)}.btn.blu{background:var(--blu)}.btn.ghost{background:var(--pri2);color:var(--pri)}
+.btn.danger{background:var(--red2);color:var(--red)}
 .btn.full{width:100%}.btn.lg{padding:14px;font-size:16px}.btn.xl{padding:22px 10px;font-size:19px;border-radius:12px}.btn:disabled{opacity:.6}
 .link{border:0;background:none;color:var(--pri);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
 .chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
@@ -83,11 +84,14 @@ label input,label select,label textarea{margin-top:4px}
 .qstats b{font-size:17px}
 .qstats .r b{color:var(--red)}.qstats .a b{color:var(--amb)}.qstats .g b{color:var(--pri)}.qstats .bl b{color:var(--blu)}
 .tbl tr.cur td{background:#f3faf6;font-weight:700}
+.edit-box{border:1px solid var(--line);border-radius:10px;padding:14px 14px 4px;margin-bottom:12px}
+.edit-box h4{margin:0 0 10px}
 .done{text-align:center;padding:28px 16px}
 .done .ok{width:64px;height:64px;border-radius:50%;background:var(--pri2);color:var(--pri);font-size:34px;line-height:64px;margin:0 auto 10px;font-weight:700}
 .tag{font-size:11px;font-weight:700;padding:4px 6px;border-radius:6px;flex:none;width:72px;text-align:center}
 .t-BROKEN{background:var(--red2);color:var(--red)}.t-LOST{background:var(--amb2);color:var(--amb)}
 .t-ADD,.t-NEWITEM{background:var(--pri2);color:var(--pri)}.t-CLOSEMONTH,.t-TRF{background:var(--blu2);color:var(--blu)}
+.t-EDIT{background:#eceff1;color:#455a64}.t-DELETEITEM{background:var(--red2);color:var(--red)}
 .q{font-weight:700}
 .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}.row:last-child{border:0}
 .row span:last-child{text-align:right;white-space:nowrap}
@@ -317,7 +321,8 @@ label input,label select,label textarea{margin-top:4px}
     <div class="bar">
       <select id="hType">
         <option value="">All types</option><option>BROKEN</option><option>LOST</option><option>ADD</option>
-        <option>TRANSFER IN</option><option>TRANSFER OUT</option><option>NEW ITEM</option><option>CLOSE MONTH</option>
+        <option>TRANSFER IN</option><option>TRANSFER OUT</option><option>NEW ITEM</option><option>EDIT</option>
+        <option>DELETE ITEM</option><option>CLOSE MONTH</option>
       </select>
       <select id="hSec"></select>
       <input id="hMonth" type="month">
@@ -392,7 +397,7 @@ label input,label select,label textarea{margin-top:4px}
 <div id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoowoC39D9UYmbTfchxQvI_-DmDwPE-QQADeUI0cNOY/exec';
+const API = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -982,16 +987,26 @@ function openItem(id) {
       ${S.hasSection ? `<button class="btn blu" onclick="goReport(${g.id},'TRANSFER')">Transfer</button>` : ''}
     </div>
     <button class="btn ghost full" style="margin-bottom:14px" onclick="openLabels(${g.id})">Print QR label</button>
-    <div class="two">
-      ${S.hasCode ? `<label>Code<input id="eCode" value="${esc(g.code)}" autocapitalize="characters"></label>` : ''}
-      ${S.hasPrice ? `<label>Price per pcs (Rp)<input id="eHarga" type="number" min="0" inputmode="numeric" value="${g.harga || ''}"></label>` : ''}
+
+    <div class="edit-box">
+      <h4>Edit item</h4>
+      <label>Item name<input id="eName" value="${esc(g.item)}"></label>
+      <div class="two">
+        ${S.hasCode ? `<label>Code<input id="eCode" value="${esc(g.code)}" autocapitalize="characters"></label>` : ''}
+        ${S.hasPrice ? `<label>Price per pcs (Rp)<input id="eHarga" type="number" min="0" inputmode="numeric" value="${g.harga || ''}"></label>` : ''}
+      </div>
+      <h4 style="margin:6px 0 4px">Stock awal${S.hasSection ? ' per section' : ''}</h4>
+      <div class="hint" style="margin:0 0 8px">Only to fix an input mistake. Current stock is recalculated and the change is logged as EDIT.</div>
+      <div class="two">${rows.map(r => `<label>${esc(r.section || 'Stock awal')}<input class="eAwal" data-row="${r.row}" data-old="${r.awal}" type="number" min="0" step="1" inputmode="numeric" value="${r.awal}"></label>`).join('')}</div>
+      ${S.hasMin ? `<h4 style="margin:6px 0 8px">Minimum stock${S.hasSection ? ' per section' : ''}</h4>
+        <div class="two">${rows.map(r => `<label>${esc(r.section || 'Minimum')}<input class="eMin" data-row="${r.row}" data-old="${r.min || ''}" type="number" min="0" step="1" inputmode="numeric" value="${r.min || ''}" placeholder="Default ${S.low}"></label>`).join('')}</div>` : ''}
+      <label>Remarks<input id="eRem" value="${esc(g.remarks)}"></label>
+      <label>Change photo<input id="ePhoto" type="file" accept="image/*"></label>
+      <img id="ePrev" class="prev" hidden>
+      <button class="btn full" id="eSave" onclick="saveEdit(${g.id})" style="margin-bottom:8px">Save changes</button>
+      <button class="btn danger full" id="eDel" onclick="delItem(${g.id})" style="margin-bottom:12px">Delete item</button>
     </div>
-    ${S.hasMin ? `<h4 style="margin-top:4px">Minimum stock${S.hasSection ? ' per section' : ''}</h4>
-      <div class="two">${rows.map(r => `<label>${esc(r.section || 'Minimum')}<input class="eMin" data-row="${r.row}" data-old="${r.min || ''}" type="number" min="0" step="1" inputmode="numeric" value="${r.min || ''}" placeholder="Default ${S.low}"></label>`).join('')}</div>` : ''}
-    <label>Remarks<input id="eRem" value="${esc(g.remarks)}"></label>
-    <label>Change photo<input id="ePhoto" type="file" accept="image/*"></label>
-    <img id="ePrev" class="prev" hidden>
-    <button class="btn full ghost" id="eSave" onclick="saveEdit(${g.id})">Save changes</button>
+
     <h4>Recent history</h4>
     ${h.length ? h.map(logRow).join('') : '<p class="empty">No history yet</p>'}`);
   previewOn('#ePhoto', '#ePrev');
@@ -999,20 +1014,47 @@ function openItem(id) {
 
 async function saveEdit(id) {
   const g = S.groups[id], btn = $('#eSave'), f = $('#ePhoto').files[0];
+  const name = $('#eName').value.trim().replace(/\s+/g, ' ');
+  if (!name) return toast('Item name is required', 1);
   const code = $('#eCode') ? $('#eCode').value.trim().toUpperCase() : undefined;
-  const mins = {};
+  const mins = {}, awals = {}, awalTxt = [];
   document.querySelectorAll('.eMin').forEach(el => { if (el.value !== el.dataset.old) mins[el.dataset.row] = el.value; });
+  for (const el of document.querySelectorAll('.eAwal')) {
+    if (el.value === el.dataset.old) continue;
+    if (el.value === '' || +el.value < 0 || +el.value % 1) return toast('Stock awal must be a whole number ≥ 0', 1);
+    awals[el.dataset.row] = +el.value;
+    const r = byRow(el.dataset.row);
+    awalTxt.push((r && r.section ? r.section + ': ' : '') + el.dataset.old + ' → ' + el.value);
+  }
+  const renamed = name !== g.item;
+  const sure = [];
+  if (renamed) sure.push('Rename "' + g.item + '" → "' + name + '" (also in History, Opname and Closing)');
+  if (awalTxt.length) sure.push('Correct stock awal: ' + awalTxt.join(', '));
+  if (sure.length && !confirm('Save these corrections?\n\n• ' + sure.join('\n• '))) return;
   btn.disabled = true; btn.textContent = 'Saving...';
   try {
     await post({
-      action: 'updateItem', item: g.item, remarks: $('#eRem').value.trim(),
+      action: 'updateItem', item: g.item, newName: renamed ? name : undefined, remarks: $('#eRem').value.trim(),
       code: code && code !== g.code ? code : undefined,
       harga: $('#eHarga') ? $('#eHarga').value : undefined,
       mins: Object.keys(mins).length ? mins : undefined,
+      awals: Object.keys(awals).length ? awals : undefined,
       photo: f ? await compress(f) : ''
     });
     toast('Saved'); closeModal(); load();
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Save changes'; }
+}
+
+async function delItem(id) {
+  const g = S.groups[id];
+  if (!confirm('Delete "' + g.item + '" from all sections?\n\nOnly possible if the item has no Broken / Lost / Add / Transfer records yet.')) return;
+  const typed = prompt('Type DELETE to confirm');
+  if (String(typed || '').trim().toUpperCase() !== 'DELETE') return toast('Delete cancelled');
+  const btn = $('#eDel'); btn.disabled = true; btn.textContent = 'Deleting...';
+  try {
+    await post({ action: 'deleteItem', item: g.item });
+    toast('Item deleted'); closeModal(); load();
+  } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Delete item'; }
 }
 
 $('#newBtn').onclick = () => {
@@ -1404,6 +1446,11 @@ function logRow(l) {
   if (l.type === 'CLOSE MONTH') {
     return `<div class="log"><span class="tag t-CLOSEMONTH">CLOSE</span>
       <div class="info"><b>Month closed</b> · ${l.qty} rows<div class="meta">${esc(l.ts)} · ${esc(l.by || '-')} · ${esc(l.note)}</div></div></div>`;
+  }
+  if (l.type === 'EDIT' || l.type === 'DELETE ITEM') {
+    return `<div class="log"><span class="tag t-${l.type.replace(/\s/g, '')}">${l.type === 'EDIT' ? 'EDIT' : 'DELETE'}</span>
+      <div class="info"><b>${codeTag(codeOf(l.item))}${esc(l.item)}</b><div class="meta"><b>${esc(l.note)}</b></div>
+        <div class="meta">${esc(l.ts)}${l.loc ? ' · ' + esc(l.loc) : ''} · ${esc(l.by || '-')}</div></div></div>`;
   }
   const trf = l.type.startsWith('TRANSFER');
   const tag = trf ? (l.type === 'TRANSFER IN' ? 'TRF IN' : 'TRF OUT') : l.type;
