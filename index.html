@@ -102,6 +102,11 @@ label input,label select,label textarea{margin-top:4px}
 .pslot img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;display:block}
 .pslot .pe{width:100%;aspect-ratio:4/3;border-radius:6px;background:var(--bg);display:flex;align-items:center;justify-content:center}
 .pslot input{font-size:11px;padding:4px;margin:0;border:0;background:none}
+.pslot .pt{font-size:12px;font-weight:700;color:var(--pri);min-height:15px}
+.atimes{display:flex;gap:8px;align-items:center;background:var(--bg);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--mute);margin-bottom:12px}
+.atimes b{color:var(--ink);font-size:15px}
+.repby{margin-top:24px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--mute);page-break-inside:avoid}
+.repby b{color:var(--ink);font-size:14px}
 .alist{display:flex;flex-direction:column;gap:10px}
 .acard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;break-inside:avoid;page-break-inside:avoid}
 .ahd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
@@ -335,10 +340,6 @@ label input,label select,label textarea{margin-top:4px}
         <label>Section<input id="aSec" list="aSecList" placeholder="Choose or type section" autocomplete="off"><datalist id="aSecList"></datalist></label>
         <label>Task<select id="aTask"></select></label>
       </div>
-      <div class="two">
-        <label>Start time<input id="aStart" type="time"></label>
-        <label>End time<input id="aEnd" type="time"></label>
-      </div>
       <div class="seg" id="aSeg">
         <button type="button" data-s="Done" class="on">Done</button>
         <button type="button" data-s="In progress">In progress</button>
@@ -346,12 +347,13 @@ label input,label select,label textarea{margin-top:4px}
       </div>
       <label id="aByWrap">Done by<input id="aBy"></label>
       <div class="who" id="aWho" hidden></div>
-      <div class="meta" style="margin:0 0 6px">Work photos <b>(min. 1)</b> – camera or gallery</div>
+      <div class="meta" style="margin:0 0 6px">Work photos <b>(min. 1)</b> – camera or gallery. Take <b>Before</b> when you start and <b>After</b> when you finish.</div>
       <div class="pgrid">
-        <label class="pslot"><span>Before</span><img id="aP1v" hidden><div class="pe" id="aP1e">+</div><input id="aP1" type="file" accept="image/*"></label>
-        <label class="pslot"><span>During</span><img id="aP2v" hidden><div class="pe" id="aP2e">+</div><input id="aP2" type="file" accept="image/*"></label>
-        <label class="pslot"><span>After</span><img id="aP3v" hidden><div class="pe" id="aP3e">+</div><input id="aP3" type="file" accept="image/*"></label>
+        <label class="pslot"><span>Before</span><img id="aP1v" hidden><div class="pe" id="aP1e">+</div><div class="pt" id="aP1t"></div><input id="aP1" type="file" accept="image/*"></label>
+        <label class="pslot"><span>During</span><img id="aP2v" hidden><div class="pe" id="aP2e">+</div><div class="pt" id="aP2t"></div><input id="aP2" type="file" accept="image/*"></label>
+        <label class="pslot"><span>After</span><img id="aP3v" hidden><div class="pe" id="aP3e">+</div><div class="pt" id="aP3t"></div><input id="aP3" type="file" accept="image/*"></label>
       </div>
+      <div class="atimes" id="aTimes"></div>
       <label>Note<textarea id="aNote" rows="2" placeholder="e.g. dish machine descaled, grease trap emptied"></textarea></label>
       <button type="button" class="btn full lg" id="aSubmit">Save activity</button>
     </div>
@@ -521,7 +523,7 @@ let S = { role: '', qrKey: '', me: '', items: [], groups: [], log: [], secs: [],
           codePrefix: 'KTC-', low: 5, type: 'BROKEN', sec: '', tab: '', lastTab: {} };
 let LBL = { only: null, skip: new Set(), cur: [] };
 let OP = { sec: null, counts: {} };
-let ACT = { list: [], status: 'Done' };
+let ACT = { list: [], status: 'Done', ptime: {} };
 let PJ = { today: [], todayList: [], week: [], wk: '' };
 let SCN = null;
 const STAFF_TABS = ['rep', 'act', 'wpj'];
@@ -532,6 +534,7 @@ let DEEP = { code: URLP.get('code'), item: URLP.get('item'), sec: URLP.get('sec'
 const QR = { key: URLP.get('k') || '', g: null, fixedSec: '', type: 'BROKEN', pin: '', name: '' };
 const isSpv = () => S.role === 'spv';
 const USER_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f6f54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>';
+const CLOCK_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f6f54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>';
 const whoHtml = (name, label) => `${USER_SVG}<div>${label || 'Reported by'}: <b>${esc(name)}</b><div class="meta">Locked to your Staff ID</div></div>`;
 
 /* ---------- NAVIGATION (grouped by category) ---------- */
@@ -661,7 +664,8 @@ const addDays = (s, n) => { const d = pdate(s); d.setDate(d.getDate() + n); retu
 const todayStr = () => dstr(new Date());
 const weekday = s => DAYS[(pdate(s).getDay() + 6) % 7];
 const mondayOf = s => addDays(s, -((pdate(s).getDay() + 6) % 7));
-const nowTime = () => { const d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const hhmm = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
+const nowTime = () => hhmm(new Date());
 const byRow = r => S.items.find(i => i.row == r);
 const groupOf = name => S.groups.find(g => nk(g.item) === nk(name));
 const codeOf = name => (groupOf(name) || {}).code || '';
@@ -682,6 +686,11 @@ function dayLabel(d) { return pdate(d).toLocaleDateString('en-GB', { weekday: 's
 function shortDay(d) { return pdate(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }); }
 const stCls = s => 'st st-' + String(s).replace(/\s/g, '');
 const closedMonths = () => [...new Set(S.closings.map(c => c.month))].sort();
+const senderName = () => S.me || ls('inv_by') || 'Supervisor';
+function reportedBy() {
+  const ts = new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return `<div class="repby">Reported by <b>${esc(senderName())}</b> · ${esc(ts)}</div>`;
+}
 function parseScan(txt) {
   txt = String(txt || '').trim();
   try {
@@ -1361,9 +1370,8 @@ function startProject(i) {
   const sel = $('#aTask');
   const opt = [...sel.options].find(o => nk(o.value) === nk(p.task));
   if (opt) sel.value = opt.value;
-  if (!$('#aStart').value) $('#aStart').value = nowTime();
   $('#aForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  toast('Project selected – add photos and save');
+  toast('Project selected – take the Before photo');
 }
 async function loadWeek() {
   if (!PJ.wk) PJ.wk = mondayOf(todayStr());
@@ -1413,13 +1421,13 @@ function shareWeekWA() {
     x.list.forEach(p => lines.push('- ' + p.task + ': ' + p.state + (p.rec ? ' (' + p.rec.by + ')' : '') + (p.rec && p.rec.note ? ' - ' + p.rec.note : '')));
     lines.push('');
   });
-  lines.push('Reported by ' + (S.me || ls('inv_by') || 'Supervisor'));
+  lines.push('Reported by ' + senderName());
   window.open('https://wa.me/?text=' + encodeURIComponent(lines.join('\n')), '_blank');
 }
 function printWeek() {
   if (!isSpv()) return toast('Supervisor only', 1);
   $('#wPH').innerHTML = `<h2>Steward Weekly Cleaning Project</h2><div>${esc(dayLabel(PJ.wk))} – ${esc(dayLabel(addDays(PJ.wk, 6)))}</div>`;
-  $('#wSig').innerHTML = sigBlock(['Prepared by', 'Checked by', 'Approved by'], [S.me || '', '', '']);
+  $('#wSig').innerHTML = reportedBy();
   window.print();
 }
 $('#wPrev').onclick = () => { PJ.wk = addDays(PJ.wk || mondayOf(todayStr()), -7); loadWeek(); };
@@ -1439,6 +1447,27 @@ function allTasks() {
   const seen = {}, out = [];
   projTasks().concat(S.tasks).forEach(t => { const k = nk(t); if (!seen[k]) { seen[k] = 1; out.push(t); } });
   return out;
+}
+// time the photo was taken: camera / gallery photo from today uses its own time, otherwise the time it is added
+function photoTime(f) {
+  const now = new Date(), t = f && f.lastModified ? new Date(f.lastModified) : null;
+  const ok = t && !isNaN(t) && t <= new Date(now.getTime() + 60000) && dstr(t) === dstr(now);
+  return hhmm(ok ? t : now);
+}
+// start = Before photo (or earliest photo); end = After photo (or latest photo, or save time when Done)
+function actTimes() {
+  const p = ACT.ptime, all = PH_KEYS.map(([k]) => p[k]).filter(Boolean).sort();
+  if (!all.length) return { start: '', end: '' };
+  const start = p.before || all[0];
+  let end = p.after || (all.length > 1 ? all[all.length - 1] : '');
+  if (!end && ACT.status === 'Done') end = nowTime();
+  return { start, end };
+}
+function showActTimes() {
+  const x = actTimes();
+  $('#aTimes').innerHTML = CLOCK_SVG + (x.start
+    ? `<span>Start <b>${x.start}</b> &nbsp;·&nbsp; Finish <b>${x.end || '-'}</b> <span class="meta">(auto from photos)</span></span>`
+    : '<span>Start &amp; finish time are recorded automatically from the photo times.</span>');
 }
 function fillActSelects() {
   const set = (id, list, first) => {
@@ -1466,14 +1495,17 @@ function fillActSelects() {
     const guess = h < 12 ? S.shifts[0] : h < 18 ? S.shifts[1] : S.shifts[2];
     if (guess) $('#aShift').value = guess;
   }
+  showActTimes();
 }
 function setActStatus(s) {
   ACT.status = s;
   document.querySelectorAll('#aSeg button').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+  showActTimes();
 }
 function resetActForm() {
-  $('#aStart').value = ''; $('#aEnd').value = ''; $('#aNote').value = ''; $('#aTask').value = '';
-  PH_KEYS.forEach(([, , id]) => { $(id).value = ''; $(id + 'v').hidden = true; $(id + 'e').hidden = false; });
+  $('#aNote').value = ''; $('#aTask').value = '';
+  ACT.ptime = {};
+  PH_KEYS.forEach(([, , id]) => { $(id).value = ''; $(id + 'v').hidden = true; $(id + 'e').hidden = false; $(id + 't').textContent = ''; });
   setActStatus('Done');
 }
 async function submitActivity() {
@@ -1482,8 +1514,6 @@ async function submitActivity() {
   if (!date) return toast('Choose the date', 1);
   if (!section) return toast('Choose or type the section', 1);
   if (!task) return toast('Choose the task', 1);
-  const start = $('#aStart').value, end = $('#aEnd').value;
-  if (start && end && end < start && !confirm('End time is earlier than start time (overnight shift?). Continue?')) return;
   let by = S.me || '';
   if (isSpv() && !S.me) {
     by = $('#aBy').value.trim();
@@ -1492,6 +1522,7 @@ async function submitActivity() {
   }
   const files = PH_KEYS.map(([k, , id]) => [k, $(id).files[0]]);
   if (!files.some(([, f]) => f)) return toast('Add at least 1 work photo', 1);
+  const { start, end } = actTimes();
   const btn = $('#aSubmit'); btn.disabled = true; btn.textContent = 'Uploading photos...';
   try {
     const photos = {};
@@ -1502,7 +1533,7 @@ async function submitActivity() {
       shift: $('#aShift').value, section, note: $('#aNote').value.trim(), photos
     });
     ls('act_sec', section);
-    toast('Activity saved – ' + task);
+    toast('Activity saved – ' + task + (start ? ' (' + start + '–' + (end || '?') + ')' : ''));
     resetActForm();
     $('#afFrom').value = $('#afTo').value = date;
     loadActs(); loadTodayProj();
@@ -1569,9 +1600,8 @@ async function printActs() {
   if (!list.length) return toast('Nothing to print', 1);
   const sec = $('#afSec').value, staff = $('#afStaff').value;
   $('#aPH').innerHTML = `<h2>Steward Daily Activity Report</h2>
-    <div>${esc(actRange())}${sec ? ' · ' + esc(sec) : ''}${staff ? ' · ' + esc(staff) : ''}</div>
-    <div>Prepared by ${esc(S.me || ls('inv_by') || 'Supervisor')}</div>`;
-  $('#aSig').innerHTML = sigBlock(['Prepared by', 'Checked by', 'Approved by'], [S.me || '', '', '']);
+    <div>${esc(actRange())}${sec ? ' · ' + esc(sec) : ''}${staff ? ' · ' + esc(staff) : ''}</div>`;
+  $('#aSig').innerHTML = reportedBy();
   await waitImgs('#aList img', $('#aPrint'), 'Print / PDF');
   window.print();
 }
@@ -1608,7 +1638,7 @@ function shareActsWA() {
     lines.push('', '*Needs attention:*');
     issues.forEach(a => lines.push('- ' + a.task + (a.section ? ' (' + a.section + ')' : '') + (a.note ? ': ' + a.note : '')));
   }
-  lines.push('', 'Reported by ' + (S.me || ls('inv_by') || 'Supervisor'));
+  lines.push('', 'Reported by ' + senderName());
   window.open('https://wa.me/?text=' + encodeURIComponent(lines.join('\n')), '_blank');
 }
 function xlsActs() {
@@ -1617,7 +1647,7 @@ function xlsActs() {
   const list = actFiltered();
   if (!list.length) return toast('Nothing to export', 1);
   const pt = projTasks().map(nk);
-  const aoa = [['STEWARD DAILY ACTIVITY'], ['Period', actRange()], [],
+  const aoa = [['STEWARD DAILY ACTIVITY'], ['Period', actRange()], ['Reported by', senderName()], [],
     ['DATE', 'SHIFT', 'SECTION', 'TASK', 'TYPE', 'START', 'END', 'STATUS', 'STAFF', 'NOTE', 'PHOTO BEFORE', 'PHOTO DURING', 'PHOTO AFTER']];
   list.slice().reverse().forEach(a => aoa.push([a.date, a.shift, a.section, a.task, pt.indexOf(nk(a.task)) > -1 ? 'Weekly project' : 'Daily', a.start, a.end, a.status, a.by, a.note, a.before, a.during, a.after]));
   const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -1627,9 +1657,16 @@ function xlsActs() {
   XLSX.writeFile(wb, 'Steward-Activity-' + $('#afFrom').value + ($('#afTo').value !== $('#afFrom').value ? '_' + $('#afTo').value : '') + '.xlsx');
 }
 document.querySelectorAll('#aSeg button').forEach(b => b.onclick = () => setActStatus(b.dataset.s));
-PH_KEYS.forEach(([, , id]) => previewOn(id, id + 'v', id + 'e'));
-$('#aStart').onfocus = () => { if (!$('#aStart').value) $('#aStart').value = nowTime(); };
-$('#aEnd').onfocus = () => { if (!$('#aEnd').value) $('#aEnd').value = nowTime(); };
+PH_KEYS.forEach(([k, , id]) => {
+  $(id).onchange = e => {
+    const f = e.target.files[0], p = $(id + 'v');
+    if (f) { p.src = URL.createObjectURL(f); p.hidden = false; ACT.ptime[k] = photoTime(f); }
+    else { p.hidden = true; delete ACT.ptime[k]; }
+    $(id + 'e').hidden = !!f;
+    $(id + 't').textContent = ACT.ptime[k] || '';
+    showActTimes();
+  };
+});
 $('#aSubmit').onclick = submitActivity;
 $('#afFrom').onchange = loadActs; $('#afTo').onchange = loadActs;
 $('#afSec').onchange = renderActs; $('#afTask').onchange = renderActs; $('#afStaff').onchange = renderActs;
