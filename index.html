@@ -12,6 +12,7 @@
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
 [hidden]{display:none!important}
+.printonly{display:none}
 .top{position:sticky;top:0;z-index:5}
 header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 header h1{font-size:17px;margin:0}header small{opacity:.85;font-size:12px}
@@ -26,7 +27,7 @@ main{max-width:900px;margin:0 auto;padding:16px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
 .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
 .stat small{color:var(--mute);font-size:12px}.stat b{display:block;font-size:22px;margin-top:2px}
-.stat.r b{color:var(--red)}.stat.a b{color:var(--amb)}.stat.g b{color:var(--pri)}
+.stat.r b{color:var(--red)}.stat.a b{color:var(--amb)}.stat.g b{color:var(--pri)}.stat.b b{color:var(--blu)}
 h3{margin:0 0 10px;font-size:15px}h4{margin:18px 0 8px;font-size:14px}
 .bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .bar input,.bar select{flex:1;min-width:130px;width:auto}
@@ -66,6 +67,9 @@ label input,label select,label textarea{margin-top:4px}
 .seg button.on[data-t=LOST]{background:var(--amb2);border-color:var(--amb);color:var(--amb);font-weight:600}
 .seg button.on[data-t=ADD]{background:var(--pri2);border-color:var(--pri);color:var(--pri);font-weight:600}
 .seg button.on[data-t=TRANSFER]{background:var(--blu2);border-color:var(--blu);color:var(--blu);font-weight:600}
+.seg button.on[data-s="Done"]{background:var(--pri2);border-color:var(--pri);color:var(--pri);font-weight:600}
+.seg button.on[data-s="In progress"]{background:var(--blu2);border-color:var(--blu);color:var(--blu);font-weight:600}
+.seg button.on[data-s="Issue"]{background:var(--red2);border-color:var(--red);color:var(--red);font-weight:600}
 .hint{font-size:13px;margin:-6px 0 12px;color:var(--mute)}
 .note{font-size:13px;color:var(--ink);background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px;line-height:1.5}
 .prev{max-width:160px;border-radius:8px;margin-bottom:12px;display:block}
@@ -86,6 +90,20 @@ label input,label select,label textarea{margin-top:4px}
 .tbl tr.cur td{background:#f3faf6;font-weight:700}
 .edit-box{border:1px solid var(--line);border-radius:10px;padding:14px 14px 4px;margin-bottom:12px}
 .edit-box h4{margin:0 0 10px}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pslot{display:flex;flex-direction:column;gap:6px;border:1.5px dashed #c9d2cc;border-radius:10px;padding:8px;margin:0;text-align:center;font-size:12px;font-weight:600;color:var(--ink);background:#fafbfa}
+.pslot img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;display:block}
+.pslot .pe{width:100%;aspect-ratio:4/3;border-radius:6px;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.pslot input{font-size:11px;padding:4px;margin:0;border:0;background:none}
+.alist{display:flex;flex-direction:column;gap:10px}
+.acard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;break-inside:avoid;page-break-inside:avoid}
+.ahd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.st{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.st-Done{background:var(--pri2);color:var(--pri)}.st-Inprogress{background:var(--blu2);color:var(--blu)}.st-Issue{background:var(--red2);color:var(--red)}
+.aph{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.aph figure{margin:0}
+.aph img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;background:var(--bg);display:block}
+.aph figcaption{font-size:11px;color:var(--mute);margin-top:3px;text-align:center}
 .done{text-align:center;padding:28px 16px}
 .done .ok{width:64px;height:64px;border-radius:50%;background:var(--pri2);color:var(--pri);font-size:34px;line-height:64px;margin:0 auto 10px;font-weight:700}
 .tag{font-size:11px;font-weight:700;padding:4px 6px;border-radius:6px;flex:none;width:72px;text-align:center}
@@ -174,13 +192,15 @@ label input,label select,label textarea{margin-top:4px}
   @page{size:A4;margin:12mm}
   body{background:#fff}
   .top,.noprint,#toast,#modal,#login{display:none!important}
+  .printonly{display:block!important}
   main{padding:0;max-width:none}
   #rpt,#opRpt{border:0;padding:0;margin:0}
-  .tbl th,.lph,.qh{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tbl th,.lph,.qh,.st{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .tbl-wrap{overflow:visible}
   .labels{justify-content:start}
   .lbl{border:1px dashed #999}
   .lbl.qc{border:1px solid #999}
+  .acard{border:1px solid #bbb}
 }
 </style>
 </head>
@@ -206,6 +226,7 @@ label input,label select,label textarea{margin-top:4px}
     <button data-tab="dash" class="on">Dashboard</button>
     <button data-tab="inv">Inventory</button>
     <button data-tab="rep">Input</button>
+    <button data-tab="act">Activity</button>
     <button data-tab="opn">Opname</button>
     <button data-tab="his">History</button>
     <button data-tab="rec">Recap</button>
@@ -285,6 +306,63 @@ label input,label select,label textarea{margin-top:4px}
       </div>
       <button class="btn full red lg" id="rSubmit">Report broken</button>
     </form>
+  </section>
+
+  <!-- DAILY ACTIVITY STEWARD -->
+  <section id="act" hidden>
+    <div class="card noprint">
+      <h3>Steward daily activity</h3>
+      <div class="two">
+        <label>Date<input id="aDate" type="date"></label>
+        <label>Shift<select id="aShift"></select></label>
+      </div>
+      <div class="two">
+        <label id="aSecWrap">Section<select id="aSec"></select></label>
+        <label>Task<select id="aTask"></select></label>
+      </div>
+      <div class="two">
+        <label>Start time<input id="aStart" type="time"></label>
+        <label>End time<input id="aEnd" type="time"></label>
+      </div>
+      <div class="seg" id="aSeg">
+        <button type="button" data-s="Done" class="on">Done</button>
+        <button type="button" data-s="In progress">In progress</button>
+        <button type="button" data-s="Issue">Issue</button>
+      </div>
+      <label id="aByWrap">Done by<input id="aBy"></label>
+      <div class="who" id="aWho" hidden></div>
+      <div class="meta" style="margin:0 0 6px">Work photos <b>(min. 1)</b> – camera or gallery</div>
+      <div class="pgrid">
+        <label class="pslot"><span>Before</span><img id="aP1v" hidden><div class="pe" id="aP1e">+</div><input id="aP1" type="file" accept="image/*"></label>
+        <label class="pslot"><span>During</span><img id="aP2v" hidden><div class="pe" id="aP2e">+</div><input id="aP2" type="file" accept="image/*"></label>
+        <label class="pslot"><span>After</span><img id="aP3v" hidden><div class="pe" id="aP3e">+</div><input id="aP3" type="file" accept="image/*"></label>
+      </div>
+      <label>Note<textarea id="aNote" rows="2" placeholder="e.g. dish machine descaled, grease trap emptied"></textarea></label>
+      <button type="button" class="btn full lg" id="aSubmit">Save activity</button>
+    </div>
+
+    <div class="card noprint">
+      <div class="flex" style="margin-bottom:10px">
+        <h3 style="margin:0" id="aListTitle">Activities</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn ghost" id="aPrint">Print / PDF</button>
+          <button class="btn ghost" id="aXls">Excel</button>
+        </div>
+      </div>
+      <div class="two">
+        <label>From<input id="afFrom" type="date"></label>
+        <label>To<input id="afTo" type="date"></label>
+      </div>
+      <div class="bar" style="margin:0">
+        <select id="afSec"></select>
+        <select id="afTask"></select>
+        <select id="afStaff"></select>
+      </div>
+    </div>
+    <div class="printonly rh" id="aPH"></div>
+    <div class="stats" id="aSum"></div>
+    <div class="alist" id="aList"><p class="empty">Loading...</p></div>
+    <div class="printonly" id="aSig"></div>
   </section>
 
   <section id="opn" hidden>
@@ -397,22 +475,25 @@ label input,label select,label textarea{margin-top:4px}
 <div id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoowoC39D9UYmbTfchxQvI_-DmDwPE-QQADeUI0cNOY/exec';
+const API = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let S = { role: '', qrKey: '', me: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], hasLost: false, hasPrice: false,
-          hasSection: false, hasTrf: false, hasCode: false, hasMin: false, codePrefix: 'KU-', low: 5, type: 'BROKEN', sec: '' };
+let S = { role: '', qrKey: '', me: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], tasks: [], shifts: [],
+          hasLost: false, hasPrice: false, hasSection: false, hasTrf: false, hasCode: false, hasMin: false,
+          codePrefix: 'KTC-', low: 5, type: 'BROKEN', sec: '' };
 let LBL = { only: null, skip: new Set(), cur: [] };
 let OP = { sec: null, counts: {} };
+let ACT = { list: [], status: 'Done', loading: false };
 let SCN = null;
+const STAFF_TABS = ['rep', 'act'];
 const APP_URL = location.href.split(/[?#]/)[0];
 const URLP = new URLSearchParams(location.search);
 let DEEP = { code: URLP.get('code'), item: URLP.get('item'), sec: URLP.get('sec') };
 const QR = { key: URLP.get('k') || '', g: null, fixedSec: '', type: 'BROKEN', pin: '', name: '' };
 const isSpv = () => S.role === 'spv';
 const USER_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f6f54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>';
-const whoHtml = name => `${USER_SVG}<div>Reported by: <b>${esc(name)}</b><div class="meta">Locked to your Staff ID</div></div>`;
+const whoHtml = (name, label) => `${USER_SVG}<div>${label || 'Reported by'}: <b>${esc(name)}</b><div class="meta">Locked to your Staff ID</div></div>`;
 
 /* ---------- API ---------- */
 async function get(action, params = {}, pinOverride) {
@@ -453,6 +534,7 @@ async function doLogin() {
 }
 function logout(silent) {
   ls('inv_pin', null); ls('inv_role', null); S.role = ''; S.me = '';
+  $('#nav').hidden = true;
   closeModal();
   if (!silent) toast('Logged out');
   showLogin();
@@ -460,16 +542,20 @@ function logout(silent) {
 function applyRole() {
   if (S.role === 'qr') return;
   const spv = isSpv();
-  $('#nav').hidden = !spv;
+  $('#nav').hidden = false;
+  document.querySelectorAll('#nav button').forEach(b => b.hidden = !spv && STAFF_TABS.indexOf(b.dataset.tab) < 0);
   $('#roleTag').textContent = spv ? (S.me ? 'Supervisor · ' + S.me : 'Admin') : 'Staff' + (S.me ? ' · ' + S.me : '');
   $('#segAdd').hidden = !spv;
   $('#segTrf').hidden = !spv || !S.hasSection;
   $('#rByWrap').hidden = !spv || !!S.me;       // admin types a name; supervisor & staff are locked
   $('#rWho').hidden = !S.me;
-  if (S.me) $('#rWho').innerHTML = whoHtml(S.me);
+  $('#aByWrap').hidden = !spv || !!S.me;
+  $('#aWho').hidden = !S.me;
+  $('#afStaff').hidden = !spv;
+  if (S.me) { $('#rWho').innerHTML = whoHtml(S.me); $('#aWho').innerHTML = whoHtml(S.me, 'Done by'); }
   if (!spv) {
     if (S.type !== 'BROKEN' && S.type !== 'LOST') setType('BROKEN');
-    if (currentTab() !== 'rep') tab('rep');
+    if (STAFF_TABS.indexOf(currentTab()) < 0) tab('rep');
   }
 }
 function currentTab() { const s = [...document.querySelectorAll('main section')].find(x => !x.hidden); return s ? s.id : ''; }
@@ -493,6 +579,9 @@ function thumb(src, cls = 'th') {
 const rp = n => (n < 0 ? '−' : '') + 'Rp ' + Math.round(Math.abs(n || 0)).toLocaleString('id-ID');
 const sgn = n => n > 0 ? '+' + n : String(n);
 const nk = s => String(s || '').trim().toLowerCase();
+const pad = n => String(n).padStart(2, '0');
+const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+const nowTime = () => { const d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
 const byRow = r => S.items.find(i => i.row == r);
 const groupOf = name => S.groups.find(g => nk(g.item) === nk(name));
 const codeOf = name => (groupOf(name) || {}).code || '';
@@ -509,6 +598,7 @@ const byCode = (a, b) => (a.code || '~').localeCompare(b.code || '~', undefined,
 const ym = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 const thisMonth = () => ym(new Date());
 function monthLabel(m) { const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleString('en', { month: 'long', year: 'numeric' }); }
+function dayLabel(d) { const [y, m, dd] = d.split('-').map(Number); return new Date(y, m - 1, dd).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }); }
 const closedMonths = () => [...new Set(S.closings.map(c => c.month))].sort();
 function parseScan(txt) {
   txt = String(txt || '').trim();
@@ -540,10 +630,11 @@ function compress(file) {
     img.src = URL.createObjectURL(file);
   });
 }
-function previewOn(inputId, imgId) {
+function previewOn(inputId, imgId, emptyId) {
   $(inputId).onchange = e => {
     const f = e.target.files[0], p = $(imgId);
     if (f) { p.src = URL.createObjectURL(f); p.hidden = false; } else p.hidden = true;
+    if (emptyId) $(emptyId).hidden = !!f;
   };
 }
 
@@ -568,8 +659,9 @@ function stopScanner() {
 /* ---------- LOAD ---------- */
 function applyInv(inv) {
   S.items = inv.items; S.secs = inv.sections || []; S.reasons = inv.reasons || [];
+  S.tasks = inv.tasks || []; S.shifts = inv.shifts || [];
   S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice; S.hasSection = inv.hasSection; S.hasTrf = inv.hasTrf;
-  S.hasCode = inv.hasCode; S.hasMin = inv.hasMin; S.codePrefix = inv.codePrefix || 'KU-';
+  S.hasCode = inv.hasCode; S.hasMin = inv.hasMin; S.codePrefix = inv.codePrefix || 'KTC-';
   S.low = inv.lowStock; S.qrKey = inv.qrKey || S.qrKey || '';
   if (S.role !== 'qr') S.me = inv.me || '';
   if (S.sec && S.secs.indexOf(S.sec) < 0) S.sec = '';
@@ -592,13 +684,14 @@ async function load() {
     }
     applyInv(inv);
     S.log = log; S.closings = cl;
-    fillSecs(); fillReasons(); fillItems();
+    fillSecs(); fillReasons(); fillItems(); fillActSelects();
     if (isSpv()) {
       renderChips(); renderDash(); renderList(); renderHis(); renderCloseInfo(); renderRecap();
       if (!$('#lab').hidden) renderLabels();
       if (!$('#opn').hidden) renderOpname();
     }
     applyRole();
+    if (!$('#act').hidden) loadActs();
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     handleDeepLink();
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
@@ -1098,6 +1191,159 @@ async function saveNew() {
     toast('Item added' + (r && r.code ? ' · ' + r.code : '')); closeModal(); load();
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Add item'; }
 }
+
+/* ---------- DAILY ACTIVITY STEWARD ---------- */
+const PH_KEYS = [['before', 'Before', '#aP1'], ['during', 'During', '#aP2'], ['after', 'After', '#aP3']];
+function fillActSelects() {
+  const set = (id, list, first) => {
+    const s = $(id), v = s.value;
+    s.innerHTML = (first ? `<option value="">${first}</option>` : '') + list.map(x => `<option>${esc(x)}</option>`).join('');
+    if (v && [...s.options].some(o => o.value === v)) s.value = v;
+  };
+  set('#aShift', S.shifts, '— shift —');
+  set('#aSec', S.secs, '— section —');
+  set('#aTask', S.tasks, '— choose task —');
+  set('#afSec', S.secs, 'All sections');
+  set('#afTask', S.tasks, 'All tasks');
+  $('#aSecWrap').hidden = !S.secs.length;
+  $('#afSec').hidden = !S.secs.length;
+  if (!$('#aDate').value) $('#aDate').value = todayStr();
+  if (!$('#afFrom').value) $('#afFrom').value = todayStr();
+  if (!$('#afTo').value) $('#afTo').value = todayStr();
+  if (!$('#aBy').value) $('#aBy').value = ls('inv_by') || '';
+  if (!$('#aShift').value) {
+    const h = new Date().getHours();
+    const guess = h < 12 ? S.shifts[0] : h < 18 ? S.shifts[1] : S.shifts[2];
+    if (guess) $('#aShift').value = guess;
+  }
+}
+function setActStatus(s) {
+  ACT.status = s;
+  document.querySelectorAll('#aSeg button').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+}
+function resetActForm() {
+  $('#aStart').value = ''; $('#aEnd').value = ''; $('#aNote').value = ''; $('#aTask').value = '';
+  PH_KEYS.forEach(([, , id]) => { $(id).value = ''; $(id + 'v').hidden = true; $(id + 'e').hidden = false; });
+  setActStatus('Done');
+}
+async function submitActivity() {
+  const date = $('#aDate').value, task = $('#aTask').value;
+  if (!date) return toast('Choose the date', 1);
+  if (!task) return toast('Choose the task', 1);
+  if (S.secs.length && !$('#aSec').value) return toast('Choose the section', 1);
+  const start = $('#aStart').value, end = $('#aEnd').value;
+  if (start && end && end < start && !confirm('End time is earlier than start time (overnight shift?). Continue?')) return;
+  let by = S.me || '';
+  if (isSpv() && !S.me) {
+    by = $('#aBy').value.trim();
+    if (!by) return toast('Fill "Done by"', 1);
+    ls('inv_by', by);
+  }
+  const files = PH_KEYS.map(([k, , id]) => [k, $(id).files[0]]);
+  if (!files.some(([, f]) => f)) return toast('Add at least 1 work photo', 1);
+  const btn = $('#aSubmit'); btn.disabled = true; btn.textContent = 'Uploading photos...';
+  try {
+    const photos = {};
+    for (const [k, f] of files) if (f) photos[k] = await compress(f);
+    btn.textContent = 'Saving...';
+    await post({
+      action: 'activity', date, task, by, status: ACT.status, start, end,
+      shift: $('#aShift').value, section: $('#aSec').value, note: $('#aNote').value.trim(), photos
+    });
+    toast('Activity saved – ' + task);
+    resetActForm();
+    $('#afFrom').value = $('#afTo').value = date;
+    loadActs();
+  } catch (e) { toast(e.message, 1); }
+  finally { btn.disabled = false; btn.textContent = 'Save activity'; }
+}
+async function loadActs() {
+  let from = $('#afFrom').value || todayStr(), to = $('#afTo').value || from;
+  if (to < from) { const t = from; from = to; to = t; $('#afFrom').value = from; $('#afTo').value = to; }
+  $('#aList').innerHTML = '<p class="empty">Loading...</p>';
+  try {
+    ACT.list = await get('activities', { from, to });
+    const staff = [...new Set(ACT.list.map(a => a.by).filter(String))].sort();
+    const s = $('#afStaff'), v = s.value;
+    s.innerHTML = '<option value="">All staff</option>' + staff.map(x => `<option>${esc(x)}</option>`).join('');
+    if (v && staff.indexOf(v) > -1) s.value = v;
+    renderActs();
+  } catch (e) { $('#aList').innerHTML = `<p class="empty">${esc(e.message)}</p>`; }
+}
+function actFiltered() {
+  const sec = $('#afSec').value, task = $('#afTask').value, staff = isSpv() ? $('#afStaff').value : '';
+  return ACT.list.filter(a => (!sec || a.section === sec) && (!task || a.task === task) && (!staff || a.by === staff));
+}
+function actRange() {
+  const f = $('#afFrom').value, t = $('#afTo').value;
+  return f === t ? dayLabel(f) : dayLabel(f) + ' – ' + dayLabel(t);
+}
+function renderActs() {
+  const list = actFiltered();
+  const c = s => list.filter(a => a.status === s).length;
+  $('#aListTitle').textContent = (isSpv() ? 'Activities' : 'My activities') + ' · ' + actRange();
+  $('#aSum').innerHTML = `
+    <div class="stat"><small>Activities</small><b>${list.length}</b></div>
+    <div class="stat g"><small>Done</small><b>${c('Done')}</b></div>
+    <div class="stat b"><small>In progress</small><b>${c('In progress')}</b></div>
+    <div class="stat r"><small>Issue</small><b>${c('Issue')}</b></div>
+    ${isSpv() ? `<div class="stat"><small>Staff</small><b>${new Set(list.map(a => a.by)).size}</b></div>` : ''}`;
+  $('#aList').innerHTML = list.map(a => {
+    const ph = PH_KEYS.filter(([k]) => a[k]).map(([k, lbl]) =>
+      `<figure><a href="${esc(a[k])}" target="_blank" rel="noopener"><img src="${esc(a[k])}" loading="lazy" referrerpolicy="no-referrer" alt="${lbl} photo"></a><figcaption>${lbl}</figcaption></figure>`).join('');
+    return `<div class="acard">
+      <div class="ahd">
+        <div class="info">
+          <b>${esc(a.task)}</b>
+          <div class="meta">${esc(dayLabel(a.date))}${a.start || a.end ? ' · ' + esc(a.start || '?') + '–' + esc(a.end || '?') : ''}${a.shift ? ' · ' + esc(a.shift) : ''}${a.section ? ' · ' + esc(a.section) : ''}</div>
+          <div class="meta">By <b>${esc(a.by)}</b></div>
+          ${a.note ? `<div class="meta" style="color:var(--ink);margin-top:4px">${esc(a.note)}</div>` : ''}
+        </div>
+        <span class="st st-${esc(String(a.status).replace(/\s/g, ''))}">${esc(a.status)}</span>
+      </div>
+      ${ph ? `<div class="aph">${ph}</div>` : ''}
+    </div>`;
+  }).join('') || '<p class="empty">No activities for this period</p>';
+}
+async function printActs() {
+  const list = actFiltered();
+  if (!list.length) return toast('Nothing to print', 1);
+  const sec = $('#afSec').value, staff = isSpv() ? $('#afStaff').value : '';
+  $('#aPH').innerHTML = `<h2>Steward Daily Activity Report</h2>
+    <div>${esc(actRange())}${sec ? ' · ' + esc(sec) : ''}${staff ? ' · ' + esc(staff) : ''}</div>`;
+  $('#aSig').innerHTML = sigBlock(['Prepared by', 'Checked by', 'Approved by']);
+  const imgs = [...document.querySelectorAll('#aList img')];
+  const btn = $('#aPrint'); btn.disabled = true; btn.textContent = 'Loading photos...';
+  imgs.forEach(im => im.loading = 'eager');
+  await Promise.race([
+    Promise.all(imgs.map(im => im.complete ? 1 : new Promise(r => { im.onload = im.onerror = r; }))),
+    new Promise(r => setTimeout(r, 6000))
+  ]);
+  btn.disabled = false; btn.textContent = 'Print / PDF';
+  window.print();
+}
+function xlsActs() {
+  if (!window.XLSX) return toast('Excel library not loaded, check internet connection', 1);
+  const list = actFiltered();
+  if (!list.length) return toast('Nothing to export', 1);
+  const aoa = [['STEWARD DAILY ACTIVITY'], ['Period', actRange()], [],
+    ['DATE', 'SHIFT', 'SECTION', 'TASK', 'START', 'END', 'STATUS', 'STAFF', 'NOTE', 'PHOTO BEFORE', 'PHOTO DURING', 'PHOTO AFTER']];
+  list.slice().reverse().forEach(a => aoa.push([a.date, a.shift, a.section, a.task, a.start, a.end, a.status, a.by, a.note, a.before, a.during, a.after]));
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [12, 11, 18, 26, 8, 8, 12, 18, 36, 40, 40, 40].map(w => ({ wch: w }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Activity');
+  XLSX.writeFile(wb, 'Steward-Activity-' + $('#afFrom').value + ($('#afTo').value !== $('#afFrom').value ? '_' + $('#afTo').value : '') + '.xlsx');
+}
+document.querySelectorAll('#aSeg button').forEach(b => b.onclick = () => setActStatus(b.dataset.s));
+PH_KEYS.forEach(([, , id]) => previewOn(id, id + 'v', id + 'e'));
+$('#aStart').onfocus = () => { if (!$('#aStart').value) $('#aStart').value = nowTime(); };
+$('#aEnd').onfocus = () => { if (!$('#aEnd').value) $('#aEnd').value = nowTime(); };
+$('#aSubmit').onclick = submitActivity;
+$('#afFrom').onchange = loadActs; $('#afTo').onchange = loadActs;
+$('#afSec').onchange = renderActs; $('#afTask').onchange = renderActs; $('#afStaff').onchange = renderActs;
+$('#aPrint').onclick = printActs;
+$('#aXls').onclick = xlsActs;
 
 /* ---------- STOCK OPNAME ---------- */
 function opKey() { return 'op_' + (OP.sec || 'all'); }
@@ -1665,12 +1911,13 @@ function downloadXls() {
 /* ---------- TABS & INIT ---------- */
 function tab(t) {
   if (S.role === 'qr') t = 'qrv';
-  else if (!isSpv() && t !== 'rep') t = 'rep';
+  else if (!isSpv() && STAFF_TABS.indexOf(t) < 0) t = 'rep';
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t || (t === 'lab' && b.dataset.tab === 'inv')));
   document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== t);
   if (t === 'rec') renderRecap();
   if (t === 'lab') renderLabels();
   if (t === 'opn') renderOpname();
+  if (t === 'act') { fillActSelects(); loadActs(); }
   scrollTo(0, 0);
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
