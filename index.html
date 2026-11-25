@@ -13,16 +13,23 @@
 body{margin:0;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
 [hidden]{display:none!important}
 .printonly{display:none}
-.top{position:sticky;top:0;z-index:5}
+.top{position:sticky;top:0;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 header h1{font-size:17px;margin:0}header small{opacity:.85;font-size:12px}
 .role{display:inline-block;background:rgba(255,255,255,.2);border-radius:4px;padding:0 6px;margin-right:6px;font-weight:600}
 .hbtns{display:flex;gap:8px}
 .icon{background:rgba(255,255,255,.15);border:0;color:#fff;font-size:15px;min-width:36px;height:36px;border-radius:8px;cursor:pointer;padding:0 10px;font-weight:600}
-nav{display:flex;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto}
-nav button{flex:1;border:0;background:none;padding:12px 4px;font:inherit;font-size:12.5px;color:var(--mute);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+nav{display:flex;background:#fff;border-bottom:1px solid var(--line)}
+nav button{flex:1;border:0;background:none;padding:9px 4px 8px;font:inherit;font-size:12px;color:var(--mute);border-bottom:3px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+nav button svg{width:21px;height:21px;flex:none}
+nav button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 nav button.on{color:var(--pri);border-color:var(--pri);font-weight:600}
+.subnav{display:flex;gap:6px;overflow-x:auto;background:#fafbfa;border-bottom:1px solid var(--line);padding:8px 12px}
+.subnav button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 14px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer;white-space:nowrap}
+.subnav button.on{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
 main{max-width:900px;margin:0 auto;padding:16px}
+.grp{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 2px 10px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
+.grp:not(:first-child){margin-top:22px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
 .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
@@ -40,7 +47,7 @@ label input,label select,label textarea{margin-top:4px}
 .btn{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:600;background:var(--pri);color:#fff;cursor:pointer;white-space:nowrap}
 .btn.red{background:var(--red)}.btn.amb{background:var(--amb)}.btn.blu{background:var(--blu)}.btn.ghost{background:var(--pri2);color:var(--pri)}
 .btn.danger{background:var(--red2);color:var(--red)}.btn.wa{background:var(--wa)}
-.btn.full{width:100%}.btn.lg{padding:14px;font-size:16px}.btn.xl{padding:22px 10px;font-size:19px;border-radius:12px}.btn:disabled{opacity:.6}
+.btn.full{width:100%}.btn.lg{padding:14px;font-size:16px}.btn.xl{padding:22px 10px;font-size:19px;border-radius:12px}.btn.sm{padding:6px 10px;font-size:13px}.btn:disabled{opacity:.6}
 .link{border:0;background:none;color:var(--pri);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
 .chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
 .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 14px;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer;color:var(--ink)}
@@ -222,15 +229,8 @@ label input,label select,label textarea{margin-top:4px}
       <button class="icon" id="logoutBtn" title="Logout">Logout</button>
     </div>
   </header>
-  <nav id="nav" hidden>
-    <button data-tab="dash" class="on">Dashboard</button>
-    <button data-tab="inv">Inventory</button>
-    <button data-tab="rep">Input</button>
-    <button data-tab="act">Activity</button>
-    <button data-tab="opn">Opname</button>
-    <button data-tab="his">History</button>
-    <button data-tab="rec">Recap</button>
-  </nav>
+  <nav id="nav" hidden></nav>
+  <div id="subnav" class="subnav" hidden></div>
 </div>
 
 <main>
@@ -272,7 +272,6 @@ label input,label select,label textarea{margin-top:4px}
         <option value="broken">Most broken/lost</option>
         <option value="price">Highest price</option>
       </select>
-      <button class="btn ghost" id="lblBtn">QR Labels</button>
       <button class="btn" id="newBtn">+ New item</button>
     </div>
     <div id="list"></div>
@@ -437,10 +436,7 @@ label input,label select,label textarea{margin-top:4px}
 
   <section id="lab" hidden>
     <div class="card noprint">
-      <div class="flex" style="margin-bottom:12px">
-        <h3 style="margin:0">QR code labels</h3>
-        <button class="btn ghost" onclick="tab('inv')">← Back</button>
-      </div>
+      <h3>QR code labels</h3>
       <div class="bar">
         <select id="lSec"></select>
         <input id="lQ" placeholder="Filter name or code...">
@@ -476,13 +472,13 @@ label input,label select,label textarea{margin-top:4px}
 <div id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoowoC39D9UYmbTfchxQvI_-DmDwPE-QQADeUI0cNOY/exec';
+const API = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let S = { role: '', qrKey: '', me: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], tasks: [], shifts: [],
+let S = { role: '', qrKey: '', me: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], tasks: [], shifts: [], actToday: [],
           hasLost: false, hasPrice: false, hasSection: false, hasTrf: false, hasCode: false, hasMin: false,
-          codePrefix: 'KTC-', low: 5, type: 'BROKEN', sec: '' };
+          codePrefix: 'KTC-', low: 5, type: 'BROKEN', sec: '', tab: '', lastTab: {} };
 let LBL = { only: null, skip: new Set(), cur: [] };
 let OP = { sec: null, counts: {} };
 let ACT = { list: [], status: 'Done' };
@@ -495,6 +491,41 @@ const QR = { key: URLP.get('k') || '', g: null, fixedSec: '', type: 'BROKEN', pi
 const isSpv = () => S.role === 'spv';
 const USER_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1f6f54" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>';
 const whoHtml = (name, label) => `${USER_SVG}<div>${label || 'Reported by'}: <b>${esc(name)}</b><div class="meta">Locked to your Staff ID</div></div>`;
+
+/* ---------- NAVIGATION (grouped by category) ---------- */
+const SVG = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const NAV_ICON = {
+  home: SVG('<rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect>'),
+  inv: SVG('<path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="M3 8l9 5 9-5"></path><path d="M12 13v8"></path>'),
+  stw: SVG('<path d="M9 11l2 2 4-4"></path><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 17h8"></path>'),
+  rpt: SVG('<path d="M4 20V10"></path><path d="M10 20V4"></path><path d="M16 20v-7"></path><path d="M22 20H2"></path>')
+};
+const NAV_GROUPS = [
+  { id: 'home', label: 'Dashboard', tabs: [['dash', 'Overview']] },
+  { id: 'inv', label: 'Inventory', staff: 'Lost & Broken', tabs: [['inv', 'Stock'], ['rep', 'Input'], ['opn', 'Opname'], ['lab', 'QR Labels']] },
+  { id: 'stw', label: 'Steward', staff: 'Activity', tabs: [['act', 'Daily Activity']] },
+  { id: 'rpt', label: 'Reports', tabs: [['his', 'History'], ['rec', 'Recap & Closing']] }
+];
+function navGroups() {
+  return NAV_GROUPS.map(g => Object.assign({}, g, { tabs: g.tabs.filter(([id]) => isSpv() || STAFF_TABS.indexOf(id) > -1) }))
+    .filter(g => g.tabs.length);
+}
+function renderNav() {
+  if (!S.role || S.role === 'qr') { $('#nav').hidden = true; $('#subnav').hidden = true; return; }
+  const gs = navGroups(), cur = S.tab;
+  const g = gs.find(x => x.tabs.some(([id]) => id === cur)) || gs[0];
+  S.lastTab[g.id] = cur;
+  $('#nav').hidden = false;
+  $('#nav').innerHTML = gs.map(x => `<button type="button" data-g="${x.id}" class="${x.id === g.id ? 'on' : ''}">${NAV_ICON[x.id]}<span>${esc(isSpv() ? x.label : (x.staff || x.label))}</span></button>`).join('');
+  $('#nav').querySelectorAll('button').forEach(b => b.onclick = () => {
+    const gg = gs.find(x => x.id === b.dataset.g);
+    const last = S.lastTab[gg.id];
+    tab(last && gg.tabs.some(([id]) => id === last) ? last : gg.tabs[0][0]);
+  });
+  $('#subnav').hidden = g.tabs.length < 2;
+  $('#subnav').innerHTML = g.tabs.map(([id, l]) => `<button type="button" data-t="${id}" class="${id === cur ? 'on' : ''}">${esc(l)}</button>`).join('');
+  $('#subnav').querySelectorAll('button').forEach(b => b.onclick = () => tab(b.dataset.t));
+}
 
 /* ---------- API ---------- */
 async function get(action, params = {}, pinOverride) {
@@ -534,8 +565,8 @@ async function doLogin() {
   finally { btn.disabled = false; btn.textContent = 'Login'; }
 }
 function logout(silent) {
-  ls('inv_pin', null); ls('inv_role', null); S.role = ''; S.me = '';
-  $('#nav').hidden = true;
+  ls('inv_pin', null); ls('inv_role', null); S.role = ''; S.me = ''; S.tab = ''; S.lastTab = {};
+  renderNav();
   closeModal();
   if (!silent) toast('Logged out');
   showLogin();
@@ -543,8 +574,6 @@ function logout(silent) {
 function applyRole() {
   if (S.role === 'qr') return;
   const spv = isSpv();
-  $('#nav').hidden = false;
-  document.querySelectorAll('#nav button').forEach(b => b.hidden = !spv && STAFF_TABS.indexOf(b.dataset.tab) < 0);
   $('#roleTag').textContent = spv ? (S.me ? 'Supervisor · ' + S.me : 'Admin') : 'Staff' + (S.me ? ' · ' + S.me : '');
   $('#segAdd').hidden = !spv;
   $('#segTrf').hidden = !spv || !S.hasSection;
@@ -557,8 +586,9 @@ function applyRole() {
   if (S.me) { $('#rWho').innerHTML = whoHtml(S.me); $('#aWho').innerHTML = whoHtml(S.me, 'Done by'); }
   if (!spv) {
     if (S.type !== 'BROKEN' && S.type !== 'LOST') setType('BROKEN');
-    if (STAFF_TABS.indexOf(currentTab()) < 0) tab('rep');
+    if (STAFF_TABS.indexOf(currentTab()) < 0) { tab('rep'); return; }
   }
+  renderNav();
 }
 function currentTab() { const s = [...document.querySelectorAll('main section')].find(x => !x.hidden); return s ? s.id : ''; }
 
@@ -676,16 +706,20 @@ async function load() {
   applyRole();
   $('#sub').textContent = 'Loading...';
   try {
-    let inv, log = [], cl = [];
-    if (isSpv()) [inv, log, cl] = await Promise.all([get('list'), get('log', { limit: 3000 }), get('closing')]);
-    else inv = await get('list');
+    let inv, log = [], cl = [], act = [];
+    if (isSpv()) {
+      [inv, log, cl, act] = await Promise.all([
+        get('list'), get('log', { limit: 3000 }), get('closing'),
+        get('activities', { from: todayStr(), to: todayStr() }).catch(() => [])
+      ]);
+    } else inv = await get('list');
     if (inv.role === 'qr') { logout(true); return; }
     if (inv.role && inv.role !== S.role) {
       S.role = inv.role; ls('inv_role', inv.role);
       if (isSpv()) return load();             // role changed to supervisor: reload with full data
     }
     applyInv(inv);
-    S.log = log; S.closings = cl;
+    S.log = log; S.closings = cl; S.actToday = act;
     fillSecs(); fillReasons(); fillItems(); fillActSelects();
     if (isSpv()) {
       renderChips(); renderDash(); renderList(); renderHis(); renderCloseInfo(); renderRecap();
@@ -728,7 +762,8 @@ function buildGroups() {
 /* ---------- QR MODE: detail item + Broken/Lost, ID/PIN after tapping ---------- */
 async function startQr() {
   S.role = 'qr';
-  $('#login').hidden = true; $('#nav').hidden = true; $('#hbtns').hidden = true;
+  $('#login').hidden = true; $('#hbtns').hidden = true;
+  renderNav();
   $('#roleTag').textContent = 'Report';
   $('#sub').textContent = 'Loading...';
   document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== 'qrv');
@@ -981,27 +1016,48 @@ function renderDash() {
     </table></div></div>`;
   }
 
+  const A = S.actToday || [];
+  const ac = s => A.filter(a => a.status === s).length;
+  const issues = A.filter(a => a.status === 'Issue' || a.status === 'In progress');
+  const stwHtml = `
+    <div class="grp"><span>Steward · today</span><button class="btn ghost sm" onclick="tab('act')">Open activity</button></div>
+    <div class="stats">
+      <div class="stat"><small>Activities</small><b>${A.length}</b></div>
+      <div class="stat g"><small>Done</small><b>${ac('Done')}</b></div>
+      <div class="stat b"><small>In progress</small><b>${ac('In progress')}</b></div>
+      <div class="stat ${ac('Issue') ? 'r' : 'g'}"><small>Issue</small><b>${ac('Issue')}</b></div>
+      <div class="stat"><small>Staff active</small><b>${new Set(A.map(a => a.by)).size}</b></div>
+    </div>
+    <div class="card"><h3>Needs attention · today</h3>
+      ${issues.length ? issues.map(a => `<div class="row"><span><b>${esc(a.task)}</b>${a.section ? ' · <span style="color:var(--mute)">' + esc(a.section) + '</span>' : ''}<div class="meta">${esc(a.by)}${a.note ? ' · ' + esc(a.note) : ''}</div></span><span><span class="st st-${esc(a.status.replace(/\s/g, ''))}">${esc(a.status)}</span></span></div>`).join('') : '<p class="empty">No issues reported today</p>'}
+    </div>`;
+
   $('#dash').innerHTML = `
+    <div class="grp"><span>Inventory · ${mn}</span><button class="btn ghost sm" onclick="tab('inv')">Open stock</button></div>
     <div class="stats">
       <div class="stat"><small>Items</small><b>${S.groups.length}</b></div>
       <div class="stat g"><small>Stock on hand</small><b>${stock}</b></div>
-      <div class="stat r"><small>Broken · ${mn}</small><b>${sum('BROKEN')}</b></div>
-      <div class="stat a"><small>Lost · ${mn}</small><b>${sum('LOST')}</b></div>
-      ${S.hasPrice ? `<div class="stat r"><small>Loss value · ${mn}</small><b>${rp(lossTotal)}</b></div>` : ''}
+      <div class="stat r"><small>Broken</small><b>${sum('BROKEN')}</b></div>
+      <div class="stat a"><small>Lost</small><b>${sum('LOST')}</b></div>
+      ${S.hasPrice ? `<div class="stat r"><small>Loss value</small><b>${rp(lossTotal)}</b></div>` : ''}
       <div class="stat ${low.length ? 'r' : 'g'}"><small>Below minimum</small><b>${low.length}</b></div>
-    </div>
-    ${secHtml}
-    <div class="card"><h3>Top causes · ${mn}</h3>
-      ${causes.length ? causes.map(c => line(c, false)).join('') : '<p class="empty">No causes recorded this month</p>'}
-    </div>
-    <div class="card"><h3>Top broken / lost items · ${mn}</h3>
-      ${top.length ? top.map(c => line(c, true)).join('') : '<p class="empty">Nothing reported this month</p>'}
-    </div>
-    <div class="card"><h3>Reports by staff · ${mn}</h3>
-      ${people.length ? people.map(c => line(c, false)).join('') : '<p class="empty">No reports this month</p>'}
     </div>
     <div class="card"><h3>Below minimum stock</h3>
       ${low.length ? low.map(i => `<div class="row"><span>${codeTag(codeOf(i.item))}${esc(i.item)}${i.section ? ' · <span style="color:var(--mute)">' + esc(i.section) + '</span>' : ''}</span><span><b class="neg">${i.closing}</b> / min ${minOf(i)}</span></div>`).join('') : '<p class="empty">All items above minimum</p>'}
+    </div>
+    ${secHtml}
+
+    ${stwHtml}
+
+    <div class="grp"><span>Loss analysis · ${mn}</span><button class="btn ghost sm" onclick="tab('rec')">Open recap</button></div>
+    <div class="card"><h3>Top causes</h3>
+      ${causes.length ? causes.map(c => line(c, false)).join('') : '<p class="empty">No causes recorded this month</p>'}
+    </div>
+    <div class="card"><h3>Top broken / lost items</h3>
+      ${top.length ? top.map(c => line(c, true)).join('') : '<p class="empty">Nothing reported this month</p>'}
+    </div>
+    <div class="card"><h3>Reports by staff</h3>
+      ${people.length ? people.map(c => line(c, false)).join('') : '<p class="empty">No reports this month</p>'}
     </div>`;
 }
 
@@ -1271,6 +1327,7 @@ async function loadActs() {
   $('#aList').innerHTML = '<p class="empty">Loading...</p>';
   try {
     ACT.list = await get('activities', { from, to });
+    if (from === todayStr() && to === todayStr() && isSpv()) S.actToday = ACT.list;
     const staff = [...new Set(ACT.list.map(a => a.by).filter(String))].sort();
     const s = $('#afStaff'), v = s.value;
     s.innerHTML = '<option value="">All staff</option>' + staff.map(x => `<option>${esc(x)}</option>`).join('');
@@ -1341,6 +1398,7 @@ function shareActsWA() {
   if (!list.length) return toast('Nothing to send', 1);
   const c = s => list.filter(a => a.status === s).length;
   const sec = $('#afSec').value;
+  const multiDay = $('#afFrom').value !== $('#afTo').value;
   const lines = [
     '*STEWARD DAILY ACTIVITY*',
     actRange() + (sec ? ' | ' + sec : ''),
@@ -1350,7 +1408,7 @@ function shareActsWA() {
   list.forEach((a, i) => {
     lines.push((i + 1) + '. *' + a.task + '* - ' + a.status);
     const t = (a.start || a.end) ? (a.start || '?') + '-' + (a.end || '?') : '';
-    lines.push('   ' + [a.date !== $('#afTo').value || $('#afFrom').value !== $('#afTo').value ? a.date : '', t, a.shift, a.section, a.by].filter(Boolean).join(' | '));
+    lines.push('   ' + [multiDay ? a.date : '', t, a.shift, a.section, a.by].filter(Boolean).join(' | '));
     if (a.note) lines.push('   Note: ' + a.note);
     const ph = a.after || a.during || a.before;
     if (ph) lines.push('   Photo: ' + ph);
@@ -1361,8 +1419,7 @@ function shareActsWA() {
     issues.forEach(a => lines.push('- ' + a.task + (a.section ? ' (' + a.section + ')' : '') + (a.note ? ': ' + a.note : '')));
   }
   lines.push('', 'Reported by ' + (S.me || ls('inv_by') || 'Supervisor'));
-  const text = lines.join('\n');
-  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  window.open('https://wa.me/?text=' + encodeURIComponent(lines.join('\n')), '_blank');
 }
 function xlsActs() {
   if (!isSpv()) return toast('Supervisor only', 1);
@@ -1956,15 +2013,16 @@ function downloadXls() {
 function tab(t) {
   if (S.role === 'qr') t = 'qrv';
   else if (!isSpv() && STAFF_TABS.indexOf(t) < 0) t = 'rep';
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t || (t === 'lab' && b.dataset.tab === 'inv')));
+  S.tab = t;
+  renderNav();
   document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== t);
+  if (t === 'dash' && isSpv() && S.items.length) renderDash();
   if (t === 'rec') renderRecap();
   if (t === 'lab') renderLabels();
   if (t === 'opn') renderOpname();
   if (t === 'act') { fillActSelects(); loadActs(); }
   scrollTo(0, 0);
 }
-document.querySelectorAll('nav button').forEach(b => b.onclick = () => tab(b.dataset.tab));
 $('#q').oninput = () => {
   const v = scanCode($('#q').value);
   if (v !== $('#q').value) $('#q').value = v;
@@ -1998,7 +2056,6 @@ $('#oScan').onclick = () => openScanner(txt => {
 $('#oSheet').onclick = printCountSheet;
 $('#oClear').onclick = () => { if (confirm('Clear all counts for this section?')) { OP.counts = {}; opSave(); renderOpname(); } };
 $('#oSubmit').onclick = submitOpname;
-$('#lblBtn').onclick = () => openLabels(null);
 $('#lSec').onchange = () => { LBL.only = null; renderLabels(); };
 $('#lQ').oninput = () => { LBL.only = null; renderLabels(); };
 $('#lSize').onchange = renderLabels;
