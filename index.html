@@ -40,6 +40,7 @@ h3{margin:0 0 10px;font-size:15px}h4{margin:18px 0 8px;font-size:14px}
 .bar input,.bar select{flex:1;min-width:130px;width:auto}
 input,select,textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
 input[readonly]{background:var(--pri2);font-weight:600}
+input.bad{border-color:var(--red);background:var(--red2);color:var(--red);font-weight:700}
 label{display:block;font-size:13px;color:var(--mute);margin-bottom:12px}
 label input,label select,label textarea{margin-top:4px}
 .check{display:flex;gap:8px;align-items:center;margin:0;font-size:13px;color:var(--ink)}
@@ -103,15 +104,17 @@ label input,label select,label textarea{margin-top:4px}
 .pslot .pe{width:100%;aspect-ratio:4/3;border-radius:6px;background:var(--bg);display:flex;align-items:center;justify-content:center}
 .pslot input{font-size:11px;padding:4px;margin:0;border:0;background:none}
 .pslot .pt{font-size:12px;font-weight:700;color:var(--pri);min-height:15px}
-.atimes{display:flex;gap:8px;align-items:center;background:var(--bg);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--mute);margin-bottom:12px}
+.atimes,.tstd{display:flex;gap:8px;align-items:center;background:var(--bg);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--mute);margin-bottom:12px}
 .atimes b{color:var(--ink);font-size:15px}
+.tstd{justify-content:space-between;flex-wrap:wrap;margin-top:-4px}
+.tstd b{color:var(--ink)}
 .repby{margin-top:24px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--mute);page-break-inside:avoid}
 .repby b{color:var(--ink);font-size:14px}
 .alist{display:flex;flex-direction:column;gap:10px}
 .acard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;break-inside:avoid;page-break-inside:avoid}
 .ahd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .st{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
-.st-Done{background:var(--pri2);color:var(--pri)}.st-Inprogress{background:var(--blu2);color:var(--blu)}.st-Issue{background:var(--red2);color:var(--red)}
+.st-Done,.st-OK{background:var(--pri2);color:var(--pri)}.st-Inprogress{background:var(--blu2);color:var(--blu)}.st-Issue,.st-LOW{background:var(--red2);color:var(--red)}
 .st-Pending{background:var(--amb2);color:var(--amb)}.st-Missed{background:var(--red2);color:var(--red)}.st-Upcoming{background:#eef0ee;color:#55615a}
 .aph{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
 .aph figure{margin:0}
@@ -407,6 +410,52 @@ label input,label select,label textarea{margin-top:4px}
     <div class="printonly" id="wSig"></div>
   </section>
 
+  <!-- DISHWASHER TEMPERATURE (HACCP) -->
+  <section id="tmp" hidden>
+    <div class="card noprint" id="tToday"><p class="empty">Loading...</p></div>
+
+    <div class="card noprint" id="tForm">
+      <h3>Record dishwasher temperature</h3>
+      <div class="two">
+        <label>Machine<select id="tMachine"></select></label>
+        <label>Shift<select id="tShift"></select></label>
+      </div>
+      <div class="two">
+        <label>Wash temp (°C)<input id="tWash" type="number" step="0.1" min="0" max="120" inputmode="decimal" placeholder="e.g. 62"></label>
+        <label>Rinse temp (°C)<input id="tRinse" type="number" step="0.1" min="0" max="120" inputmode="decimal" placeholder="e.g. 83"></label>
+      </div>
+      <div class="tstd" id="tStd"></div>
+      <label id="tActWrap" hidden>Corrective action <b class="neg">(required – below standard)</b><textarea id="tAct" rows="2" placeholder="e.g. heater reset, cycle re-run, engineering informed"></textarea></label>
+      <label id="tByWrap">Checked by<input id="tBy"></label>
+      <div class="who" id="tWho" hidden></div>
+      <label>Photo of machine temperature display <b>(required)</b><input id="tPhoto" type="file" accept="image/*"></label>
+      <img id="tPrev" class="prev" hidden>
+      <label>Note<textarea id="tNote" rows="2" placeholder="Optional"></textarea></label>
+      <div class="hint" style="margin:0 0 12px">Date &amp; time are recorded automatically.</div>
+      <button type="button" class="btn full lg" id="tSubmit">Save temperature</button>
+    </div>
+
+    <div class="card noprint">
+      <div class="flex" style="margin-bottom:10px">
+        <h3 style="margin:0" id="tListTitle">Temperature log</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="tSpvBtns">
+          <button class="btn wa" id="tWa">Send to WhatsApp</button>
+          <button class="btn ghost" id="tPrint">Print / PDF</button>
+          <button class="btn ghost" id="tXls">Excel</button>
+        </div>
+      </div>
+      <div class="two">
+        <label>From<input id="tfFrom" type="date"></label>
+        <label>To<input id="tfTo" type="date"></label>
+      </div>
+      <select id="tfMachine"></select>
+    </div>
+    <div class="printonly rh" id="tPH"></div>
+    <div class="stats" id="tSum"></div>
+    <div id="tList"><p class="empty">Loading...</p></div>
+    <div class="printonly" id="tSig"></div>
+  </section>
+
   <section id="opn" hidden>
     <div class="noprint">
       <div class="card">
@@ -519,14 +568,16 @@ const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoo
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let S = { role: '', qrKey: '', me: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], tasks: [], shifts: [], projects: [],
+          machines: [], tempChecks: 2, tempToday: [],
           actToday: [], projToday: [], hasLost: false, hasPrice: false, hasSection: false, hasTrf: false, hasCode: false, hasMin: false,
           codePrefix: 'KTC-', low: 5, type: 'BROKEN', sec: '', tab: '', lastTab: {} };
 let LBL = { only: null, skip: new Set(), cur: [] };
 let OP = { sec: null, counts: {} };
 let ACT = { list: [], status: 'Done', ptime: {} };
 let PJ = { today: [], todayList: [], week: [], wk: '' };
+let TMP = { list: [], today: [] };
 let SCN = null;
-const STAFF_TABS = ['rep', 'act', 'wpj'];
+const STAFF_TABS = ['rep', 'act', 'wpj', 'tmp'];
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const APP_URL = location.href.split(/[?#]/)[0];
 const URLP = new URLSearchParams(location.search);
@@ -548,7 +599,7 @@ const NAV_ICON = {
 const NAV_GROUPS = [
   { id: 'home', label: 'Dashboard', tabs: [['dash', 'Overview']] },
   { id: 'inv', label: 'Inventory', staff: 'Lost & Broken', tabs: [['inv', 'Stock'], ['rep', 'Input'], ['opn', 'Opname'], ['lab', 'QR Labels']] },
-  { id: 'stw', label: 'Steward', staff: 'Activity', tabs: [['act', 'Daily Activity'], ['wpj', 'Weekly Project']] },
+  { id: 'stw', label: 'Steward', staff: 'Steward', tabs: [['act', 'Daily Activity'], ['wpj', 'Weekly Project'], ['tmp', 'Dishwasher Temp']] },
   { id: 'rpt', label: 'Reports', tabs: [['his', 'History'], ['rec', 'Recap & Closing']] }
 ];
 function navGroups() {
@@ -626,10 +677,17 @@ function applyRole() {
   $('#rWho').hidden = !S.me;
   $('#aByWrap').hidden = !spv || !!S.me;
   $('#aWho').hidden = !S.me;
+  $('#tByWrap').hidden = !spv || !!S.me;
+  $('#tWho').hidden = !S.me;
   $('#afStaff').hidden = !spv;
   $('#aSpvBtns').hidden = !spv;                  // Print / PDF, Excel, WhatsApp: supervisor only
   $('#wSpvBtns').hidden = !spv;
-  if (S.me) { $('#rWho').innerHTML = whoHtml(S.me); $('#aWho').innerHTML = whoHtml(S.me, 'Done by'); }
+  $('#tSpvBtns').hidden = !spv;
+  if (S.me) {
+    $('#rWho').innerHTML = whoHtml(S.me);
+    $('#aWho').innerHTML = whoHtml(S.me, 'Done by');
+    $('#tWho').innerHTML = whoHtml(S.me, 'Checked by');
+  }
   if (!spv) {
     if (S.type !== 'BROKEN' && S.type !== 'LOST') setType('BROKEN');
     if (STAFF_TABS.indexOf(currentTab()) < 0) { tab('rep'); return; }
@@ -666,6 +724,7 @@ const weekday = s => DAYS[(pdate(s).getDay() + 6) % 7];
 const mondayOf = s => addDays(s, -((pdate(s).getDay() + 6) % 7));
 const hhmm = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
 const nowTime = () => hhmm(new Date());
+const guessShift = () => { const h = new Date().getHours(); return h < 12 ? S.shifts[0] : h < 18 ? S.shifts[1] : S.shifts[2]; };
 const byRow = r => S.items.find(i => i.row == r);
 const groupOf = name => S.groups.find(g => nk(g.item) === nk(name));
 const codeOf = name => (groupOf(name) || {}).code || '';
@@ -691,6 +750,7 @@ function reportedBy() {
   const ts = new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   return `<div class="repby">Reported by <b>${esc(senderName())}</b> · ${esc(ts)}</div>`;
 }
+function rangeLabel(f, t) { return f === t ? dayLabel(f) : dayLabel(f) + ' – ' + dayLabel(t); }
 function parseScan(txt) {
   txt = String(txt || '').trim();
   try {
@@ -761,6 +821,7 @@ function stopScanner() {
 function applyInv(inv) {
   S.items = inv.items; S.secs = inv.sections || []; S.reasons = inv.reasons || [];
   S.tasks = inv.tasks || []; S.shifts = inv.shifts || []; S.projects = inv.projects || [];
+  S.machines = inv.machines || []; S.tempChecks = inv.tempChecks || 2;
   S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice; S.hasSection = inv.hasSection; S.hasTrf = inv.hasTrf;
   S.hasCode = inv.hasCode; S.hasMin = inv.hasMin; S.codePrefix = inv.codePrefix || 'KTC-';
   S.low = inv.lowStock; S.qrKey = inv.qrKey || S.qrKey || '';
@@ -775,13 +836,14 @@ async function load() {
   applyRole();
   $('#sub').textContent = 'Loading...';
   try {
-    let inv, log = [], cl = [], act = [], pj = [];
+    let inv, log = [], cl = [], act = [], pj = [], tp = [];
     const t = todayStr();
     if (isSpv()) {
-      [inv, log, cl, act, pj] = await Promise.all([
+      [inv, log, cl, act, pj, tp] = await Promise.all([
         get('list'), get('log', { limit: 3000 }), get('closing'),
         get('activities', { from: t, to: t }).catch(() => []),
-        get('projectStatus', { from: t, to: t }).catch(() => [])
+        get('projectStatus', { from: t, to: t }).catch(() => []),
+        get('temps', { from: t, to: t }).catch(() => [])
       ]);
     } else inv = await get('list');
     if (inv.role === 'qr') { logout(true); return; }
@@ -790,8 +852,8 @@ async function load() {
       if (isSpv()) return load();             // role changed to supervisor: reload with full data
     }
     applyInv(inv);
-    S.log = log; S.closings = cl; S.actToday = act; S.projToday = pj;
-    fillSecs(); fillReasons(); fillItems(); fillActSelects();
+    S.log = log; S.closings = cl; S.actToday = act; S.projToday = pj; S.tempToday = tp;
+    fillSecs(); fillReasons(); fillItems(); fillActSelects(); fillTempSelects();
     if (isSpv()) {
       renderChips(); renderDash(); renderList(); renderHis(); renderCloseInfo(); renderRecap();
       if (!$('#lab').hidden) renderLabels();
@@ -800,6 +862,7 @@ async function load() {
     applyRole();
     if (!$('#act').hidden) { loadActs(); loadTodayProj(); }
     if (!$('#wpj').hidden) loadWeek();
+    if (!$('#tmp').hidden) { loadTemps(); loadTempToday(); }
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     handleDeepLink();
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
@@ -1093,6 +1156,11 @@ function renderDash() {
   const issues = A.filter(a => a.status === 'Issue' || a.status === 'In progress');
   const tp = projForDate(todayStr(), S.projToday || []);
   const tpDone = tp.filter(p => p.state === 'Done').length;
+  const TC = tempCompliance(S.tempToday || []);
+  const lowT = (S.tempToday || []).filter(x => x.status === 'LOW');
+  const multiM = S.machines.length > 1;
+  const attn = issues.map(a => `<div class="row"><span><b>${esc(a.task)}</b>${a.section ? ' · <span style="color:var(--mute)">' + esc(a.section) + '</span>' : ''}<div class="meta">${esc(a.by)}${a.note ? ' · ' + esc(a.note) : ''}</div></span><span><span class="${stCls(a.status)}">${esc(a.status)}</span></span></div>`)
+    .concat(lowT.map(x => `<div class="row"><span><b>Dishwasher temp below standard</b>${multiM ? ' · <span style="color:var(--mute)">' + esc(x.machine) + '</span>' : ''}<div class="meta">${esc(x.time)} · wash ${x.wash}°C · rinse ${x.rinse}°C · ${esc(x.by)}${x.corrective ? ' · ' + esc(x.corrective) : ''}</div></span><span><span class="st st-LOW">LOW</span></span></div>`));
   const stwHtml = `
     <div class="grp"><span>Steward · today</span><button class="btn ghost sm" onclick="tab('act')">Open activity</button></div>
     <div class="stats">
@@ -1101,12 +1169,14 @@ function renderDash() {
       <div class="stat b"><small>In progress</small><b>${ac('In progress')}</b></div>
       <div class="stat ${ac('Issue') ? 'r' : 'g'}"><small>Issue</small><b>${ac('Issue')}</b></div>
       <div class="stat ${tp.length && tpDone < tp.length ? 'a' : 'g'}"><small>Weekly project</small><b>${tpDone} / ${tp.length}</b></div>
+      ${S.machines.length ? `<div class="stat ${TC.done < TC.req ? 'a' : 'g'}"><small>Dishwasher temp checks</small><b>${TC.done} / ${TC.req}</b></div>
+      <div class="stat ${TC.low ? 'r' : 'g'}"><small>Temp below standard</small><b>${TC.low}</b></div>` : ''}
     </div>
     <div class="card"><div class="flex" style="margin-bottom:6px"><h3 style="margin:0">Weekly project · ${weekday(todayStr())}</h3><button class="btn ghost sm" onclick="tab('wpj')">Week view</button></div>
       ${tp.length ? tp.map(p => `<div class="prow"><span class="info"><b>${esc(p.task)}</b>${p.rec ? `<div class="meta">${esc(p.rec.by)}${p.rec.end ? ' · ' + esc(p.rec.end) : ''}</div>` : ''}</span><span class="${stCls(p.state)}">${p.state}</span></div>`).join('') : '<p class="empty">No weekly project scheduled today</p>'}
     </div>
     <div class="card"><h3>Needs attention · today</h3>
-      ${issues.length ? issues.map(a => `<div class="row"><span><b>${esc(a.task)}</b>${a.section ? ' · <span style="color:var(--mute)">' + esc(a.section) + '</span>' : ''}<div class="meta">${esc(a.by)}${a.note ? ' · ' + esc(a.note) : ''}</div></span><span><span class="${stCls(a.status)}">${esc(a.status)}</span></span></div>`).join('') : '<p class="empty">No issues reported today</p>'}
+      ${attn.length ? attn.join('') : '<p class="empty">No issues reported today</p>'}
     </div>`;
 
   $('#dash').innerHTML = `
@@ -1436,6 +1506,190 @@ $('#wNow').onclick = () => { PJ.wk = mondayOf(todayStr()); loadWeek(); };
 $('#wWa').onclick = shareWeekWA;
 $('#wPrint').onclick = printWeek;
 
+/* ---------- DISHWASHER TEMPERATURE (HACCP) ---------- */
+const machineOf = n => S.machines.find(m => nk(m.name) === nk(n));
+function tempState(m, w, r) {
+  if (!m || w === '' || r === '' || isNaN(+w) || isNaN(+r)) return '';
+  return (+w >= m.minWash && +r >= m.minRinse) ? 'OK' : 'LOW';
+}
+function tempCompliance(list) {
+  const need = S.tempChecks || 2, rows = [];
+  S.machines.forEach(m => S.shifts.forEach(s => {
+    const recs = list.filter(x => nk(x.machine) === nk(m.name) && x.shift === s);
+    rows.push({ machine: m.name, shift: s, done: recs.length, need, last: recs[0] || null, low: recs.filter(x => x.status === 'LOW').length });
+  }));
+  return {
+    rows, req: rows.length * need,
+    done: rows.reduce((a, x) => a + Math.min(x.done, x.need), 0),
+    low: list.filter(x => x.status === 'LOW').length
+  };
+}
+function fillTempSelects() {
+  const ms = $('#tMachine'), mv = ms.value || ls('tmp_machine') || '';
+  ms.innerHTML = S.machines.length ? S.machines.map(m => `<option>${esc(m.name)}</option>`).join('')
+    : '<option value="">No machine – add in sheet MESIN DISHWASHER</option>';
+  if (mv && [...ms.options].some(o => o.value === mv)) ms.value = mv;
+  const sh = $('#tShift'), sv = sh.value;
+  sh.innerHTML = '<option value="">— shift —</option>' + S.shifts.map(x => `<option>${esc(x)}</option>`).join('');
+  if (sv && S.shifts.indexOf(sv) > -1) sh.value = sv; else { const g = guessShift(); if (g) sh.value = g; }
+  const fm = $('#tfMachine'), fv = fm.value;
+  fm.innerHTML = '<option value="">All machines</option>' + S.machines.map(m => `<option>${esc(m.name)}</option>`).join('');
+  if (fv && [...fm.options].some(o => o.value === fv)) fm.value = fv;
+  fm.hidden = S.machines.length < 2;
+  if (!$('#tfFrom').value) $('#tfFrom').value = todayStr();
+  if (!$('#tfTo').value) $('#tfTo').value = todayStr();
+  if (!$('#tBy').value) $('#tBy').value = ls('inv_by') || '';
+  showTempStd();
+}
+function showTempStd() {
+  const m = machineOf($('#tMachine').value), w = $('#tWash').value, r = $('#tRinse').value;
+  const st = tempState(m, w, r);
+  $('#tWash').classList.toggle('bad', !!m && w !== '' && +w < m.minWash);
+  $('#tRinse').classList.toggle('bad', !!m && r !== '' && +r < m.minRinse);
+  $('#tStd').innerHTML = m
+    ? `<span>Standard: wash <b>≥ ${m.minWash}°C</b> · rinse <b>≥ ${m.minRinse}°C</b></span>${st ? `<span class="${stCls(st)}">${st === 'OK' ? 'OK' : 'BELOW STANDARD'}</span>` : ''}`
+    : '<span>Add machines and standards in sheet tab <b>MESIN DISHWASHER</b></span>';
+  $('#tActWrap').hidden = st !== 'LOW';
+}
+async function submitTemp() {
+  const m = machineOf($('#tMachine').value);
+  if (!m) return toast('Choose the machine', 1);
+  const shift = $('#tShift').value;
+  if (!shift) return toast('Choose the shift', 1);
+  const w = $('#tWash').value, r = $('#tRinse').value;
+  if (w === '' || !(+w > 0 && +w < 120)) return toast('Enter wash temperature', 1);
+  if (r === '' || !(+r > 0 && +r < 120)) return toast('Enter rinse temperature', 1);
+  const st = tempState(m, w, r), corrective = $('#tAct').value.trim();
+  if (st === 'LOW' && !corrective) return toast('Below standard – fill corrective action', 1);
+  let by = S.me || '';
+  if (isSpv() && !S.me) {
+    by = $('#tBy').value.trim();
+    if (!by) return toast('Fill "Checked by"', 1);
+    ls('inv_by', by);
+  }
+  const f = $('#tPhoto').files[0];
+  if (!f) return toast('Take a photo of the machine display', 1);
+  const btn = $('#tSubmit'); btn.disabled = true; btn.textContent = 'Saving...';
+  try {
+    const res = await post({
+      action: 'temp', machine: m.name, shift, wash: +w, rinse: +r, corrective,
+      note: $('#tNote').value.trim(), by, photo: await compress(f)
+    });
+    ls('tmp_machine', m.name);
+    toast(res.status === 'OK' ? 'Saved – temperature OK (' + res.time + ')' : 'Saved – BELOW STANDARD, inform your supervisor', res.status !== 'OK');
+    $('#tWash').value = ''; $('#tRinse').value = ''; $('#tAct').value = ''; $('#tNote').value = '';
+    $('#tPhoto').value = ''; $('#tPrev').hidden = true;
+    showTempStd();
+    $('#tfFrom').value = $('#tfTo').value = todayStr();
+    loadTemps(); loadTempToday();
+  } catch (e) { toast(e.message, 1); }
+  finally { btn.disabled = false; btn.textContent = 'Save temperature'; }
+}
+async function loadTempToday() {
+  const t = todayStr();
+  try {
+    TMP.today = await get('temps', { from: t, to: t });
+    if (isSpv()) S.tempToday = TMP.today;
+  } catch (e) { TMP.today = []; }
+  renderTempToday();
+}
+function renderTempToday() {
+  const c = tempCompliance(TMP.today), multi = S.machines.length > 1;
+  $('#tToday').innerHTML = `
+    <div class="flex" style="margin-bottom:4px"><h3 style="margin:0">Today · ${c.done} / ${c.req} checks</h3><span class="meta">${S.tempChecks}× per shift${multi ? ' per machine' : ''}</span></div>
+    ${c.rows.length ? c.rows.map(x => `
+      <div class="prow">
+        <span class="info"><b>${multi ? esc(x.machine) + ' · ' : ''}${esc(x.shift)}</b>${x.last ? `<div class="meta">Last ${esc(x.last.time)} · wash <b class="${x.last.wash < x.last.minWash ? 'neg' : ''}">${x.last.wash}°C</b> · rinse <b class="${x.last.rinse < x.last.minRinse ? 'neg' : ''}">${x.last.rinse}°C</b> · ${esc(x.last.by)}</div>` : '<div class="meta">No check yet</div>'}</span>
+        <span class="pr">${x.low ? `<span class="st st-LOW">${x.low} low</span>` : ''}<span class="st ${x.done >= x.need ? 'st-Done' : 'st-Pending'}">${x.done} / ${x.need}</span></span>
+      </div>`).join('') : '<p class="empty">No machine set up – add in sheet tab MESIN DISHWASHER</p>'}`;
+}
+async function loadTemps() {
+  let from = $('#tfFrom').value || todayStr(), to = $('#tfTo').value || from;
+  if (to < from) { const t = from; from = to; to = t; $('#tfFrom').value = from; $('#tfTo').value = to; }
+  $('#tList').innerHTML = '<p class="empty">Loading...</p>';
+  try {
+    TMP.list = await get('temps', { from, to });
+    renderTemps();
+  } catch (e) { $('#tList').innerHTML = `<p class="empty">${esc(e.message)}</p>`; }
+}
+function tFiltered() { const m = $('#tfMachine').value; return TMP.list.filter(x => !m || nk(x.machine) === nk(m)); }
+const tRange = () => rangeLabel($('#tfFrom').value, $('#tfTo').value);
+function renderTemps() {
+  const list = tFiltered(), low = list.filter(x => x.status === 'LOW').length;
+  const multi = S.machines.length > 1 || new Set(list.map(x => x.machine)).size > 1;
+  const avg = k => list.length ? (list.reduce((a, x) => a + x[k], 0) / list.length).toFixed(1) : '-';
+  $('#tListTitle').textContent = 'Temperature log · ' + tRange();
+  $('#tSum').innerHTML = `
+    <div class="stat"><small>Checks</small><b>${list.length}</b></div>
+    <div class="stat g"><small>OK</small><b>${list.length - low}</b></div>
+    <div class="stat ${low ? 'r' : 'g'}"><small>Below standard</small><b>${low}</b></div>
+    <div class="stat b"><small>Avg wash / rinse °C</small><b>${avg('wash')} / ${avg('rinse')}</b></div>`;
+  $('#tList').innerHTML = list.length ? `<div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Date</th><th>Time</th><th>Shift</th>${multi ? '<th>Machine</th>' : ''}<th class="n">Wash °C</th><th class="n">Rinse °C</th><th>Status</th><th>Checked by</th><th>Corrective action / note</th><th class="noprint">Photo</th></tr></thead>
+    <tbody>${list.map(x => `<tr>
+      <td>${esc(shortDay(x.date))}</td><td>${esc(x.time)}</td><td>${esc(x.shift)}</td>${multi ? `<td>${esc(x.machine)}</td>` : ''}
+      <td class="n ${x.wash < x.minWash ? 'neg' : ''}"><b>${x.wash}</b></td><td class="n ${x.rinse < x.minRinse ? 'neg' : ''}"><b>${x.rinse}</b></td>
+      <td><span class="${stCls(x.status)}">${esc(x.status)}</span></td><td>${esc(x.by)}</td>
+      <td>${esc([x.corrective, x.note].filter(Boolean).join(' · '))}</td>
+      <td class="noprint">${x.photo ? `<a href="${esc(x.photo)}" target="_blank" rel="noopener">view</a>` : ''}</td>
+    </tr>`).join('')}</tbody></table></div>` : '<p class="empty">No temperature records for this period</p>';
+}
+function printTemps() {
+  if (!isSpv()) return toast('Supervisor only', 1);
+  if (!tFiltered().length) return toast('Nothing to print', 1);
+  const m = $('#tfMachine').value;
+  $('#tPH').innerHTML = `<h2>Dishwasher Temperature Log</h2>
+    <div>${esc(tRange())}${m ? ' · ' + esc(m) : ''}</div>
+    <div>Standard: ${S.machines.map(x => esc(x.name) + ' – wash ≥ ' + x.minWash + '°C, rinse ≥ ' + x.minRinse + '°C').join(' · ')}</div>`;
+  $('#tSig').innerHTML = reportedBy();
+  window.print();
+}
+function xlsTemps() {
+  if (!isSpv()) return toast('Supervisor only', 1);
+  if (!window.XLSX) return toast('Excel library not loaded, check internet connection', 1);
+  const list = tFiltered();
+  if (!list.length) return toast('Nothing to export', 1);
+  const aoa = [['DISHWASHER TEMPERATURE LOG'], ['Period', tRange()], ['Reported by', senderName()], [],
+    ['DATE', 'TIME', 'SHIFT', 'MACHINE', 'WASH °C', 'RINSE °C', 'MIN WASH', 'MIN RINSE', 'STATUS', 'CHECKED BY', 'CORRECTIVE ACTION', 'NOTE', 'PHOTO']];
+  list.slice().reverse().forEach(x => aoa.push([x.date, x.time, x.shift, x.machine, x.wash, x.rinse, x.minWash, x.minRinse, x.status, x.by, x.corrective, x.note, x.photo]));
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [12, 7, 11, 18, 9, 9, 10, 10, 8, 18, 32, 26, 40].map(w => ({ wch: w }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Dishwasher Temp');
+  XLSX.writeFile(wb, 'Dishwasher-Temp-' + $('#tfFrom').value + ($('#tfTo').value !== $('#tfFrom').value ? '_' + $('#tfTo').value : '') + '.xlsx');
+}
+function shareTempsWA() {
+  if (!isSpv()) return toast('Supervisor only', 1);
+  const list = tFiltered().slice().reverse();
+  if (!list.length) return toast('Nothing to send', 1);
+  const low = list.filter(x => x.status === 'LOW');
+  const multiDay = $('#tfFrom').value !== $('#tfTo').value, multi = S.machines.length > 1;
+  const lines = [
+    '*DISHWASHER TEMPERATURE LOG*',
+    tRange(),
+    'Checks ' + list.length + ' | OK ' + (list.length - low.length) + ' | Below standard ' + low.length,
+    'Standard: ' + S.machines.map(x => (multi ? x.name + ' ' : '') + 'wash >= ' + x.minWash + 'C, rinse >= ' + x.minRinse + 'C').join(' | '),
+    ''
+  ];
+  list.forEach((x, i) => {
+    lines.push((i + 1) + '. ' + [multiDay ? shortDay(x.date) : '', x.time, x.shift, multi ? x.machine : ''].filter(Boolean).join(' | ')
+      + ' - Wash ' + x.wash + 'C | Rinse ' + x.rinse + 'C - ' + x.status + ' (' + x.by + ')');
+    if (x.corrective) lines.push('   Action: ' + x.corrective);
+  });
+  lines.push('', 'Reported by ' + senderName());
+  window.open('https://wa.me/?text=' + encodeURIComponent(lines.join('\n')), '_blank');
+}
+$('#tMachine').onchange = showTempStd;
+$('#tWash').oninput = showTempStd;
+$('#tRinse').oninput = showTempStd;
+previewOn('#tPhoto', '#tPrev');
+$('#tSubmit').onclick = submitTemp;
+$('#tfFrom').onchange = loadTemps; $('#tfTo').onchange = loadTemps;
+$('#tfMachine').onchange = renderTemps;
+$('#tPrint').onclick = printTemps;
+$('#tXls').onclick = xlsTemps;
+$('#tWa').onclick = shareTempsWA;
+
 /* ---------- DAILY ACTIVITY STEWARD ---------- */
 const PH_KEYS = [['before', 'Before', '#aP1'], ['during', 'During', '#aP2'], ['after', 'After', '#aP3']];
 function actSecList() {
@@ -1490,11 +1744,7 @@ function fillActSelects() {
   if (!$('#afFrom').value) $('#afFrom').value = todayStr();
   if (!$('#afTo').value) $('#afTo').value = todayStr();
   if (!$('#aBy').value) $('#aBy').value = ls('inv_by') || '';
-  if (!$('#aShift').value) {
-    const h = new Date().getHours();
-    const guess = h < 12 ? S.shifts[0] : h < 18 ? S.shifts[1] : S.shifts[2];
-    if (guess) $('#aShift').value = guess;
-  }
+  if (!$('#aShift').value) { const g = guessShift(); if (g) $('#aShift').value = g; }
   showActTimes();
 }
 function setActStatus(s) {
@@ -1561,10 +1811,7 @@ function actFiltered() {
   const sec = $('#afSec').value, task = $('#afTask').value, staff = isSpv() ? $('#afStaff').value : '';
   return ACT.list.filter(a => (!sec || a.section === sec) && (!task || nk(a.task) === nk(task)) && (!staff || a.by === staff));
 }
-function actRange() {
-  const f = $('#afFrom').value, t = $('#afTo').value;
-  return f === t ? dayLabel(f) : dayLabel(f) + ' – ' + dayLabel(t);
-}
+const actRange = () => rangeLabel($('#afFrom').value, $('#afTo').value);
 function renderActs() {
   const list = actFiltered();
   const c = s => list.filter(a => a.status === s).length;
@@ -2244,6 +2491,7 @@ function tab(t) {
   if (t === 'opn') renderOpname();
   if (t === 'act') { fillActSelects(); loadActs(); loadTodayProj(); }
   if (t === 'wpj') loadWeek();
+  if (t === 'tmp') { fillTempSelects(); loadTemps(); loadTempToday(); }
   scrollTo(0, 0);
 }
 $('#q').oninput = () => {
