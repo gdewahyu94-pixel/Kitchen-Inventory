@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
-:root{--bg:#f4f5f3;--card:#fff;--ink:#1d2621;--mute:#6a756e;--line:#e1e5e1;--pri:#1f6f54;--pri2:#e5f1ec;--red:#c0392b;--red2:#fbecea;--amb:#b26b00;--amb2:#fdf3e1;--blu:#2b5797;--blu2:#e8eef7}
+:root{--bg:#f4f5f3;--card:#fff;--ink:#1d2621;--mute:#6a756e;--line:#e1e5e1;--pri:#1f6f54;--pri2:#e5f1ec;--red:#c0392b;--red2:#fbecea;--amb:#b26b00;--amb2:#fdf3e1;--blu:#2b5797;--blu2:#e8eef7;--wa:#1f8f4e}
 *{box-sizing:border-box}
 body{margin:0;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
 [hidden]{display:none!important}
@@ -39,7 +39,7 @@ label input,label select,label textarea{margin-top:4px}
 .check input{width:auto;margin:0}
 .btn{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:600;background:var(--pri);color:#fff;cursor:pointer;white-space:nowrap}
 .btn.red{background:var(--red)}.btn.amb{background:var(--amb)}.btn.blu{background:var(--blu)}.btn.ghost{background:var(--pri2);color:var(--pri)}
-.btn.danger{background:var(--red2);color:var(--red)}
+.btn.danger{background:var(--red2);color:var(--red)}.btn.wa{background:var(--wa)}
 .btn.full{width:100%}.btn.lg{padding:14px;font-size:16px}.btn.xl{padding:22px 10px;font-size:19px;border-radius:12px}.btn:disabled{opacity:.6}
 .link{border:0;background:none;color:var(--pri);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
 .chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}
@@ -317,7 +317,7 @@ label input,label select,label textarea{margin-top:4px}
         <label>Shift<select id="aShift"></select></label>
       </div>
       <div class="two">
-        <label id="aSecWrap">Section<select id="aSec"></select></label>
+        <label>Section<input id="aSec" list="aSecList" placeholder="Choose or type section" autocomplete="off"><datalist id="aSecList"></datalist></label>
         <label>Task<select id="aTask"></select></label>
       </div>
       <div class="two">
@@ -344,7 +344,8 @@ label input,label select,label textarea{margin-top:4px}
     <div class="card noprint">
       <div class="flex" style="margin-bottom:10px">
         <h3 style="margin:0" id="aListTitle">Activities</h3>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="aSpvBtns">
+          <button class="btn wa" id="aWa">Send to WhatsApp</button>
           <button class="btn ghost" id="aPrint">Print / PDF</button>
           <button class="btn ghost" id="aXls">Excel</button>
         </div>
@@ -475,7 +476,7 @@ label input,label select,label textarea{margin-top:4px}
 <div id="toast"></div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoowoC39D9UYmbTfchxQvI_-DmDwPE-QQADeUI0cNOY/exec';
+const API = 'PASTE_APPS_SCRIPT_WEB_APP_URL_HERE';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -484,7 +485,7 @@ let S = { role: '', qrKey: '', me: '', items: [], groups: [], log: [], secs: [],
           codePrefix: 'KTC-', low: 5, type: 'BROKEN', sec: '' };
 let LBL = { only: null, skip: new Set(), cur: [] };
 let OP = { sec: null, counts: {} };
-let ACT = { list: [], status: 'Done', loading: false };
+let ACT = { list: [], status: 'Done' };
 let SCN = null;
 const STAFF_TABS = ['rep', 'act'];
 const APP_URL = location.href.split(/[?#]/)[0];
@@ -552,6 +553,7 @@ function applyRole() {
   $('#aByWrap').hidden = !spv || !!S.me;
   $('#aWho').hidden = !S.me;
   $('#afStaff').hidden = !spv;
+  $('#aSpvBtns').hidden = !spv;                  // Print / PDF, Excel, WhatsApp: supervisor only
   if (S.me) { $('#rWho').innerHTML = whoHtml(S.me); $('#aWho').innerHTML = whoHtml(S.me, 'Done by'); }
   if (!spv) {
     if (S.type !== 'BROKEN' && S.type !== 'LOST') setType('BROKEN');
@@ -1194,6 +1196,11 @@ async function saveNew() {
 
 /* ---------- DAILY ACTIVITY STEWARD ---------- */
 const PH_KEYS = [['before', 'Before', '#aP1'], ['during', 'During', '#aP2'], ['after', 'After', '#aP3']];
+function actSecList() {
+  const set = new Set(S.secs);
+  ACT.list.forEach(a => { if (a.section) set.add(a.section); });
+  return [...set];
+}
 function fillActSelects() {
   const set = (id, list, first) => {
     const s = $(id), v = s.value;
@@ -1201,12 +1208,11 @@ function fillActSelects() {
     if (v && [...s.options].some(o => o.value === v)) s.value = v;
   };
   set('#aShift', S.shifts, '— shift —');
-  set('#aSec', S.secs, '— section —');
   set('#aTask', S.tasks, '— choose task —');
-  set('#afSec', S.secs, 'All sections');
   set('#afTask', S.tasks, 'All tasks');
-  $('#aSecWrap').hidden = !S.secs.length;
-  $('#afSec').hidden = !S.secs.length;
+  set('#afSec', actSecList(), 'All sections');
+  $('#aSecList').innerHTML = S.secs.map(s => `<option value="${esc(s)}"></option>`).join('');
+  if (!$('#aSec').value) $('#aSec').value = ls('act_sec') || '';
   if (!$('#aDate').value) $('#aDate').value = todayStr();
   if (!$('#afFrom').value) $('#afFrom').value = todayStr();
   if (!$('#afTo').value) $('#afTo').value = todayStr();
@@ -1228,9 +1234,10 @@ function resetActForm() {
 }
 async function submitActivity() {
   const date = $('#aDate').value, task = $('#aTask').value;
+  const section = $('#aSec').value.trim().replace(/\s+/g, ' ');
   if (!date) return toast('Choose the date', 1);
+  if (!section) return toast('Choose or type the section', 1);
   if (!task) return toast('Choose the task', 1);
-  if (S.secs.length && !$('#aSec').value) return toast('Choose the section', 1);
   const start = $('#aStart').value, end = $('#aEnd').value;
   if (start && end && end < start && !confirm('End time is earlier than start time (overnight shift?). Continue?')) return;
   let by = S.me || '';
@@ -1248,8 +1255,9 @@ async function submitActivity() {
     btn.textContent = 'Saving...';
     await post({
       action: 'activity', date, task, by, status: ACT.status, start, end,
-      shift: $('#aShift').value, section: $('#aSec').value, note: $('#aNote').value.trim(), photos
+      shift: $('#aShift').value, section, note: $('#aNote').value.trim(), photos
     });
+    ls('act_sec', section);
     toast('Activity saved – ' + task);
     resetActForm();
     $('#afFrom').value = $('#afTo').value = date;
@@ -1267,6 +1275,9 @@ async function loadActs() {
     const s = $('#afStaff'), v = s.value;
     s.innerHTML = '<option value="">All staff</option>' + staff.map(x => `<option>${esc(x)}</option>`).join('');
     if (v && staff.indexOf(v) > -1) s.value = v;
+    const fs = $('#afSec'), fv = fs.value, secs = actSecList();
+    fs.innerHTML = '<option value="">All sections</option>' + secs.map(x => `<option>${esc(x)}</option>`).join('');
+    if (fv && secs.indexOf(fv) > -1) fs.value = fv;
     renderActs();
   } catch (e) { $('#aList').innerHTML = `<p class="empty">${esc(e.message)}</p>`; }
 }
@@ -1306,12 +1317,14 @@ function renderActs() {
   }).join('') || '<p class="empty">No activities for this period</p>';
 }
 async function printActs() {
+  if (!isSpv()) return toast('Supervisor only', 1);
   const list = actFiltered();
   if (!list.length) return toast('Nothing to print', 1);
-  const sec = $('#afSec').value, staff = isSpv() ? $('#afStaff').value : '';
+  const sec = $('#afSec').value, staff = $('#afStaff').value;
   $('#aPH').innerHTML = `<h2>Steward Daily Activity Report</h2>
-    <div>${esc(actRange())}${sec ? ' · ' + esc(sec) : ''}${staff ? ' · ' + esc(staff) : ''}</div>`;
-  $('#aSig').innerHTML = sigBlock(['Prepared by', 'Checked by', 'Approved by']);
+    <div>${esc(actRange())}${sec ? ' · ' + esc(sec) : ''}${staff ? ' · ' + esc(staff) : ''}</div>
+    <div>Prepared by ${esc(S.me || ls('inv_by') || 'Supervisor')}</div>`;
+  $('#aSig').innerHTML = sigBlock(['Prepared by', 'Checked by', 'Approved by'], [S.me || '', '', '']);
   const imgs = [...document.querySelectorAll('#aList img')];
   const btn = $('#aPrint'); btn.disabled = true; btn.textContent = 'Loading photos...';
   imgs.forEach(im => im.loading = 'eager');
@@ -1322,7 +1335,37 @@ async function printActs() {
   btn.disabled = false; btn.textContent = 'Print / PDF';
   window.print();
 }
+function shareActsWA() {
+  if (!isSpv()) return toast('Supervisor only', 1);
+  const list = actFiltered().slice().reverse();
+  if (!list.length) return toast('Nothing to send', 1);
+  const c = s => list.filter(a => a.status === s).length;
+  const sec = $('#afSec').value;
+  const lines = [
+    '*STEWARD DAILY ACTIVITY*',
+    actRange() + (sec ? ' | ' + sec : ''),
+    'Total ' + list.length + ' | Done ' + c('Done') + ' | In progress ' + c('In progress') + ' | Issue ' + c('Issue'),
+    ''
+  ];
+  list.forEach((a, i) => {
+    lines.push((i + 1) + '. *' + a.task + '* - ' + a.status);
+    const t = (a.start || a.end) ? (a.start || '?') + '-' + (a.end || '?') : '';
+    lines.push('   ' + [a.date !== $('#afTo').value || $('#afFrom').value !== $('#afTo').value ? a.date : '', t, a.shift, a.section, a.by].filter(Boolean).join(' | '));
+    if (a.note) lines.push('   Note: ' + a.note);
+    const ph = a.after || a.during || a.before;
+    if (ph) lines.push('   Photo: ' + ph);
+  });
+  const issues = list.filter(a => a.status === 'Issue');
+  if (issues.length) {
+    lines.push('', '*Needs attention:*');
+    issues.forEach(a => lines.push('- ' + a.task + (a.section ? ' (' + a.section + ')' : '') + (a.note ? ': ' + a.note : '')));
+  }
+  lines.push('', 'Reported by ' + (S.me || ls('inv_by') || 'Supervisor'));
+  const text = lines.join('\n');
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
 function xlsActs() {
+  if (!isSpv()) return toast('Supervisor only', 1);
   if (!window.XLSX) return toast('Excel library not loaded, check internet connection', 1);
   const list = actFiltered();
   if (!list.length) return toast('Nothing to export', 1);
@@ -1344,6 +1387,7 @@ $('#afFrom').onchange = loadActs; $('#afTo').onchange = loadActs;
 $('#afSec').onchange = renderActs; $('#afTask').onchange = renderActs; $('#afStaff').onchange = renderActs;
 $('#aPrint').onclick = printActs;
 $('#aXls').onclick = xlsActs;
+$('#aWa').onclick = shareActsWA;
 
 /* ---------- STOCK OPNAME ---------- */
 function opKey() { return 'op_' + (OP.sec || 'all'); }
