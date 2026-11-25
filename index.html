@@ -107,10 +107,18 @@ label input,label select,label textarea{margin-top:4px}
 .ahd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .st{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
 .st-Done{background:var(--pri2);color:var(--pri)}.st-Inprogress{background:var(--blu2);color:var(--blu)}.st-Issue{background:var(--red2);color:var(--red)}
+.st-Pending{background:var(--amb2);color:var(--amb)}.st-Missed{background:var(--red2);color:var(--red)}.st-Upcoming{background:#eef0ee;color:#55615a}
 .aph{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
 .aph figure{margin:0}
 .aph img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;background:var(--bg);display:block}
 .aph figcaption{font-size:11px;color:var(--mute);margin-top:3px;text-align:center}
+.prow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.prow:last-child{border:0}
+.prow .pr{display:flex;align-items:center;gap:8px;flex:none}
+.wday{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;break-inside:avoid;page-break-inside:avoid}
+.wday.today{border:2px solid var(--pri)}
+.wday h4{margin:0 0 4px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wday h4 small{font-weight:500;color:var(--mute);font-size:12px}
 .done{text-align:center;padding:28px 16px}
 .done .ok{width:64px;height:64px;border-radius:50%;background:var(--pri2);color:var(--pri);font-size:34px;line-height:64px;margin:0 auto 10px;font-weight:700}
 .tag{font-size:11px;font-weight:700;padding:4px 6px;border-radius:6px;flex:none;width:72px;text-align:center}
@@ -207,7 +215,7 @@ label input,label select,label textarea{margin-top:4px}
   .labels{justify-content:start}
   .lbl{border:1px dashed #999}
   .lbl.qc{border:1px solid #999}
-  .acard{border:1px solid #bbb}
+  .acard,.wday{border:1px solid #bbb}
 }
 </style>
 </head>
@@ -309,8 +317,16 @@ label input,label select,label textarea{margin-top:4px}
 
   <!-- DAILY ACTIVITY STEWARD -->
   <section id="act" hidden>
-    <div class="card noprint">
-      <h3>Steward daily activity</h3>
+    <div class="card noprint" id="tpCard">
+      <div class="flex" style="margin-bottom:4px">
+        <h3 style="margin:0" id="tpTitle">Weekly project · today</h3>
+        <button class="btn ghost sm" onclick="tab('wpj')">Week view</button>
+      </div>
+      <div id="tpList"><p class="empty">Loading...</p></div>
+    </div>
+
+    <div class="card noprint" id="aForm">
+      <h3>Log activity</h3>
       <div class="two">
         <label>Date<input id="aDate" type="date"></label>
         <label>Shift<select id="aShift"></select></label>
@@ -363,6 +379,30 @@ label input,label select,label textarea{margin-top:4px}
     <div class="stats" id="aSum"></div>
     <div class="alist" id="aList"><p class="empty">Loading...</p></div>
     <div class="printonly" id="aSig"></div>
+  </section>
+
+  <!-- WEEKLY CLEANING PROJECT -->
+  <section id="wpj" hidden>
+    <div class="card noprint">
+      <div class="flex">
+        <h3 style="margin:0">Steward weekly cleaning project</h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn ghost sm" id="wPrev">‹ Prev</button>
+          <button class="btn ghost sm" id="wNow">This week</button>
+          <button class="btn ghost sm" id="wNext">Next ›</button>
+        </div>
+      </div>
+      <div class="meta" id="wRange" style="margin-top:6px"></div>
+      <div class="acts" style="margin:12px 0 0" id="wSpvBtns">
+        <button class="btn wa" id="wWa">Send to WhatsApp</button>
+        <button class="btn ghost" id="wPrint">Print / PDF</button>
+      </div>
+      <div class="hint" style="margin:10px 0 0">Project list per day is managed in sheet tab <b>WEEKLY PROJECT</b>.</div>
+    </div>
+    <div class="printonly rh" id="wPH"></div>
+    <div class="stats" id="wSum"></div>
+    <div id="wDays"><p class="empty">Loading...</p></div>
+    <div class="printonly" id="wSig"></div>
   </section>
 
   <section id="opn" hidden>
@@ -476,14 +516,16 @@ const API = 'https://script.google.com/macros/s/AKfycbxzVhZFbhwYKZKc8Ui2c8DiAAoo
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let S = { role: '', qrKey: '', me: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], tasks: [], shifts: [], actToday: [],
-          hasLost: false, hasPrice: false, hasSection: false, hasTrf: false, hasCode: false, hasMin: false,
+let S = { role: '', qrKey: '', me: '', items: [], groups: [], log: [], secs: [], closings: [], reasons: [], tasks: [], shifts: [], projects: [],
+          actToday: [], projToday: [], hasLost: false, hasPrice: false, hasSection: false, hasTrf: false, hasCode: false, hasMin: false,
           codePrefix: 'KTC-', low: 5, type: 'BROKEN', sec: '', tab: '', lastTab: {} };
 let LBL = { only: null, skip: new Set(), cur: [] };
 let OP = { sec: null, counts: {} };
 let ACT = { list: [], status: 'Done' };
+let PJ = { today: [], todayList: [], week: [], wk: '' };
 let SCN = null;
-const STAFF_TABS = ['rep', 'act'];
+const STAFF_TABS = ['rep', 'act', 'wpj'];
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const APP_URL = location.href.split(/[?#]/)[0];
 const URLP = new URLSearchParams(location.search);
 let DEEP = { code: URLP.get('code'), item: URLP.get('item'), sec: URLP.get('sec') };
@@ -503,7 +545,7 @@ const NAV_ICON = {
 const NAV_GROUPS = [
   { id: 'home', label: 'Dashboard', tabs: [['dash', 'Overview']] },
   { id: 'inv', label: 'Inventory', staff: 'Lost & Broken', tabs: [['inv', 'Stock'], ['rep', 'Input'], ['opn', 'Opname'], ['lab', 'QR Labels']] },
-  { id: 'stw', label: 'Steward', staff: 'Activity', tabs: [['act', 'Daily Activity']] },
+  { id: 'stw', label: 'Steward', staff: 'Activity', tabs: [['act', 'Daily Activity'], ['wpj', 'Weekly Project']] },
   { id: 'rpt', label: 'Reports', tabs: [['his', 'History'], ['rec', 'Recap & Closing']] }
 ];
 function navGroups() {
@@ -583,6 +625,7 @@ function applyRole() {
   $('#aWho').hidden = !S.me;
   $('#afStaff').hidden = !spv;
   $('#aSpvBtns').hidden = !spv;                  // Print / PDF, Excel, WhatsApp: supervisor only
+  $('#wSpvBtns').hidden = !spv;
   if (S.me) { $('#rWho').innerHTML = whoHtml(S.me); $('#aWho').innerHTML = whoHtml(S.me, 'Done by'); }
   if (!spv) {
     if (S.type !== 'BROKEN' && S.type !== 'LOST') setType('BROKEN');
@@ -610,9 +653,14 @@ function thumb(src, cls = 'th') {
 }
 const rp = n => (n < 0 ? '−' : '') + 'Rp ' + Math.round(Math.abs(n || 0)).toLocaleString('id-ID');
 const sgn = n => n > 0 ? '+' + n : String(n);
-const nk = s => String(s || '').trim().toLowerCase();
+const nk = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
 const pad = n => String(n).padStart(2, '0');
-const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+const dstr = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const pdate = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = pdate(s); d.setDate(d.getDate() + n); return dstr(d); };
+const todayStr = () => dstr(new Date());
+const weekday = s => DAYS[(pdate(s).getDay() + 6) % 7];
+const mondayOf = s => addDays(s, -((pdate(s).getDay() + 6) % 7));
 const nowTime = () => { const d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
 const byRow = r => S.items.find(i => i.row == r);
 const groupOf = name => S.groups.find(g => nk(g.item) === nk(name));
@@ -630,7 +678,9 @@ const byCode = (a, b) => (a.code || '~').localeCompare(b.code || '~', undefined,
 const ym = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 const thisMonth = () => ym(new Date());
 function monthLabel(m) { const [y, mo] = m.split('-'); return new Date(+y, +mo - 1, 1).toLocaleString('en', { month: 'long', year: 'numeric' }); }
-function dayLabel(d) { const [y, m, dd] = d.split('-').map(Number); return new Date(y, m - 1, dd).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }); }
+function dayLabel(d) { return pdate(d).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }); }
+function shortDay(d) { return pdate(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }); }
+const stCls = s => 'st st-' + String(s).replace(/\s/g, '');
 const closedMonths = () => [...new Set(S.closings.map(c => c.month))].sort();
 function parseScan(txt) {
   txt = String(txt || '').trim();
@@ -669,6 +719,16 @@ function previewOn(inputId, imgId, emptyId) {
     if (emptyId) $(emptyId).hidden = !!f;
   };
 }
+async function waitImgs(sel, btn, label) {
+  const imgs = [...document.querySelectorAll(sel)];
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading photos...'; }
+  imgs.forEach(im => im.loading = 'eager');
+  await Promise.race([
+    Promise.all(imgs.map(im => im.complete ? 1 : new Promise(r => { im.onload = im.onerror = r; }))),
+    new Promise(r => setTimeout(r, 6000))
+  ]);
+  if (btn) { btn.disabled = false; btn.textContent = label; }
+}
 
 /* ---------- SCANNER ---------- */
 function openScanner(onCode) {
@@ -691,7 +751,7 @@ function stopScanner() {
 /* ---------- LOAD ---------- */
 function applyInv(inv) {
   S.items = inv.items; S.secs = inv.sections || []; S.reasons = inv.reasons || [];
-  S.tasks = inv.tasks || []; S.shifts = inv.shifts || [];
+  S.tasks = inv.tasks || []; S.shifts = inv.shifts || []; S.projects = inv.projects || [];
   S.hasLost = inv.hasLost; S.hasPrice = inv.hasPrice; S.hasSection = inv.hasSection; S.hasTrf = inv.hasTrf;
   S.hasCode = inv.hasCode; S.hasMin = inv.hasMin; S.codePrefix = inv.codePrefix || 'KTC-';
   S.low = inv.lowStock; S.qrKey = inv.qrKey || S.qrKey || '';
@@ -706,11 +766,13 @@ async function load() {
   applyRole();
   $('#sub').textContent = 'Loading...';
   try {
-    let inv, log = [], cl = [], act = [];
+    let inv, log = [], cl = [], act = [], pj = [];
+    const t = todayStr();
     if (isSpv()) {
-      [inv, log, cl, act] = await Promise.all([
+      [inv, log, cl, act, pj] = await Promise.all([
         get('list'), get('log', { limit: 3000 }), get('closing'),
-        get('activities', { from: todayStr(), to: todayStr() }).catch(() => [])
+        get('activities', { from: t, to: t }).catch(() => []),
+        get('projectStatus', { from: t, to: t }).catch(() => [])
       ]);
     } else inv = await get('list');
     if (inv.role === 'qr') { logout(true); return; }
@@ -719,7 +781,7 @@ async function load() {
       if (isSpv()) return load();             // role changed to supervisor: reload with full data
     }
     applyInv(inv);
-    S.log = log; S.closings = cl; S.actToday = act;
+    S.log = log; S.closings = cl; S.actToday = act; S.projToday = pj;
     fillSecs(); fillReasons(); fillItems(); fillActSelects();
     if (isSpv()) {
       renderChips(); renderDash(); renderList(); renderHis(); renderCloseInfo(); renderRecap();
@@ -727,7 +789,8 @@ async function load() {
       if (!$('#opn').hidden) renderOpname();
     }
     applyRole();
-    if (!$('#act').hidden) loadActs();
+    if (!$('#act').hidden) { loadActs(); loadTodayProj(); }
+    if (!$('#wpj').hidden) loadWeek();
     $('#sub').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     handleDeepLink();
   } catch (e) { toast(e.message, 1); $('#sub').textContent = 'Failed to load'; }
@@ -1019,6 +1082,8 @@ function renderDash() {
   const A = S.actToday || [];
   const ac = s => A.filter(a => a.status === s).length;
   const issues = A.filter(a => a.status === 'Issue' || a.status === 'In progress');
+  const tp = projForDate(todayStr(), S.projToday || []);
+  const tpDone = tp.filter(p => p.state === 'Done').length;
   const stwHtml = `
     <div class="grp"><span>Steward · today</span><button class="btn ghost sm" onclick="tab('act')">Open activity</button></div>
     <div class="stats">
@@ -1026,10 +1091,13 @@ function renderDash() {
       <div class="stat g"><small>Done</small><b>${ac('Done')}</b></div>
       <div class="stat b"><small>In progress</small><b>${ac('In progress')}</b></div>
       <div class="stat ${ac('Issue') ? 'r' : 'g'}"><small>Issue</small><b>${ac('Issue')}</b></div>
-      <div class="stat"><small>Staff active</small><b>${new Set(A.map(a => a.by)).size}</b></div>
+      <div class="stat ${tp.length && tpDone < tp.length ? 'a' : 'g'}"><small>Weekly project</small><b>${tpDone} / ${tp.length}</b></div>
+    </div>
+    <div class="card"><div class="flex" style="margin-bottom:6px"><h3 style="margin:0">Weekly project · ${weekday(todayStr())}</h3><button class="btn ghost sm" onclick="tab('wpj')">Week view</button></div>
+      ${tp.length ? tp.map(p => `<div class="prow"><span class="info"><b>${esc(p.task)}</b>${p.rec ? `<div class="meta">${esc(p.rec.by)}${p.rec.end ? ' · ' + esc(p.rec.end) : ''}</div>` : ''}</span><span class="${stCls(p.state)}">${p.state}</span></div>`).join('') : '<p class="empty">No weekly project scheduled today</p>'}
     </div>
     <div class="card"><h3>Needs attention · today</h3>
-      ${issues.length ? issues.map(a => `<div class="row"><span><b>${esc(a.task)}</b>${a.section ? ' · <span style="color:var(--mute)">' + esc(a.section) + '</span>' : ''}<div class="meta">${esc(a.by)}${a.note ? ' · ' + esc(a.note) : ''}</div></span><span><span class="st st-${esc(a.status.replace(/\s/g, ''))}">${esc(a.status)}</span></span></div>`).join('') : '<p class="empty">No issues reported today</p>'}
+      ${issues.length ? issues.map(a => `<div class="row"><span><b>${esc(a.task)}</b>${a.section ? ' · <span style="color:var(--mute)">' + esc(a.section) + '</span>' : ''}<div class="meta">${esc(a.by)}${a.note ? ' · ' + esc(a.note) : ''}</div></span><span><span class="${stCls(a.status)}">${esc(a.status)}</span></span></div>`).join('') : '<p class="empty">No issues reported today</p>'}
     </div>`;
 
   $('#dash').innerHTML = `
@@ -1250,12 +1318,127 @@ async function saveNew() {
   } catch (e) { toast(e.message, 1); btn.disabled = false; btn.textContent = 'Add item'; }
 }
 
+/* ---------- WEEKLY PROJECT ---------- */
+function projTasks() {
+  const seen = {}, out = [];
+  S.projects.forEach(p => { const k = nk(p.task); if (!seen[k]) { seen[k] = 1; out.push(p.task); } });
+  return out;
+}
+// projects scheduled on a date, with their status from activity records
+function projForDate(date, recs) {
+  const day = weekday(date), today = todayStr();
+  const rank = { 'Done': 3, 'Issue': 2, 'In progress': 1 };
+  return S.projects.filter(p => p.day === day).map(p => {
+    const mine = recs.filter(r => r.date === date && nk(r.task) === nk(p.task))
+      .sort((a, b) => (rank[b.status] || 0) - (rank[a.status] || 0));
+    const rec = mine[0] || null;
+    const state = rec ? rec.status : date < today ? 'Missed' : date === today ? 'Pending' : 'Upcoming';
+    return { task: p.task, state, rec, all: mine };
+  });
+}
+async function loadTodayProj() {
+  const t = todayStr();
+  $('#tpTitle').textContent = 'Weekly project · ' + weekday(t);
+  try {
+    PJ.today = await get('projectStatus', { from: t, to: t });
+    if (isSpv()) S.projToday = PJ.today;
+  } catch (e) { PJ.today = []; }
+  renderTodayProj();
+}
+function renderTodayProj() {
+  const list = projForDate(todayStr(), PJ.today);
+  PJ.todayList = list;
+  $('#tpCard').hidden = !S.projects.length;
+  $('#tpList').innerHTML = list.length ? list.map((p, i) => `
+    <div class="prow">
+      <span class="info"><b>${esc(p.task)}</b>${p.rec ? `<div class="meta">${esc(p.rec.by)}${p.rec.start || p.rec.end ? ' · ' + esc(p.rec.start || '?') + '–' + esc(p.rec.end || '?') : ''}${p.rec.note ? ' · ' + esc(p.rec.note) : ''}</div>` : ''}</span>
+      <span class="pr"><span class="${stCls(p.state)}">${p.state}</span>${p.state !== 'Done' ? `<button class="btn sm" onclick="startProject(${i})">Start</button>` : ''}</span>
+    </div>`).join('') : '<p class="empty">No weekly project scheduled today. Daily tasks only.</p>';
+}
+function startProject(i) {
+  const p = PJ.todayList[i]; if (!p) return;
+  $('#aDate').value = todayStr();
+  const sel = $('#aTask');
+  const opt = [...sel.options].find(o => nk(o.value) === nk(p.task));
+  if (opt) sel.value = opt.value;
+  if (!$('#aStart').value) $('#aStart').value = nowTime();
+  $('#aForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  toast('Project selected – add photos and save');
+}
+async function loadWeek() {
+  if (!PJ.wk) PJ.wk = mondayOf(todayStr());
+  const from = PJ.wk, to = addDays(PJ.wk, 6);
+  $('#wRange').textContent = dayLabel(from) + ' – ' + dayLabel(to);
+  $('#wDays').innerHTML = '<p class="empty">Loading...</p>';
+  try {
+    PJ.week = await get('projectStatus', { from, to });
+    renderWeek();
+  } catch (e) { $('#wDays').innerHTML = `<p class="empty">${esc(e.message)}</p>`; }
+}
+function weekData() {
+  return DAYS.map((d, i) => { const date = addDays(PJ.wk, i); return { day: d, date, list: projForDate(date, PJ.week) }; });
+}
+function renderWeek() {
+  const wd = weekData(), all = wd.flatMap(x => x.list), t = todayStr();
+  const c = s => all.filter(p => p.state === s).length;
+  $('#wSum').innerHTML = `
+    <div class="stat"><small>Projects this week</small><b>${all.length}</b></div>
+    <div class="stat g"><small>Done</small><b>${c('Done')}</b></div>
+    <div class="stat b"><small>In progress / Issue</small><b>${c('In progress') + c('Issue')}</b></div>
+    <div class="stat r"><small>Missed</small><b>${c('Missed')}</b></div>
+    <div class="stat a"><small>Pending / Upcoming</small><b>${c('Pending') + c('Upcoming')}</b></div>`;
+  $('#wDays').innerHTML = wd.map(x => `
+    <div class="wday ${x.date === t ? 'today' : ''}">
+      <h4><span>${x.day} <small>${shortDay(x.date)}${x.date === t ? ' · today' : ''}</small></span>${x.list.length ? `<small>${x.list.filter(p => p.state === 'Done').length} / ${x.list.length} done</small>` : ''}</h4>
+      ${x.list.length ? x.list.map(p => `
+        <div class="prow">
+          <span class="info"><b>${esc(p.task)}</b>${p.rec ? `<div class="meta">${esc(p.rec.by)}${p.rec.start || p.rec.end ? ' · ' + esc(p.rec.start || '?') + '–' + esc(p.rec.end || '?') : ''}${p.rec.note ? ' · ' + esc(p.rec.note) : ''}${p.rec.photo ? ` · <a href="${esc(p.rec.photo)}" target="_blank" rel="noopener">photo</a>` : ''}</div>` : ''}</span>
+          <span class="${stCls(p.state)}">${p.state}</span>
+        </div>`).join('') : '<div class="meta">No project scheduled</div>'}
+    </div>`).join('');
+}
+function shareWeekWA() {
+  if (!isSpv()) return toast('Supervisor only', 1);
+  const wd = weekData(), all = wd.flatMap(x => x.list);
+  if (!all.length) return toast('No projects this week', 1);
+  const c = s => all.filter(p => p.state === s).length;
+  const lines = [
+    '*STEWARD WEEKLY CLEANING PROJECT*',
+    dayLabel(PJ.wk) + ' - ' + dayLabel(addDays(PJ.wk, 6)),
+    'Done ' + c('Done') + ' of ' + all.length + ' | Missed ' + c('Missed') + ' | Issue ' + c('Issue'),
+    ''
+  ];
+  wd.filter(x => x.list.length).forEach(x => {
+    lines.push('*' + x.day + ' ' + shortDay(x.date) + '*');
+    x.list.forEach(p => lines.push('- ' + p.task + ': ' + p.state + (p.rec ? ' (' + p.rec.by + ')' : '') + (p.rec && p.rec.note ? ' - ' + p.rec.note : '')));
+    lines.push('');
+  });
+  lines.push('Reported by ' + (S.me || ls('inv_by') || 'Supervisor'));
+  window.open('https://wa.me/?text=' + encodeURIComponent(lines.join('\n')), '_blank');
+}
+function printWeek() {
+  if (!isSpv()) return toast('Supervisor only', 1);
+  $('#wPH').innerHTML = `<h2>Steward Weekly Cleaning Project</h2><div>${esc(dayLabel(PJ.wk))} – ${esc(dayLabel(addDays(PJ.wk, 6)))}</div>`;
+  $('#wSig').innerHTML = sigBlock(['Prepared by', 'Checked by', 'Approved by'], [S.me || '', '', '']);
+  window.print();
+}
+$('#wPrev').onclick = () => { PJ.wk = addDays(PJ.wk || mondayOf(todayStr()), -7); loadWeek(); };
+$('#wNext').onclick = () => { PJ.wk = addDays(PJ.wk || mondayOf(todayStr()), 7); loadWeek(); };
+$('#wNow').onclick = () => { PJ.wk = mondayOf(todayStr()); loadWeek(); };
+$('#wWa').onclick = shareWeekWA;
+$('#wPrint').onclick = printWeek;
+
 /* ---------- DAILY ACTIVITY STEWARD ---------- */
 const PH_KEYS = [['before', 'Before', '#aP1'], ['during', 'During', '#aP2'], ['after', 'After', '#aP3']];
 function actSecList() {
   const set = new Set(S.secs);
   ACT.list.forEach(a => { if (a.section) set.add(a.section); });
   return [...set];
+}
+function allTasks() {
+  const seen = {}, out = [];
+  projTasks().concat(S.tasks).forEach(t => { const k = nk(t); if (!seen[k]) { seen[k] = 1; out.push(t); } });
+  return out;
 }
 function fillActSelects() {
   const set = (id, list, first) => {
@@ -1264,8 +1447,13 @@ function fillActSelects() {
     if (v && [...s.options].some(o => o.value === v)) s.value = v;
   };
   set('#aShift', S.shifts, '— shift —');
-  set('#aTask', S.tasks, '— choose task —');
-  set('#afTask', S.tasks, 'All tasks');
+  const pt = projTasks(), daily = S.tasks.filter(t => !pt.some(p => nk(p) === nk(t)));
+  const ts = $('#aTask'), tv = ts.value;
+  ts.innerHTML = '<option value="">— choose task —</option>'
+    + (pt.length ? `<optgroup label="Weekly project">${pt.map(x => `<option>${esc(x)}</option>`).join('')}</optgroup>` : '')
+    + (daily.length ? `<optgroup label="Daily tasks">${daily.map(x => `<option>${esc(x)}</option>`).join('')}</optgroup>` : '');
+  if (tv && [...ts.options].some(o => o.value === tv)) ts.value = tv;
+  set('#afTask', allTasks(), 'All tasks');
   set('#afSec', actSecList(), 'All sections');
   $('#aSecList').innerHTML = S.secs.map(s => `<option value="${esc(s)}"></option>`).join('');
   if (!$('#aSec').value) $('#aSec').value = ls('act_sec') || '';
@@ -1317,7 +1505,7 @@ async function submitActivity() {
     toast('Activity saved – ' + task);
     resetActForm();
     $('#afFrom').value = $('#afTo').value = date;
-    loadActs();
+    loadActs(); loadTodayProj();
   } catch (e) { toast(e.message, 1); }
   finally { btn.disabled = false; btn.textContent = 'Save activity'; }
 }
@@ -1340,7 +1528,7 @@ async function loadActs() {
 }
 function actFiltered() {
   const sec = $('#afSec').value, task = $('#afTask').value, staff = isSpv() ? $('#afStaff').value : '';
-  return ACT.list.filter(a => (!sec || a.section === sec) && (!task || a.task === task) && (!staff || a.by === staff));
+  return ACT.list.filter(a => (!sec || a.section === sec) && (!task || nk(a.task) === nk(task)) && (!staff || a.by === staff));
 }
 function actRange() {
   const f = $('#afFrom').value, t = $('#afTo').value;
@@ -1349,6 +1537,7 @@ function actRange() {
 function renderActs() {
   const list = actFiltered();
   const c = s => list.filter(a => a.status === s).length;
+  const pt = projTasks().map(nk);
   $('#aListTitle').textContent = (isSpv() ? 'Activities' : 'My activities') + ' · ' + actRange();
   $('#aSum').innerHTML = `
     <div class="stat"><small>Activities</small><b>${list.length}</b></div>
@@ -1359,15 +1548,16 @@ function renderActs() {
   $('#aList').innerHTML = list.map(a => {
     const ph = PH_KEYS.filter(([k]) => a[k]).map(([k, lbl]) =>
       `<figure><a href="${esc(a[k])}" target="_blank" rel="noopener"><img src="${esc(a[k])}" loading="lazy" referrerpolicy="no-referrer" alt="${lbl} photo"></a><figcaption>${lbl}</figcaption></figure>`).join('');
+    const isPj = pt.indexOf(nk(a.task)) > -1;
     return `<div class="acard">
       <div class="ahd">
         <div class="info">
-          <b>${esc(a.task)}</b>
+          <b>${esc(a.task)}</b>${isPj ? ' <span class="code">WEEKLY</span>' : ''}
           <div class="meta">${esc(dayLabel(a.date))}${a.start || a.end ? ' · ' + esc(a.start || '?') + '–' + esc(a.end || '?') : ''}${a.shift ? ' · ' + esc(a.shift) : ''}${a.section ? ' · ' + esc(a.section) : ''}</div>
           <div class="meta">By <b>${esc(a.by)}</b></div>
           ${a.note ? `<div class="meta" style="color:var(--ink);margin-top:4px">${esc(a.note)}</div>` : ''}
         </div>
-        <span class="st st-${esc(String(a.status).replace(/\s/g, ''))}">${esc(a.status)}</span>
+        <span class="${stCls(a.status)}">${esc(a.status)}</span>
       </div>
       ${ph ? `<div class="aph">${ph}</div>` : ''}
     </div>`;
@@ -1382,14 +1572,7 @@ async function printActs() {
     <div>${esc(actRange())}${sec ? ' · ' + esc(sec) : ''}${staff ? ' · ' + esc(staff) : ''}</div>
     <div>Prepared by ${esc(S.me || ls('inv_by') || 'Supervisor')}</div>`;
   $('#aSig').innerHTML = sigBlock(['Prepared by', 'Checked by', 'Approved by'], [S.me || '', '', '']);
-  const imgs = [...document.querySelectorAll('#aList img')];
-  const btn = $('#aPrint'); btn.disabled = true; btn.textContent = 'Loading photos...';
-  imgs.forEach(im => im.loading = 'eager');
-  await Promise.race([
-    Promise.all(imgs.map(im => im.complete ? 1 : new Promise(r => { im.onload = im.onerror = r; }))),
-    new Promise(r => setTimeout(r, 6000))
-  ]);
-  btn.disabled = false; btn.textContent = 'Print / PDF';
+  await waitImgs('#aList img', $('#aPrint'), 'Print / PDF');
   window.print();
 }
 function shareActsWA() {
@@ -1413,6 +1596,13 @@ function shareActsWA() {
     const ph = a.after || a.during || a.before;
     if (ph) lines.push('   Photo: ' + ph);
   });
+  if (!multiDay && S.projects.length) {
+    const tp = projForDate($('#afFrom').value, list.map(a => ({ date: a.date, task: a.task, status: a.status, by: a.by })));
+    if (tp.length) {
+      lines.push('', '*Weekly project ' + weekday($('#afFrom').value) + ':*');
+      tp.forEach(p => lines.push('- ' + p.task + ': ' + p.state + (p.rec ? ' (' + p.rec.by + ')' : '')));
+    }
+  }
   const issues = list.filter(a => a.status === 'Issue');
   if (issues.length) {
     lines.push('', '*Needs attention:*');
@@ -1426,11 +1616,12 @@ function xlsActs() {
   if (!window.XLSX) return toast('Excel library not loaded, check internet connection', 1);
   const list = actFiltered();
   if (!list.length) return toast('Nothing to export', 1);
+  const pt = projTasks().map(nk);
   const aoa = [['STEWARD DAILY ACTIVITY'], ['Period', actRange()], [],
-    ['DATE', 'SHIFT', 'SECTION', 'TASK', 'START', 'END', 'STATUS', 'STAFF', 'NOTE', 'PHOTO BEFORE', 'PHOTO DURING', 'PHOTO AFTER']];
-  list.slice().reverse().forEach(a => aoa.push([a.date, a.shift, a.section, a.task, a.start, a.end, a.status, a.by, a.note, a.before, a.during, a.after]));
+    ['DATE', 'SHIFT', 'SECTION', 'TASK', 'TYPE', 'START', 'END', 'STATUS', 'STAFF', 'NOTE', 'PHOTO BEFORE', 'PHOTO DURING', 'PHOTO AFTER']];
+  list.slice().reverse().forEach(a => aoa.push([a.date, a.shift, a.section, a.task, pt.indexOf(nk(a.task)) > -1 ? 'Weekly project' : 'Daily', a.start, a.end, a.status, a.by, a.note, a.before, a.during, a.after]));
   const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = [12, 11, 18, 26, 8, 8, 12, 18, 36, 40, 40, 40].map(w => ({ wch: w }));
+  ws['!cols'] = [12, 11, 18, 32, 14, 8, 8, 12, 18, 36, 40, 40, 40].map(w => ({ wch: w }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Activity');
   XLSX.writeFile(wb, 'Steward-Activity-' + $('#afFrom').value + ($('#afTo').value !== $('#afFrom').value ? '_' + $('#afTo').value : '') + '.xlsx');
@@ -1662,13 +1853,7 @@ function skipLabel(i) {
   renderLabels();
 }
 async function printLabels() {
-  const imgs = [...document.querySelectorAll('#labels img')];
-  const btn = $('#lPrint'); btn.disabled = true; btn.textContent = 'Loading photos...';
-  await Promise.race([
-    Promise.all(imgs.map(im => im.complete ? 1 : new Promise(r => { im.onload = im.onerror = r; }))),
-    new Promise(r => setTimeout(r, 5000))
-  ]);
-  btn.disabled = false; btn.textContent = 'Print labels';
+  await waitImgs('#labels img', $('#lPrint'), 'Print labels');
   window.print();
 }
 
@@ -2020,7 +2205,8 @@ function tab(t) {
   if (t === 'rec') renderRecap();
   if (t === 'lab') renderLabels();
   if (t === 'opn') renderOpname();
-  if (t === 'act') { fillActSelects(); loadActs(); }
+  if (t === 'act') { fillActSelects(); loadActs(); loadTodayProj(); }
+  if (t === 'wpj') loadWeek();
   scrollTo(0, 0);
 }
 $('#q').oninput = () => {
